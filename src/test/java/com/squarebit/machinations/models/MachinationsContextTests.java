@@ -44,4 +44,11 @@ public class MachinationsContextTests {
             assertThat(pool.getInitialSize()).isEqualTo(40);
         }
     }
+
+    @Test
+    public void should_construct_resource_connections() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/resource-connection-types.graphml");
+        TinkerGraph specs = SpecGraphReader.fromFile(path);
+        MachinationsContext context = MachinationsContext.fromSpecs(specs);
+    }
 }
