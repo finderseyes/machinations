@@ -13,6 +13,8 @@ public class IntSupplierFactoryTests {
 
         {
             Supplier<Integer> supplier = factory.fromExpression("D+3");
+            supplier = factory.fromExpression("10");
+            supplier = factory.fromExpression("");
             supplier = factory.fromExpression("D");
             supplier = factory.fromExpression("1D");
             supplier = factory.fromExpression("1D5");
