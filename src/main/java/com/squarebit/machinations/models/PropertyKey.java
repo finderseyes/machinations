@@ -1,0 +1,7 @@
+package com.squarebit.machinations.models;
+
+public class PropertyKey {
+    public static final String NODE_TYPE = "NodeType";
+    public static final String ACTIVATION_MODE = "ActivationMode";
+    public static final String NAME = "Name";
+}

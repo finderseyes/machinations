@@ -3,18 +3,18 @@ package com.squarebit.machinations.models;
 import lombok.Data;
 
 @Data
-public abstract class AbstractEdge {
-    private AbstractVertex from;
-    private AbstractVertex to;
+public abstract class AbstractConnection {
+    private AbstractNode from;
+    private AbstractNode to;
 
     /**
      * Instantiates a new Abstract edge.
      */
-    public AbstractEdge() {
+    public AbstractConnection() {
         this.from = this.to = null;
     }
 
-    public AbstractEdge(AbstractVertex from, AbstractVertex to) {
+    public AbstractConnection(AbstractNode from, AbstractNode to) {
         this.from = from;
         this.to = to;
     }

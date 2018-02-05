@@ -14,6 +14,18 @@ public class MachinationsContextTests {
         TinkerGraph specs = SpecGraphReader.fromFile(path);
         MachinationsContext context = MachinationsContext.fromSpecs(specs);
 
-        assertThat(context.getVertices().size()).isEqualTo(1);
+        assertThat(context.getNodes().size()).isEqualTo(4);
+
+        {
+            Pool pool = (Pool)context.getNode("n0").get();
+            assertThat(pool.getName()).isEqualTo("A");
+            assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.AUTOMATIC);
+        }
+
+        {
+            Pool pool = (Pool)context.getNode("n1").get();
+            assertThat(pool.getName()).isEqualTo("B");
+            assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.INTERACTIVE);
+        }
     }
 }
