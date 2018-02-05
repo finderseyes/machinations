@@ -74,7 +74,7 @@ public class MachinationsContext {
             if (value != null && valueType.isInstance(value))
                 return valueType.cast(value);
             else
-                return null;
+                return defaultValue;
         }
         else
             return defaultValue;
@@ -88,7 +88,10 @@ public class MachinationsContext {
         AbstractNode node = null;
 
         if (vertexType != null && vertexType.equals(Constants.NODE_TYPE_POOL)) {
+            int initialSize = getPropertyOrDefault(vertex, PropertyKey.POOL_SIZE, 0, Integer.class);
+
             Pool pool = new Pool();
+            pool.setInitialSize(initialSize);
             node = pool;
         }
 

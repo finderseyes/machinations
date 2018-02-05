@@ -20,12 +20,28 @@ public class MachinationsContextTests {
             Pool pool = (Pool)context.getNode("n0").get();
             assertThat(pool.getName()).isEqualTo("A");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.AUTOMATIC);
+            assertThat(pool.getInitialSize()).isEqualTo(10);
         }
 
         {
             Pool pool = (Pool)context.getNode("n1").get();
             assertThat(pool.getName()).isEqualTo("B");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.INTERACTIVE);
+            assertThat(pool.getInitialSize()).isEqualTo(20);
+        }
+
+        {
+            Pool pool = (Pool)context.getNode("n2").get();
+            assertThat(pool.getName()).isEqualTo("C");
+            assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.STARTING_ACTION);
+            assertThat(pool.getInitialSize()).isEqualTo(30);
+        }
+
+        {
+            Pool pool = (Pool)context.getNode("n3").get();
+            assertThat(pool.getName()).isEqualTo("D");
+            assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.PASSIVE);
+            assertThat(pool.getInitialSize()).isEqualTo(40);
         }
     }
 }
