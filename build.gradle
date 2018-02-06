@@ -24,6 +24,7 @@ apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'antlr'
 
 sourceCompatibility = 1.8
 
@@ -43,6 +44,7 @@ repositories {
 }
 
 dependencies {
+    antlr 'org.antlr:antlr4:4.5'
     compile(
             'org.springframework.boot:spring-boot-starter',
             'org.mongodb:bson:3.4.2',
@@ -59,6 +61,7 @@ dependencies {
             'org.knowm.xchange:xchange-poloniex:4.3.2',
             'org.apache.tinkerpop:gremlin-core:3.3.1',
             'org.apache.tinkerpop:tinkergraph-gremlin:3.3.1',
+//            'org.antlr:antlr4:4.5',
     )
 
 
@@ -74,4 +77,8 @@ dependencies {
 }
 
 sourceSets.test.resources.srcDir 'src/test/java'
+
+generateGrammarSource {
+    arguments += ["-package", "com.squarebit.machinations.parsers"]
+}
 
