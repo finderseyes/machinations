@@ -128,5 +128,10 @@ public class IntSupplierFactoryTests {
             Supplier<Integer> supplier = factory.fromExpression("D+D");
             assertInRange(supplier, 2, 12);
         }
+
+        {
+            Supplier<Integer> supplier = factory.fromExpression("D+D5-5");
+            assertInRange(supplier, -3, 6);
+        }
     }
 }

@@ -1,72 +1,81 @@
 package com.squarebit.machinations.models;
 
-import org.apache.commons.lang3.RandomUtils;
-import org.javatuples.Tuple;
-import org.parboiled.common.Tuple2;
+import com.squarebit.machinations.parsers.*;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class IntSupplierFactory {
-
-
     public Supplier<Integer> fromExpression(String expression) throws Exception {
-//        if (expression.trim().equals(""))
-//            return () -> 1;
-//
-//        Pattern numericPattern = Pattern.compile("\\d+");
-//        Pattern dicePattern = Pattern.compile("(\\d*)D(\\d*)");
-//
-//        String[] parts = expression.split("\\+");
-//
-//        List<Tuple2<Integer, Integer>> subexp = Arrays.stream(parts).map(part -> {
-//            Matcher matcher = dicePattern.matcher(part.trim());
-//
-//            if (matcher.find()) {
-//                String a = matcher.group(1);
-//                String b = matcher.group(2);
-//
-//                int aval = !a.equals("") ? Integer.parseInt(a) : 1;
-//                int bval = !b.equals("") ? Integer.parseInt(b) : 6;
-//            }
-//
-//            return new Tuple2<>(0, 0);
-//        }).collect(Collectors.toList());
-//
-//        return null;
+        if (expression.trim().equals(""))
+            return () -> 1;
 
-        String pattern = "((\\d*D\\d*)|(-?\\d+))((\\+|-)((\\d*D\\d*)|(-?\\d+)))*";
+        CharStream stream = new ANTLRInputStream(expression);
+        TokenStream tokens = new CommonTokenStream(new DiceLexer(stream));
 
-        Pattern r = Pattern.compile(pattern);
-        Matcher matcher = r.matcher(expression);
+        DiceParser parser = new DiceParser(tokens);
+        DiceParser.ProgramContext program = parser.program();
 
-        if (matcher.find()) {
-            String a = matcher.group(3);
-            String b = matcher.group(4);
-            String c = matcher.group(5);
+        List<AbstractDiceTerm> terms = IntStream.range(0, program.children.size()).boxed().map(i -> {
+            ParseTree c = program.getChild(i);
+            ParseTree prev = program.getChild(i - 1);
 
-            int aval = a != null ? (!a.equals("") ? Integer.parseInt(a) : 1) : 0;
-            int bval = b != null && !b.equals("") ? Integer.parseInt(b) : 6;
-            int cval = c != null && !c.equals("") ? Integer.parseInt(c) : 0;
+            if (c instanceof DiceParser.TermContext) {
+                int sign = 1;
+                if (prev != null) {
+                    if (((TerminalNode)prev).getSymbol().getType() == DiceParser.PLUS)
+                        sign = 1;
+                    else if (((TerminalNode)prev).getSymbol().getType() == DiceParser.MINUS)
+                        sign = -1;
+                }
 
-            if (aval == 0)
-                return () -> cval;
-            else {
-                return () -> {
-                    int sum = 0;
-                    for (int i = 0; i < aval; i++)
-                        sum += RandomUtils.nextInt(1, bval + 1);
-                    sum += cval;
-                    return sum;
-                };
+                ParseTree firstChild = ((DiceParser.TermContext)c).children.get(0);
+                if (firstChild instanceof DiceParser.DiceTermContext) {
+                    DiceParser.DiceTermContext term = (DiceParser.DiceTermContext)firstChild;
+                    int times = 1;
+                    int faces = 6;
+
+                    TerminalNode t0 = (TerminalNode)term.getChild(0);
+                    TerminalNode t1 = (TerminalNode)term.getChild(1);
+                    TerminalNode t2 = (TerminalNode)term.getChild(2);
+
+                    //
+                    if (t0.getText().equals("D")) {
+                        // case: D1
+                        if (t1 != null) {
+                            faces = Integer.parseInt(t1.getText());
+                        }
+                    }
+                    else {
+                        times = Integer.parseInt(t0.getText());
+                        // case: 1D1
+                        if (t2 != null) {
+
+                            faces = Integer.parseInt(t2.getText());
+                        }
+                    }
+
+                    return new DiceTerm().setTimes(times).setFaces(faces).setSign(sign);
+                }
+                else if (firstChild instanceof DiceParser.NumericTermContext) {
+                    DiceParser.NumericTermContext term = (DiceParser.NumericTermContext)firstChild;
+                    int value = Integer.parseInt(term.getText());
+                    return new NumericTerm().setValue(value).setSign(sign);
+                }
             }
-        }
-        else
-            throw new Exception("Invalid expression.");
+
+            return null;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+
+        return () -> terms.stream().mapToInt(AbstractDiceTerm::evaluate).sum();
     }
 }

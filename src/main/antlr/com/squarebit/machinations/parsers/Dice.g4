@@ -3,16 +3,16 @@ grammar Dice;
 program: term ((PLUS|MINUS) term)*;
 
 term
-    : dice_term
-    | numeric_term
+    : diceTerm
+    | numericTerm
     ;
 
-dice_term
+diceTerm
     : INT?'D'INT?
     ;
 
-numeric_term
-    : INT
+numericTerm
+    : (PLUS|MINUS)?INT
     ;
 
 INT
