@@ -1,15 +1,13 @@
 package com.squarebit.machinations.models;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class MachinationsContext {
@@ -49,30 +47,62 @@ public class MachinationsContext {
         MachinationsContext context = new MachinationsContext();
         context.specs = specs;
 
+        List<ResourceConnectionNode> resourceConnectionNodes = new ArrayList<>();
+
         // Iterate all nodes.
         specs.vertices().forEachRemaining(v -> {
             try {
-                AbstractNode vertex = createVertex(v);
-                context.nodes.add(vertex);
-                context.nodeBySpec.put(v.id().toString(), vertex);
+                AbstractNode node = context.createVertex(v);
+
+                if (!(node instanceof ResourceConnectionNode)) {
+                    context.nodes.add(node);
+                    context.nodeBySpec.put(v.id().toString(), node);
+                }
+                else {
+                    resourceConnectionNodes.add((ResourceConnectionNode)node);
+                }
             }
             catch (Exception ex) {}
         });
 
-        // Iterate all connections.
+        // Iterate all resource connection nodes.
+        resourceConnectionNodes.forEach(rcn -> {
+            IntSupplierFactory factory = new IntSupplierFactory();
+
+            String rateExp = getPropertyOrDefault(rcn.getVertex(), PropertyKey.CONNECTION_RATE, "", String.class);
+            try {
+                Supplier<Integer> rateSupplier = factory.fromExpression(rateExp);
+                ResourceConnection resourceConnection = new ResourceConnection();
+                resourceConnection.setRate(rateSupplier);
+
+                AbstractNode from = context.nodeBySpec.get(rcn.getIncomingEdge().outVertex().id().toString());
+                AbstractNode to = context.nodeBySpec.get(rcn.getOutgoingEdge().inVertex().id().toString());
+
+                from.getOutgoingConnections().add(resourceConnection);
+                to.getIncomingConnections().add(resourceConnection);
+                resourceConnection.setFrom(from).setTo(to);
+
+                context.connections.add(resourceConnection);
+            }
+            catch (Exception ex) {}
+        });
+
+        // Iterate all other connections.
         specs.edges().forEachRemaining(e -> {
             try {
-                AbstractConnection connection = createConnection(e);
-
                 AbstractNode from = context.nodeBySpec.get(e.outVertex().id().toString());
                 AbstractNode to = context.nodeBySpec.get(e.inVertex().id().toString());
 
-                from.getOutgoingConnections().add(connection);
-                to.getIncomingConnections().add(connection);
-                connection.setFrom(from);
-                connection.setTo(to);
+                AbstractConnection connection = context.createConnection(e);
 
-                context.connections.add(connection);
+                if (connection != null) {
+                    from.getOutgoingConnections().add(connection);
+                    to.getIncomingConnections().add(connection);
+                    connection.setFrom(from);
+                    connection.setTo(to);
+
+                    context.connections.add(connection);
+                }
             }
             catch (Exception ex) {}
         });
@@ -93,7 +123,7 @@ public class MachinationsContext {
             return defaultValue;
     }
 
-    private static AbstractNode createVertex(Vertex vertex) throws Exception {
+    private AbstractNode createVertex(Vertex vertex) throws Exception {
         String vertexType = getPropertyOrDefault(vertex, PropertyKey.NODE_TYPE, Constants.NODE_TYPE_POOL, String.class);
         String activationMode =
                 getPropertyOrDefault(vertex, PropertyKey.ACTIVATION_MODE, Constants.ACTIVATION_MODE_PASSIVE, String.class);
@@ -106,6 +136,13 @@ public class MachinationsContext {
             Pool pool = new Pool();
             pool.setInitialSize(initialSize);
             node = pool;
+        }
+        else if (vertexType.equals(Constants.NODE_TYPE_RESOURCE_CONNECTION)) {
+            ResourceConnectionNode rcn = new ResourceConnectionNode();
+            rcn.setIncomingEdge(vertex.edges(Direction.IN).next());
+            rcn.setOutgoingEdge(vertex.edges(Direction.OUT).next());
+            rcn.setVertex(vertex);
+            node = rcn;
         }
 
         if (node != null) {
@@ -122,7 +159,7 @@ public class MachinationsContext {
         throw new Exception("Unknown vertex type.");
     }
 
-    private static AbstractConnection createConnection(Edge edge) throws Exception {
+    private AbstractConnection createConnection(Edge edge) throws Exception {
         IntSupplierFactory factory = new IntSupplierFactory();
         String connectionType = getPropertyOrDefault(edge, PropertyKey.CONNECTION_TYPE,
                 Constants.CONNECTION_TYPE_RESOURCE_CONNECTION, String.class);
@@ -130,13 +167,21 @@ public class MachinationsContext {
         AbstractConnection connection = null;
 
         if (connectionType != null && connectionType.equals(Constants.CONNECTION_TYPE_RESOURCE_CONNECTION)) {
-            String rateExp = getPropertyOrDefault(edge, PropertyKey.RATE, "", String.class);
-            Supplier<Integer> rateSupplier = factory.fromExpression(rateExp);
+            String outVertexType = getPropertyOrDefault(edge.outVertex(), PropertyKey.NODE_TYPE,
+                Constants.NODE_TYPE_POOL, String.class);
+            String inVertexType = getPropertyOrDefault(edge.inVertex(), PropertyKey.NODE_TYPE,
+                    Constants.NODE_TYPE_POOL, String.class);
 
-            ResourceConnection resourceConnection = new ResourceConnection();
-            resourceConnection.setRate(rateSupplier);
+            if (!outVertexType.equals(Constants.NODE_TYPE_RESOURCE_CONNECTION) &&
+                    !inVertexType.equals(Constants.NODE_TYPE_RESOURCE_CONNECTION)) {
+                String rateExp = getPropertyOrDefault(edge, PropertyKey.CONNECTION_RATE, "", String.class);
+                Supplier<Integer> rateSupplier = factory.fromExpression(rateExp);
 
-            connection = resourceConnection;
+                ResourceConnection resourceConnection = new ResourceConnection();
+                resourceConnection.setRate(rateSupplier);
+
+                connection = resourceConnection;
+            }
         }
 
         return connection;

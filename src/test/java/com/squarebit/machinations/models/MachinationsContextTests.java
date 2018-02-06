@@ -51,7 +51,7 @@ public class MachinationsContextTests {
         TinkerGraph specs = SpecGraphReader.fromFile(path);
         MachinationsContext context = MachinationsContext.fromSpecs(specs);
 
-        assertThat(context.getConnections().size()).isEqualTo(2);
+        assertThat(context.getConnections().size()).isEqualTo(3);
 
         {
             Pool n0 = (Pool)context.getNode("n0").get();
@@ -69,6 +69,17 @@ public class MachinationsContextTests {
             assertThat(c0).isEqualTo(c1);
             assertThat(c0.getFrom()).isEqualTo(n0);
             assertThat(c1.getTo()).isEqualTo(n1);
+        }
+
+        {
+            Pool n2 = (Pool)context.getNode("n2").get();
+            Pool n3 = (Pool)context.getNode("n3").get();
+
+            assertThat(n2.getOutgoingConnections().size()).isEqualTo(2);
+            assertThat(n2.getIncomingConnections().size()).isEqualTo(0);
+
+            assertThat(n3.getIncomingConnections().size()).isEqualTo(2);
+            assertThat(n3.getOutgoingConnections().size()).isEqualTo(0);
         }
     }
 }

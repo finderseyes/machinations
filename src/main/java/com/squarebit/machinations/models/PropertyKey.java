@@ -7,5 +7,5 @@ public class PropertyKey {
     public static final String POOL_SIZE = "PoolSize";
 
     public static final String CONNECTION_TYPE = "ConnectionType";
-    public static final String RATE = "Rate";
+    public static final String CONNECTION_RATE = "ConnectionRate";
 }
