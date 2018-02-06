@@ -47,8 +47,28 @@ public class MachinationsContextTests {
 
     @Test
     public void should_construct_resource_connections() throws Exception {
-        String path = Utils.absoluteResourcePath("graphs/resource-connection-types.graphml");
+        String path = Utils.absoluteResourcePath("graphs/pool-types.graphml");
         TinkerGraph specs = SpecGraphReader.fromFile(path);
         MachinationsContext context = MachinationsContext.fromSpecs(specs);
+
+        assertThat(context.getConnections().size()).isEqualTo(2);
+
+        {
+            Pool n0 = (Pool)context.getNode("n0").get();
+            Pool n1 = (Pool)context.getNode("n1").get();
+
+            assertThat(n0.getOutgoingConnections().size()).isEqualTo(1);
+            assertThat(n0.getIncomingConnections().size()).isEqualTo(0);
+
+            assertThat(n1.getIncomingConnections().size()).isEqualTo(1);
+            assertThat(n1.getOutgoingConnections().size()).isEqualTo(0);
+
+            AbstractConnection c0 = n0.getOutgoingConnections().stream().findFirst().get();
+            AbstractConnection c1 = n1.getIncomingConnections().stream().findFirst().get();
+
+            assertThat(c0).isEqualTo(c1);
+            assertThat(c0.getFrom()).isEqualTo(n0);
+            assertThat(c1.getTo()).isEqualTo(n1);
+        }
     }
 }

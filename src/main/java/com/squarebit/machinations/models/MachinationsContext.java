@@ -1,6 +1,7 @@
 package com.squarebit.machinations.models;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -9,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class MachinationsContext {
     private Object specs;
@@ -54,14 +56,25 @@ public class MachinationsContext {
                 context.nodes.add(vertex);
                 context.nodeBySpec.put(v.id().toString(), vertex);
             }
-            catch (Exception ex) {
-
-            }
+            catch (Exception ex) {}
         });
 
         // Iterate all connections.
         specs.edges().forEachRemaining(e -> {
-            int k = 10;
+            try {
+                AbstractConnection connection = createConnection(e);
+
+                AbstractNode from = context.nodeBySpec.get(e.outVertex().id().toString());
+                AbstractNode to = context.nodeBySpec.get(e.inVertex().id().toString());
+
+                from.getOutgoingConnections().add(connection);
+                to.getIncomingConnections().add(connection);
+                connection.setFrom(from);
+                connection.setTo(to);
+
+                context.connections.add(connection);
+            }
+            catch (Exception ex) {}
         });
 
         return context;
@@ -107,5 +120,25 @@ public class MachinationsContext {
         }
 
         throw new Exception("Unknown vertex type.");
+    }
+
+    private static AbstractConnection createConnection(Edge edge) throws Exception {
+        IntSupplierFactory factory = new IntSupplierFactory();
+        String connectionType = getPropertyOrDefault(edge, PropertyKey.CONNECTION_TYPE,
+                Constants.CONNECTION_TYPE_RESOURCE_CONNECTION, String.class);
+
+        AbstractConnection connection = null;
+
+        if (connectionType != null && connectionType.equals(Constants.CONNECTION_TYPE_RESOURCE_CONNECTION)) {
+            String rateExp = getPropertyOrDefault(edge, PropertyKey.RATE, "", String.class);
+            Supplier<Integer> rateSupplier = factory.fromExpression(rateExp);
+
+            ResourceConnection resourceConnection = new ResourceConnection();
+            resourceConnection.setRate(rateSupplier);
+
+            connection = resourceConnection;
+        }
+
+        return connection;
     }
 }
