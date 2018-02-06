@@ -12,7 +12,7 @@ public class IntSupplierFactory {
         if (expression.trim().equals(""))
             return () -> 1;
 
-        String pattern = "(((\\d*)D(\\d*))\\+?)?(-?\\d+)?";
+        String pattern = "(((\\d*)D(\\d*))\\+?)?(-?\\d+)*";
 
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(expression);
