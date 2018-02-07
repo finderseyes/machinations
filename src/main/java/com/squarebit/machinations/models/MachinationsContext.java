@@ -135,6 +135,34 @@ public class MachinationsContext {
             }
         });
 
+        // Trigger.
+        traversal.E().filter(t ->
+                elementHasProperty(t.get(), PropertyKey.CONNECTION_TYPE, Constants.CONNECTION_TYPE_TRIGGER)
+        ).forEachRemaining(e -> {
+            AbstractNode owner = context.nodeBySpec.get(e.outVertex().id().toString());
+
+            if (elementHasProperty(e.inVertex(), PropertyKey.NODE_TYPE, Constants.NODE_TYPE_CONNECTION_LABEL)) {
+                AbstractConnection target = connectionByLabel.get(e.inVertex());
+                Trigger trigger = new Trigger().setOwner(owner).setTarget(target);
+                owner.getTriggers().add(trigger);
+            }
+            else {
+                AbstractNode target = context.nodeBySpec.get(e.inVertex().id().toString());
+                Trigger trigger = new Trigger().setOwner(owner).setTarget(target);
+                owner.getTriggers().add(trigger);
+            }
+        });
+
+        // Activator
+        traversal.E().filter(t ->
+                elementHasProperty(t.get(), PropertyKey.CONNECTION_TYPE, Constants.CONNECTION_TYPE_ACTIVATOR)
+        ).forEachRemaining(e -> {
+            AbstractNode owner = context.nodeBySpec.get(e.outVertex().id().toString());
+            AbstractNode target = context.nodeBySpec.get(e.inVertex().id().toString());
+            Activator activator = new Activator().setOwner(owner).setTarget(target);
+            owner.getActivators().add(activator);
+        });
+
         return context;
     }
 
