@@ -1,17 +1,19 @@
 grammar Dice;
 
-program: term ((PLUS|MINUS) term)*;
+labelModifierExpression: (PLUS|MINUS)INT?;
+
+diceExpression: term ((PLUS|MINUS) term)*;
 
 term
     : diceTerm
-    | numericTerm
+    | integer
     ;
 
 diceTerm
     : INT?'D'INT?
     ;
 
-numericTerm
+integer
     : (PLUS|MINUS)?INT
     ;
 

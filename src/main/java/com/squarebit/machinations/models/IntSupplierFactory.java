@@ -23,7 +23,7 @@ public class IntSupplierFactory {
         TokenStream tokens = new CommonTokenStream(new DiceLexer(stream));
 
         DiceParser parser = new DiceParser(tokens);
-        DiceParser.ProgramContext program = parser.program();
+        DiceParser.DiceExpressionContext program = parser.diceExpression();
 
         List<AbstractDiceTerm> terms = IntStream.range(0, program.children.size()).boxed().map(i -> {
             ParseTree c = program.getChild(i);
@@ -66,8 +66,8 @@ public class IntSupplierFactory {
 
                     return new DiceTerm().setTimes(times).setFaces(faces).setSign(sign);
                 }
-                else if (firstChild instanceof DiceParser.NumericTermContext) {
-                    DiceParser.NumericTermContext term = (DiceParser.NumericTermContext)firstChild;
+                else if (firstChild instanceof DiceParser.IntegerContext) {
+                    DiceParser.IntegerContext term = (DiceParser.IntegerContext)firstChild;
                     int value = Integer.parseInt(term.getText());
                     return new NumericTerm().setValue(value).setSign(sign);
                 }

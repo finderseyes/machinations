@@ -22,14 +22,14 @@
   <key attr.name="Name" attr.type="string" for="node" id="d8">
     <default/>
   </key>
-  <key attr.name="ConnectionRate" attr.type="string" for="node" id="d9">
+  <key attr.name="Label" attr.type="string" for="node" id="d9">
     <default/>
   </key>
   <key attr.name="url" attr.type="string" for="node" id="d10"/>
   <key attr.name="description" attr.type="string" for="node" id="d11"/>
   <key for="node" id="d12" yfiles.type="nodegraphics"/>
   <key for="graphml" id="d13" yfiles.type="resources"/>
-  <key attr.name="ConnectionRate" attr.type="string" for="edge" id="d14">
+  <key attr.name="Label" attr.type="string" for="edge" id="d14">
     <default/>
   </key>
   <key attr.name="ConnectionType" attr.type="string" for="edge" id="d15">

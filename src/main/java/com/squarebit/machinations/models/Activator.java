@@ -6,6 +6,7 @@ package com.squarebit.machinations.models;
 public class Activator {
     private AbstractNode owner;
     private AbstractNode target;
+    private String label;
 
     public AbstractNode getOwner() {
         return owner;
@@ -22,6 +23,15 @@ public class Activator {
 
     public Activator setTarget(AbstractNode target) {
         this.target = target;
+        return this;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public Activator setLabel(String label) {
+        this.label = label;
         return this;
     }
 }

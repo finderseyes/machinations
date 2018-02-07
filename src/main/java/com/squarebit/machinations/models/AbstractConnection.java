@@ -3,6 +3,7 @@ package com.squarebit.machinations.models;
 public abstract class AbstractConnection extends AbstractElement {
     private AbstractNode from;
     private AbstractNode to;
+    private String label;
 
     /**
      * Instantiates a new Abstract edge.
@@ -59,6 +60,26 @@ public abstract class AbstractConnection extends AbstractElement {
      */
     public AbstractConnection setTo(AbstractNode to) {
         this.to = to;
+        return this;
+    }
+
+    /**
+     * Gets label.
+     *
+     * @return the label
+     */
+    public String getLabel() {
+        return label;
+    }
+
+    /**
+     * Sets label.
+     *
+     * @param label the label
+     * @return the label
+     */
+    public AbstractConnection setLabel(String label) {
+        this.label = label;
         return this;
     }
 }

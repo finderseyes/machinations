@@ -96,8 +96,6 @@ public class MachinationsContextTests {
 
             assertThat(connections.get(0).getTo()).isEqualTo(n3);
             assertThat(connections.get(1).getTo()).isEqualTo(n3);
-
-            assertThat(connections.get(1).getModifyingElements().size()).isEqualTo(1);
         }
     }
 }

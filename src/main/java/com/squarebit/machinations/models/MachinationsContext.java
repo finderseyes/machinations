@@ -1,14 +1,11 @@
 package com.squarebit.machinations.models;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.yaml.snakeyaml.scanner.Constant;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -74,11 +71,11 @@ public class MachinationsContext {
 
         // Iterate all connection label nodes.
         connectionLabels.forEach(rcn -> {
-            String rateExp = getPropertyOrDefault(rcn.getVertex(), PropertyKey.CONNECTION_RATE, "", String.class);
+            String rateExp = getPropertyOrDefault(rcn.getVertex(), PropertyKey.CONNECTION_LABEL, "", String.class);
             try {
                 Supplier<Integer> rateSupplier = context.expressionFactory.fromExpression(rateExp);
                 ResourceConnection resourceConnection = new ResourceConnection();
-                resourceConnection.setRate(rateSupplier);
+                resourceConnection.setRate(rateSupplier).setLabel(rateExp);
 
                 AbstractNode from = context.nodeBySpec.get(rcn.getIncomingEdge().outVertex().id().toString());
                 AbstractNode to = context.nodeBySpec.get(rcn.getOutgoingEdge().inVertex().id().toString());
@@ -118,17 +115,18 @@ public class MachinationsContext {
                 elementHasProperty(t.get(), PropertyKey.CONNECTION_TYPE, Constants.CONNECTION_TYPE_MOFIFIER)
         ).forEachRemaining(e -> {
             AbstractNode owner = context.nodeBySpec.get(e.outVertex().id().toString());
+            String label = getPropertyOrDefault(e, PropertyKey.CONNECTION_LABEL, "");
 
             if (elementHasProperty(e.inVertex(), PropertyKey.NODE_TYPE, Constants.NODE_TYPE_CONNECTION_LABEL)) {
                 AbstractConnection target = connectionByLabel.get(e.inVertex());
-                Modifier modifier = new Modifier().setOwner(owner).setTarget(target);
+                Modifier modifier = new Modifier().setOwner(owner).setTarget(target).setLabel(label);
 
                 owner.getModifiers().add(modifier);
                 target.getModifyingElements().add(modifier);
             }
             else {
                 AbstractNode target = context.nodeBySpec.get(e.inVertex().id().toString());
-                Modifier modifier = new Modifier().setOwner(owner).setTarget(target);
+                Modifier modifier = new Modifier().setOwner(owner).setTarget(target).setLabel(label);
 
                 owner.getModifiers().add(modifier);
                 target.getModifyingElements().add(modifier);
@@ -159,7 +157,8 @@ public class MachinationsContext {
         ).forEachRemaining(e -> {
             AbstractNode owner = context.nodeBySpec.get(e.outVertex().id().toString());
             AbstractNode target = context.nodeBySpec.get(e.inVertex().id().toString());
-            Activator activator = new Activator().setOwner(owner).setTarget(target);
+            Activator activator = new Activator().setOwner(owner).setTarget(target)
+                    .setLabel(getPropertyOrDefault(e, PropertyKey.CONNECTION_LABEL, ""));
             owner.getActivators().add(activator);
         });
 
@@ -255,11 +254,11 @@ public class MachinationsContext {
 
             if (!outVertexType.equals(Constants.NODE_TYPE_CONNECTION_LABEL) &&
                     !inVertexType.equals(Constants.NODE_TYPE_CONNECTION_LABEL)) {
-                String rateExp = getPropertyOrDefault(edge, PropertyKey.CONNECTION_RATE, "", String.class);
+                String rateExp = getPropertyOrDefault(edge, PropertyKey.CONNECTION_LABEL, "", String.class);
                 Supplier<Integer> rateSupplier = this.expressionFactory.fromExpression(rateExp);
 
                 ResourceConnection resourceConnection = new ResourceConnection();
-                resourceConnection.setRate(rateSupplier);
+                resourceConnection.setRate(rateSupplier).setLabel(rateExp);
 
                 connection = resourceConnection;
             }
