@@ -12,7 +12,9 @@ unaryArithmeticExpression
     | (PLUS|MINUS) arithmeticExpression;
 
 unaryLogicalExpression
-    : relationExpression
+    : relationalExpression
+    | leftImplicitRelationalExpression
+    | rightImplicitRelationalExpression
     | groupLogicalExpression
     | NOT logicalExpression;
 
@@ -39,8 +41,14 @@ multiplicativeExpression
 additiveExpression
     : unaryArithmeticExpression PLUS arithmeticExpression;
 
-relationExpression
+relationalExpression
     : arithmeticExpression (GT|GTE|LT|LTE|EQ|NEQ) arithmeticExpression;
+
+leftImplicitRelationalExpression
+    : (GT|GTE|LT|LTE|EQ|NEQ) arithmeticExpression;
+
+rightImplicitRelationalExpression
+    : arithmeticExpression (GT|GTE|LT|LTE|EQ|NEQ);
 
 logicalOrExpression
     : unaryLogicalExpression OR logicalExpression;
@@ -48,7 +56,7 @@ logicalOrExpression
 logicalAndExpression
     : unaryLogicalExpression AND logicalExpression;
 
-number: diceTerm | integer | fraction;
+number: DICE_TERM | INT | FRACTION | PERCENTAGE;
 
 diceExpression: term ((PLUS|MINUS) term)*;
 
@@ -58,7 +66,6 @@ term
     ;
 
 diceTerm: DICE_TERM;
-
 integer: INT;
 fraction: FRACTION;
 identifier: IDENTIFIER;
@@ -67,6 +74,7 @@ IDENTIFIER: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
 DICE_TERM: [0-9]?'D'[0-9]?;
 INT: [0-9]+;
 FRACTION: [0-9]+'/'[0-9]+;
+PERCENTAGE: [0-9]+'%';
 
 PLUS: '+';
 MINUS: '-';
