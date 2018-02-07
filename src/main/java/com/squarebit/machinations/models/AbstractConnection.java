@@ -1,9 +1,6 @@
 package com.squarebit.machinations.models;
 
-import lombok.Data;
-
-@Data
-public abstract class AbstractConnection {
+public abstract class AbstractConnection extends AbstractElement {
     private AbstractNode from;
     private AbstractNode to;
 

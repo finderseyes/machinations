@@ -3,7 +3,7 @@ package com.squarebit.machinations.models;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class ResourceConnectionNode extends AbstractNode {
+public class ConnectionLabel extends AbstractNode {
     private Edge incomingEdge;
     private Edge outgoingEdge;
     private Vertex vertex;
@@ -12,7 +12,7 @@ public class ResourceConnectionNode extends AbstractNode {
         return incomingEdge;
     }
 
-    public ResourceConnectionNode setIncomingEdge(Edge incomingEdge) {
+    public ConnectionLabel setIncomingEdge(Edge incomingEdge) {
         this.incomingEdge = incomingEdge;
         return this;
     }
@@ -21,7 +21,7 @@ public class ResourceConnectionNode extends AbstractNode {
         return outgoingEdge;
     }
 
-    public ResourceConnectionNode setOutgoingEdge(Edge outgoingEdge) {
+    public ConnectionLabel setOutgoingEdge(Edge outgoingEdge) {
         this.outgoingEdge = outgoingEdge;
         return this;
     }
@@ -30,7 +30,7 @@ public class ResourceConnectionNode extends AbstractNode {
         return vertex;
     }
 
-    public ResourceConnectionNode setVertex(Vertex vertex) {
+    public ConnectionLabel setVertex(Vertex vertex) {
         this.vertex = vertex;
         return this;
     }

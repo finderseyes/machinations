@@ -5,6 +5,10 @@ import com.squarebit.machinations.Utils;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MachinationsContextTests {
@@ -69,6 +73,11 @@ public class MachinationsContextTests {
             assertThat(c0).isEqualTo(c1);
             assertThat(c0.getFrom()).isEqualTo(n0);
             assertThat(c1.getTo()).isEqualTo(n1);
+
+            assertThat(n0.getTriggers().size()).isEqualTo(1);
+            assertThat(n0.getActivators().size()).isEqualTo(1);
+
+            assertThat(n1.getModifiers().size()).isEqualTo(1);
         }
 
         {
@@ -80,6 +89,15 @@ public class MachinationsContextTests {
 
             assertThat(n3.getIncomingConnections().size()).isEqualTo(2);
             assertThat(n3.getOutgoingConnections().size()).isEqualTo(0);
+
+            List<AbstractConnection> connections = new ArrayList<>(n2.getOutgoingConnections());
+            assertThat(connections.get(0).getFrom()).isEqualTo(n2);
+            assertThat(connections.get(1).getFrom()).isEqualTo(n2);
+
+            assertThat(connections.get(0).getTo()).isEqualTo(n3);
+            assertThat(connections.get(1).getTo()).isEqualTo(n3);
+
+            assertThat(connections.get(1).getModifyingElements().size()).isEqualTo(1);
         }
     }
 }

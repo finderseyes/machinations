@@ -3,12 +3,15 @@ package com.squarebit.machinations.models;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractNode {
+public abstract class AbstractNode extends AbstractElement {
     protected String name;
     protected ActivationMode activationMode = ActivationMode.PASSIVE;
 
     private HashSet<AbstractConnection> outgoingConnections = new HashSet<>();
     private HashSet<AbstractConnection> incomingConnections = new HashSet<>();
+    private HashSet<Modifier> modifiers = new HashSet<>();
+    private HashSet<Trigger> triggers = new HashSet<>();
+    private HashSet<Activator> activators = new HashSet<>();
 
     /**
      * Gets name.
@@ -55,6 +58,18 @@ public abstract class AbstractNode {
 
     public Set<AbstractConnection> getIncomingConnections() {
         return this.incomingConnections;
+    }
+
+    public HashSet<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    public HashSet<Trigger> getTriggers() {
+        return triggers;
+    }
+
+    public HashSet<Activator> getActivators() {
+        return activators;
     }
 
     /**
