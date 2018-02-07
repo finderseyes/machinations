@@ -2,25 +2,12 @@ grammar Dice;
 
 labelModifier: (PLUS|MINUS)INT?;
 
-program: expression EOF;
-
-primaryExpression
-    : number
-    | groupArithmeticExpression
-    | groupLogicalExpression;
-
-groupExpression: LEFT_PARENTHESIS expression RIGHT_PARENTHESIS;
 groupArithmeticExpression: LEFT_PARENTHESIS arithmeticExpression RIGHT_PARENTHESIS;
 groupLogicalExpression: LEFT_PARENTHESIS logicalExpression RIGHT_PARENTHESIS;
 
-unaryExpression
-    : primaryExpression
-    | unaryArithmeticExpression
-    | unaryLogicalExpression
-    ;
-
 unaryArithmeticExpression
     : number
+    | identifier
     | groupArithmeticExpression
     | (PLUS|MINUS) arithmeticExpression;
 
@@ -46,7 +33,6 @@ logicalExpression
     | logicalOrExpression
     ;
 
-
 multiplicativeExpression
     : unaryArithmeticExpression TIMES arithmeticExpression;
 
@@ -62,7 +48,7 @@ logicalOrExpression
 logicalAndExpression
     : unaryLogicalExpression AND logicalExpression;
 
-number: integer | diceTerm;
+number: diceTerm | integer | fraction;
 
 diceExpression: term ((PLUS|MINUS) term)*;
 
@@ -71,21 +57,21 @@ term
     | integer
     ;
 
-diceTerm
-    : INT?'D'INT?
-    ;
+diceTerm: DICE_TERM;
 
-integer
-    : (PLUS|MINUS)?INT
-    ;
+integer: INT;
+fraction: FRACTION;
+identifier: IDENTIFIER;
 
-INT
-    : [0-9]+
-    ;
+IDENTIFIER: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
+DICE_TERM: [0-9]?'D'[0-9]?;
+INT: [0-9]+;
+FRACTION: [0-9]+'/'[0-9]+;
 
 PLUS: '+';
 MINUS: '-';
 TIMES: '*';
+
 GT: '>';
 GTE: '>=';
 LT: '<';
