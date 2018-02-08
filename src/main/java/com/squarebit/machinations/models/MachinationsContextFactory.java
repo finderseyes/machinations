@@ -1,21 +1,33 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.specs.yaml.ElementSpec;
 import com.squarebit.machinations.specs.yaml.PoolSpec;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
 import org.bson.types.ObjectId;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MachinationContextFactory {
-    public MachinationContext fromSpec(YamlSpec spec) throws Exception {
-        MachinationContext context = new MachinationContext();
-
-        this.createNode(context, spec);
-
-        return context;
+public class MachinationsContextFactory {
+    private class BuildingContext {
+        private MachinationsContext machinations;
+        private YamlSpec spec;
+        private Map<AbstractElement, ElementSpec> elementSpec = new HashMap<>();
     }
 
-    private void createNode(MachinationContext context, YamlSpec spec) throws Exception {
+    public MachinationsContext fromSpec(YamlSpec spec) throws Exception {
+        BuildingContext context = new BuildingContext();
+        context.machinations = new MachinationsContext();
+        context.spec = spec;
+
+        this.createNode(context, spec);
+        this.createNodeConnections(context);
+
+        return context.machinations;
+    }
+
+    private void createNode(BuildingContext context, YamlSpec spec) throws Exception {
         AtomicReference<Exception> lastError = new AtomicReference<>();
 
         // Build the node, first pass.
@@ -28,7 +40,6 @@ public class MachinationContextFactory {
 
             if (nodeSpec instanceof PoolSpec) {
                 Pool pool = new Pool();
-
                 node = pool;
             }
 
@@ -37,7 +48,8 @@ public class MachinationContextFactory {
                         .setActivationMode(ActivationMode.from(nodeSpec.getActivationMode()))
                         .setId(id);
                 try {
-                    context.addElement(node);
+                    context.machinations.addElement(node);
+                    context.elementSpec.put(node, nodeSpec);
                 }
                 catch (Exception ex) {
                     lastError.compareAndSet(null, ex);
@@ -47,6 +59,10 @@ public class MachinationContextFactory {
 
         if (lastError.get() != null)
             throw lastError.get();
+    }
+
+    private void createNodeConnections(BuildingContext context) {
+
     }
 
     private String getOrCreateId(String id) {

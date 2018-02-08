@@ -6,14 +6,14 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MachinationContextFactoryTests {
+public class MachinationsContextFactoryTests {
     @Test
     public void should_load_elements_from_yaml_spec() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationContextFactory factory = new MachinationContextFactory();
+        MachinationsContextFactory factory = new MachinationsContextFactory();
 
-        MachinationContext context = factory.fromSpec(spec);
+        MachinationsContext context = factory.fromSpec(spec);
         assertThat(context).isNotNull();
 
         {
@@ -71,8 +71,8 @@ public class MachinationContextFactoryTests {
     public void should_not_load_elements_with_same_id_from_yaml_spec() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/duplicated-node-id.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationContextFactory factory = new MachinationContextFactory();
+        MachinationsContextFactory factory = new MachinationsContextFactory();
 
-        MachinationContext context = factory.fromSpec(spec);
+        MachinationsContext context = factory.fromSpec(spec);
     }
 }

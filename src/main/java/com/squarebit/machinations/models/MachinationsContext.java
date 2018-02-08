@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class MachinationContext {
+public class MachinationsContext {
     private Set<AbstractElement> elements;
     private Map<String, AbstractElement> elementById;
 
-    public MachinationContext() {
+    public MachinationsContext() {
         this.elements = new HashSet<>();
         this.elementById = new HashMap<>();
     }
