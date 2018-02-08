@@ -61,7 +61,8 @@ dependencies {
             'org.knowm.xchange:xchange-poloniex:4.3.2',
             'org.apache.tinkerpop:gremlin-core:3.3.1',
             'org.apache.tinkerpop:tinkergraph-gremlin:3.3.1',
-//            'org.antlr:antlr4:4.5',
+            'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4',
+            'com.fasterxml.jackson.core:jackson-databind:2.9.4',
     )
 
 

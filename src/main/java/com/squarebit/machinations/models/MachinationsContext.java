@@ -151,7 +151,7 @@ public class MachinationsContext {
             }
         });
 
-        // Activator
+        // ActivatorSpec
         traversal.E().filter(t ->
                 elementHasProperty(t.get(), PropertyKey.CONNECTION_TYPE, Constants.CONNECTION_TYPE_ACTIVATOR)
         ).forEachRemaining(e -> {

@@ -1,0 +1,23 @@
+# Sample graph.
+# NOTE: edge-like structures (connections, triggers, activators) are defined by strings in two forms
+# - Relative form: to define edge from a node, will have the form [label] --> target_node_id [(edge_id)]
+# - Absolute form: to define edge from out side a node, having form: source_node_id --> [label -->] target_node_id [edge_id]
+---
+nodes:
+  - type: pool
+    id: n0
+    resources: 125 Mana, 30 Gold
+    connections:
+      - 1D+2 --> n1 (e1)
+      - 1D+2 --> n2
+      - --> n3 (e2)
+
+  - type: pool
+    id: n1
+    modifiers:
+      - 1 --> e1
+    triggers:
+      - --> n0
+
+  - type: gate
+    id: n2

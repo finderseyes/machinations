@@ -299,7 +299,7 @@
       </data>
     </edge>
     <edge id="e6" source="n0" target="n2">
-      <data key="d15"><![CDATA[activator]]></data>
+      <data key="d15"><![CDATA[activators]]></data>
       <data key="d17"/>
       <data key="d18">
         <y:PolyLineEdge>
