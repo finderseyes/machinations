@@ -1,12 +1,14 @@
 package com.squarebit.machinations.models;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public abstract class AbstractElement {
-    private Set<Modifier> modifyingElements = new HashSet<>();
+    private String id;
 
-    public Set<Modifier> getModifyingElements() {
-        return modifyingElements;
+    public String getId() {
+        return id;
+    }
+
+    public AbstractElement setId(String id) {
+        this.id = id;
+        return this;
     }
 }

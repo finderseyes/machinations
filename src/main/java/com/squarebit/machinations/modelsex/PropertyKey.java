@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 public class PropertyKey {
     public static final String NODE_TYPE = "NodeType";

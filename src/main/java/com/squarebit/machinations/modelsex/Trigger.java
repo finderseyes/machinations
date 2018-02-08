@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 public class Trigger {
     private AbstractNode owner;

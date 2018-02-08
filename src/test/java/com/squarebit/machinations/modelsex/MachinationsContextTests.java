@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 import com.squarebit.machinations.SpecGraphReader;
 import com.squarebit.machinations.Utils;
@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

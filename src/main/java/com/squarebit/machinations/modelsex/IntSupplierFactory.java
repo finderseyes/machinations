@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 import com.squarebit.machinations.parsers.*;
 import org.antlr.v4.runtime.ANTLRInputStream;

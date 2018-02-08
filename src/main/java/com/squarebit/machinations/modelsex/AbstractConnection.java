@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 public abstract class AbstractConnection extends AbstractElement {
     private AbstractNode from;

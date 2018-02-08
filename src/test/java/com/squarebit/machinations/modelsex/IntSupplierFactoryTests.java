@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 import org.assertj.core.data.Offset;
 import org.junit.Test;

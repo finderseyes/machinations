@@ -1,4 +1,4 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 public class Constants {
     public static final String ACTIVATION_MODE_AUTOMATIC = "automatic";

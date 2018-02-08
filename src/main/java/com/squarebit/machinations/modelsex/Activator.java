@@ -1,18 +1,18 @@
-package com.squarebit.machinations.models;
+package com.squarebit.machinations.modelsex;
 
 /**
- * (label/node modifier).
+ * Trigger/activator.
  */
-public class Modifier {
+public class Activator {
     private AbstractNode owner;
-    private Object target;
+    private AbstractNode target;
     private String label;
 
     public AbstractNode getOwner() {
         return owner;
     }
 
-    public Modifier setOwner(AbstractNode owner) {
+    public Activator setOwner(AbstractNode owner) {
         this.owner = owner;
         return this;
     }
@@ -21,7 +21,7 @@ public class Modifier {
         return target;
     }
 
-    public Modifier setTarget(Object target) {
+    public Activator setTarget(AbstractNode target) {
         this.target = target;
         return this;
     }
@@ -30,7 +30,7 @@ public class Modifier {
         return label;
     }
 
-    public Modifier setLabel(String label) {
+    public Activator setLabel(String label) {
         this.label = label;
         return this;
     }

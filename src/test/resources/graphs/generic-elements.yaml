@@ -5,7 +5,8 @@
 ---
 nodes:
   - type: pool
-    id: n0
+    id: p0
+    name: aaa
     resources: 125 Mana, 30 Gold
     connections:
       - 1D+2 --> n1 (e1)
@@ -13,11 +14,26 @@ nodes:
       - --> n3 (e2)
 
   - type: pool
-    id: n1
+    id: p1
+    name: bbb
+    activationMode: automatic
     modifiers:
       - 1 --> e1
     triggers:
       - --> n0
 
-  - type: gate
-    id: n2
+  - type: pool
+    name: ccc
+    id: p2
+    activationMode: interactive
+
+  - type: pool
+    name: ddd
+    id: p3
+    activationMode: startingAction
+
+  - type: pool
+    name: eee
+    id: p4
+    activationMode: passive
+
