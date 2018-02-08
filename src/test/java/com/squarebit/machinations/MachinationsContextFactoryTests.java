@@ -24,6 +24,7 @@ public class MachinationsContextFactoryTests {
             Pool pool = (Pool)element;
             assertThat(pool.getName()).isEqualTo("aaa");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.PASSIVE);
+            assertThat(pool.getFlowMode()).isEqualTo(FlowMode.AUTOMATIC);
         }
 
         {
@@ -34,6 +35,7 @@ public class MachinationsContextFactoryTests {
             Pool pool = (Pool)element;
             assertThat(pool.getName()).isEqualTo("bbb");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.AUTOMATIC);
+            assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ANY);
         }
 
         {
@@ -44,6 +46,7 @@ public class MachinationsContextFactoryTests {
             Pool pool = (Pool)element;
             assertThat(pool.getName()).isEqualTo("ccc");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.INTERACTIVE);
+            assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PULL_ALL);
         }
 
         {
@@ -54,6 +57,7 @@ public class MachinationsContextFactoryTests {
             Pool pool = (Pool)element;
             assertThat(pool.getName()).isEqualTo("ddd");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.STARTING_ACTION);
+            assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ALL);
         }
 
         {
@@ -64,6 +68,7 @@ public class MachinationsContextFactoryTests {
             Pool pool = (Pool)element;
             assertThat(pool.getName()).isEqualTo("eee");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.PASSIVE);
+            assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PULL_ANY);
         }
     }
 

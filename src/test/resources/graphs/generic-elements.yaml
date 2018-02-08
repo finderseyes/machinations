@@ -17,6 +17,7 @@ nodes:
     id: p1
     name: bbb
     activationMode: automatic
+    flowMode: pushAny
     modifiers:
       - 1 --> e1
     triggers:
@@ -26,14 +27,17 @@ nodes:
     name: ccc
     id: p2
     activationMode: interactive
+    flowMode: pullAll
 
   - type: pool
     name: ddd
     id: p3
     activationMode: startingAction
+    flowMode: pushAll
 
   - type: pool
     name: eee
     id: p4
     activationMode: passive
+    flowMode: pullAny
 

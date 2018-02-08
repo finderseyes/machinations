@@ -73,6 +73,26 @@ public abstract class NodeSpec extends ElementSpec {
     }
 
     /**
+     * Gets flow mode.
+     *
+     * @return the flow mode
+     */
+    public String getFlowMode() {
+        return flowMode;
+    }
+
+    /**
+     * Sets flow mode.
+     *
+     * @param flowMode the flow mode
+     * @return the flow mode
+     */
+    public NodeSpec setFlowMode(String flowMode) {
+        this.flowMode = flowMode;
+        return this;
+    }
+
+    /**
      * Gets connections.
      *
      * @return the connections

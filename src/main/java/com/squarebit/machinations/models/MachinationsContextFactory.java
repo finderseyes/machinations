@@ -44,10 +44,12 @@ public class MachinationsContextFactory {
             }
 
             if (node != null) {
-                node.setName(nodeSpec.getName())
-                        .setActivationMode(ActivationMode.from(nodeSpec.getActivationMode()))
-                        .setId(id);
                 try {
+                    node.setName(nodeSpec.getName())
+                            .setActivationMode(ActivationMode.from(nodeSpec.getActivationMode()))
+                            .setFlowMode(FlowMode.from(nodeSpec.getFlowMode()))
+                            .setId(id);
+
                     context.machinations.addElement(node);
                     context.elementSpec.put(node, nodeSpec);
                 }

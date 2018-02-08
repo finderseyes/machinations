@@ -6,6 +6,7 @@ import java.util.Set;
 public abstract class AbstractNode extends AbstractElement {
     private String name;
     private ActivationMode activationMode;
+    private FlowMode flowMode;
     private Set<AbstractConnection> incomingConnections = new HashSet<>();
     private Set<AbstractConnection> outgoingConnections = new HashSet<>();
 
@@ -24,6 +25,15 @@ public abstract class AbstractNode extends AbstractElement {
 
     public AbstractNode setActivationMode(ActivationMode activationMode) {
         this.activationMode = activationMode;
+        return this;
+    }
+
+    public FlowMode getFlowMode() {
+        return flowMode;
+    }
+
+    public AbstractNode setFlowMode(FlowMode flowMode) {
+        this.flowMode = flowMode;
         return this;
     }
 

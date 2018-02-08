@@ -15,7 +15,7 @@ public class MachinationsRunner implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        final Graph graph = SpecGraphReader.fromFile("d:\\workspace\\project-machinations\\temp\\test.graphml");
+        // final Graph graph = SpecGraphReader.fromFile("d:\\workspace\\project-machinations\\temp\\test.graphml");
         int k = 10;
     }
 }
