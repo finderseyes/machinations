@@ -8,6 +8,7 @@ nodes:
     id: p0
     name: aaa
     resources: 125 Mana, 30 Gold
+    capacity: 200 Mana
     connections:
       - 1D+2 --> n1 (e1)
       - 1D+2 --> n2
@@ -28,12 +29,14 @@ nodes:
     id: p2
     activationMode: interactive
     flowMode: pullAll
+    resources: 100
 
   - type: pool
     name: ddd
     id: p3
     activationMode: startingAction
     flowMode: pushAll
+    resources: 100, 100
 
   - type: pool
     name: eee

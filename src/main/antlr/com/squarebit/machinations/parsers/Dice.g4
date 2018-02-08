@@ -1,5 +1,8 @@
 grammar Dice;
 
+resourceExpression: singleResourceExpression (',' singleResourceExpression)*;
+singleResourceExpression: INT RESOURCE_NAME?;
+
 labelModifier: (PLUS|MINUS)INT?;
 
 groupArithmeticExpression: LEFT_PARENTHESIS arithmeticExpression RIGHT_PARENTHESIS;
@@ -70,6 +73,7 @@ integer: INT;
 fraction: FRACTION;
 identifier: IDENTIFIER;
 
+RESOURCE_NAME: [a-zA-Z_]+;
 IDENTIFIER: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
 DICE_TERM: [0-9]?'D'[0-9]?;
 INT: [0-9]+;

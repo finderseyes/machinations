@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class MachinationsContext {
+    public static final String DEFAULT_RESOURCE_NAME = "";
+
     private Set<AbstractElement> elements;
     private Map<String, AbstractElement> elementById;
 
@@ -14,10 +16,22 @@ public class MachinationsContext {
         this.elementById = new HashMap<>();
     }
 
+    /**
+     * Find by id abstract element.
+     *
+     * @param id the id
+     * @return the abstract element
+     */
     public AbstractElement findById(String id) {
         return this.elementById.get(id);
     }
 
+    /**
+     * Add element.
+     *
+     * @param element the element
+     * @throws Exception the exception
+     */
     protected void addElement(AbstractElement element) throws Exception {
         if (!this.elementById.containsKey(element.getId())) {
             this.elements.add(element);

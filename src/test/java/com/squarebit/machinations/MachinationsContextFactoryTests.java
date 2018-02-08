@@ -25,6 +25,12 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getName()).isEqualTo("aaa");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.PASSIVE);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.AUTOMATIC);
+
+            assertThat(pool.getResourceCount("Mana")).isEqualTo(125);
+            assertThat(pool.getResourceCount("Gold")).isEqualTo(30);
+
+            assertThat(pool.getResourceCapacity("Mana")).isEqualTo(200);
+            assertThat(pool.getResourceCapacity("Gold")).isEqualTo(-1);
         }
 
         {
@@ -36,6 +42,7 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getName()).isEqualTo("bbb");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.AUTOMATIC);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ANY);
+            assertThat(pool.getTotalResourceCount()).isEqualTo(0);
         }
 
         {
@@ -47,6 +54,7 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getName()).isEqualTo("ccc");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.INTERACTIVE);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PULL_ALL);
+            assertThat(pool.getTotalResourceCount()).isEqualTo(100);
         }
 
         {
@@ -58,6 +66,7 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getName()).isEqualTo("ddd");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.STARTING_ACTION);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ALL);
+            assertThat(pool.getTotalResourceCount()).isEqualTo(200);
         }
 
         {
