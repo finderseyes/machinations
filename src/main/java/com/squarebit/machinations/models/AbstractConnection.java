@@ -3,7 +3,7 @@ package com.squarebit.machinations.models;
 public abstract class AbstractConnection extends AbstractElement {
     private AbstractNode from;
     private AbstractNode to;
-    private String label;
+    private String label = "";
 
     public AbstractNode getFrom() {
         return from;

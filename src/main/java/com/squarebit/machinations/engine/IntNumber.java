@@ -1,6 +1,6 @@
 package com.squarebit.machinations.engine;
 
-public class Number extends ArithmeticExpression {
+public class IntNumber extends ArithmeticExpression {
     private int value;
 
     /**
@@ -18,7 +18,7 @@ public class Number extends ArithmeticExpression {
      * @param value the value
      * @return the value
      */
-    public Number setValue(int value) {
+    public IntNumber setValue(int value) {
         this.value = value;
         return this;
     }
@@ -39,7 +39,7 @@ public class Number extends ArithmeticExpression {
      * @param value the value
      * @return the number
      */
-    public static Number of(int value) {
-        return new Number().setValue(value);
+    public static IntNumber of(int value) {
+        return new IntNumber().setValue(value);
     }
 }

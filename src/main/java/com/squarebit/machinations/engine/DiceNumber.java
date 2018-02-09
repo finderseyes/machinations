@@ -58,4 +58,8 @@ public class DiceNumber extends ArithmeticExpression {
             sum += RandomUtils.nextInt(1, this.faces + 1);
         return sum;
     }
+
+    public static DiceNumber of(int times, int faces) {
+        return new DiceNumber().setTimes(times).setFaces(faces);
+    }
 }

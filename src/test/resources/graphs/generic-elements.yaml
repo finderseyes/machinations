@@ -2,13 +2,15 @@
 # NOTE: edge-like structures (connections, triggers, activators) are defined by strings in two forms
 # - Relative form: to define edge from a node, will have the form [label] --> target_node_id [(edge_id)]
 # - Absolute form: to define edge from out side a node, having form: source_node_id --> [label -->] target_node_id [edge_id]
+
+# NOTE: identifier names must begin with a lowercase character, due to ambiguity with Dice number (starting with D).
 ---
 nodes:
   - type: pool
     id: p0
     name: aaa
-    resources: 125 Mana, 30 Gold
-    capacity: 200 Mana
+    resources: 125 mana, 30 gold
+    capacity: 200 mana
     connections:
       - --> p1 (p0_p1)
       - 2D10 --> p2 (p0_p2)

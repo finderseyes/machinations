@@ -1,15 +1,13 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.engine.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
 import com.squarebit.machinations.specs.yaml.ElementSpec;
 import com.squarebit.machinations.specs.yaml.NodeSpec;
 import com.squarebit.machinations.specs.yaml.PoolSpec;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.bson.types.ObjectId;
@@ -28,6 +26,7 @@ public class MachinationsContextFactory {
         private MachinationsContext machinations;
         private YamlSpec spec;
         private Map<AbstractElement, ElementSpec> elementSpec = new HashMap<>();
+        private Map<Object, Object> buildContext = new HashMap<>();
     }
 
     /**
@@ -36,7 +35,7 @@ public class MachinationsContextFactory {
     private class ConnectionBuildContext {
         private AbstractNode from;
         private AbstractNode to;
-        private String label = "";
+        private DiceParser.ArithmeticExpressionContext labelExpression;
         private String id;
 
         public AbstractNode getFrom() {
@@ -57,12 +56,12 @@ public class MachinationsContextFactory {
             return this;
         }
 
-        public String getLabel() {
-            return label;
+        public DiceParser.ArithmeticExpressionContext getLabelExpression() {
+            return labelExpression;
         }
 
-        public ConnectionBuildContext setLabel(String label) {
-            this.label = label;
+        public ConnectionBuildContext setLabelExpression(DiceParser.ArithmeticExpressionContext labelExpression) {
+            this.labelExpression = labelExpression;
             return this;
         }
 
@@ -195,7 +194,128 @@ public class MachinationsContextFactory {
         this.createImplicitActivators(context);
         this.createExplicitActivators(context, spec);
 
+        // --> Third pass.
+
+        // Build connection flow expression.
+        context.machinations.getElements().stream()
+                .filter(e -> e instanceof ResourceConnection).map(e -> (ResourceConnection)e)
+                .forEach(connection -> {
+                    ConnectionBuildContext buildContext = (ConnectionBuildContext)context.buildContext.get(connection);
+                    if (buildContext.labelExpression != null) {
+                        connection.setFlowRateExpression(buildArithmetic(context, buildContext.labelExpression));
+                    }
+                });
+
         return context.machinations;
+    }
+
+    public ArithmeticExpression buildArithmetic(BuildingContext context,
+                                                DiceParser.ArithmeticExpressionContext expressionContext)
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof DiceParser.UnaryArithmeticExpressionContext) {
+            return buildUnaryArithmetic(context, (DiceParser.UnaryArithmeticExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.AdditiveExpressionContext) {
+            return buildAdditiveExpressionContext(context, (DiceParser.AdditiveExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.MultiplicativeExpressionContext) {
+            return buildMultiplicativeExpressionContext(context, (DiceParser.MultiplicativeExpressionContext)decl);
+        }
+
+        return null;
+    }
+
+    private ArithmeticExpression buildUnaryArithmetic(BuildingContext context,
+                                                      DiceParser.UnaryArithmeticExpressionContext expressionContext) {
+
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof DiceParser.NumberContext) {
+            return buildNumber((DiceParser.NumberContext)decl);
+        }
+        else if (decl instanceof DiceParser.RandomNumberContext) {
+            return buildRandomNumber((DiceParser.RandomNumberContext)decl);
+        }
+        else if (decl instanceof DiceParser.ProbableNumberContext) {
+            return buildProbableNumber((DiceParser.ProbableNumberContext)decl);
+        }
+        else if (decl instanceof DiceParser.GroupArithmeticExpressionContext) {
+            return buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)decl.getChild(1));
+        }
+        else if (decl instanceof TerminalNode) {
+            Token token = ((TerminalNode)decl).getSymbol();
+            ArithmeticExpression child = buildArithmetic(
+                    context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
+            if (token.getType() == DiceParser.MINUS)
+                return Negation.of(child);
+            else
+                return child;
+        }
+
+        return null;
+    }
+
+    private ArithmeticExpression buildNumber(DiceParser.NumberContext numberContext) {
+        Token token = ((TerminalNode)numberContext.getChild(0)).getSymbol();
+
+        if (token.getType() == DiceParser.INT)
+            return IntNumber.of(Integer.parseInt(token.getText()));
+        else if (token.getType() == DiceParser.FRACTION) {
+            String[] parts = token.getText().split("/");
+            return FractionNumber.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        }
+
+        return IntNumber.of(1);
+    }
+
+    private ArithmeticExpression buildRandomNumber(DiceParser.RandomNumberContext context) {
+        Token token = ((TerminalNode)context.getChild(0)).getSymbol();
+        String text = token.getText();
+
+        if (text.equals("D"))
+            return DiceNumber.of(1, 6);
+        else if (text.charAt(0) == 'D')
+            return DiceNumber.of(1, Integer.parseInt(text.substring(1)));
+        else if (text.charAt(text.length() - 1) == 'D')
+            return DiceNumber.of(Integer.parseInt(text.substring(0, text.length() - 1)), 6);
+        else {
+            String[] parts = token.getText().split("D");
+            return DiceNumber.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        }
+    }
+
+    private ArithmeticExpression buildProbableNumber(DiceParser.ProbableNumberContext context) {
+        Token token = ((TerminalNode)context.getChild(0)).getSymbol();
+        String text = token.getText();
+        int percentage = Integer.parseInt(text.substring(0, text.length() - 1));
+        return ProbableNumber.of(percentage * 1e-2f);
+    }
+
+    private ArithmeticExpression buildAdditiveExpressionContext(BuildingContext context,
+                                                                DiceParser.AdditiveExpressionContext expressionContext) {
+        ArithmeticExpression lhs = buildUnaryArithmetic(
+                context, (DiceParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
+        ArithmeticExpression rhs = buildArithmetic(
+                context,(DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+
+        Token token = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
+
+        if (token.getType() == DiceParser.PLUS)
+            return Addition.of(lhs, rhs);
+        else
+            return Subtraction.of(lhs, rhs);
+    }
+
+    private ArithmeticExpression buildMultiplicativeExpressionContext(BuildingContext context,
+                                                                      DiceParser.MultiplicativeExpressionContext expressionContext) {
+        ArithmeticExpression lhs = buildUnaryArithmetic(
+                context, (DiceParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
+        ArithmeticExpression rhs = buildArithmetic(
+                context,(DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+
+        return Multiplication.of(lhs, rhs);
     }
 
     private void createNode(BuildingContext context, YamlSpec spec) throws Exception {
@@ -434,10 +554,14 @@ public class MachinationsContextFactory {
 
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)
-                .setLabel(connectionBuildContext.label)
                 .setId(getOrCreateId(connectionBuildContext.id));
 
+        if (connectionBuildContext.labelExpression != null)
+            connection.setLabel(connectionBuildContext.labelExpression.getText());
+
         context.machinations.addElement(connection);
+        context.buildContext.put(connection, connectionBuildContext);
+
         connectionBuildContext.from.getOutgoingConnections().add(connection);
         connectionBuildContext.to.getIncomingConnections().add(connection);
     }
@@ -460,7 +584,7 @@ public class MachinationsContextFactory {
 
         nextDecl = decl.getChild(next);
         if (nextDecl instanceof DiceParser.ArithmeticExpressionContext) {
-            buildContext.label = nextDecl.getText();
+            buildContext.labelExpression = (DiceParser.ArithmeticExpressionContext)nextDecl;
             next += 2;
         }
         else if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)

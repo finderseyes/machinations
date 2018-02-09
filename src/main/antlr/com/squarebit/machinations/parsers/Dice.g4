@@ -35,7 +35,7 @@ groupLogicalExpression: LEFT_PARENTHESIS logicalExpression RIGHT_PARENTHESIS;
 unaryArithmeticExpression
     : number
     | randomNumber
-    | probability
+    | probableNumber
     | identifier
     | groupArithmeticExpression
     | (PLUS|MINUS) arithmeticExpression;
@@ -68,7 +68,7 @@ multiplicativeExpression
     : unaryArithmeticExpression TIMES arithmeticExpression;
 
 additiveExpression
-    : unaryArithmeticExpression PLUS arithmeticExpression;
+    : unaryArithmeticExpression (PLUS|MINUS) arithmeticExpression;
 
 relationalExpression
     : arithmeticExpression (GT|GTE|LT|LTE|EQ|NEQ) arithmeticExpression;
@@ -88,7 +88,7 @@ logicalAndExpression
 
 number: INT | FRACTION;
 randomNumber: DICE_TERM;
-probability: PERCENTAGE;
+probableNumber: PERCENTAGE;
 
 diceExpression: term ((PLUS|MINUS) term)*;
 
@@ -103,8 +103,8 @@ fraction: FRACTION;
 identifier: REFERENCE;
 
 TO: '-->';
-IDENTIFIER: [a-zA-Z_]([a-zA-Z_0-9])*;
-REFERENCE: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
+IDENTIFIER: [a-z_]([a-zA-Z_0-9])*;
+REFERENCE: '$'[a-z_]([a-zA-Z_0-9])*;
 DICE_TERM: [0-9]*'D'[0-9]*;
 INT: [0-9]+;
 FRACTION: [0-9]+'/'[0-9]+;

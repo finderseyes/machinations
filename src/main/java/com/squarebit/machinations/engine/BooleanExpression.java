@@ -5,4 +5,11 @@ public abstract class BooleanExpression extends Expression {
     public DataType getType() {
         return DataType.BOOLEAN;
     }
+
+    /**
+     * Evaluate boolean.
+     *
+     * @return the boolean
+     */
+    public abstract boolean evaluate();
 }
