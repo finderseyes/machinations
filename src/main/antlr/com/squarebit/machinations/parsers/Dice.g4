@@ -34,6 +34,8 @@ groupLogicalExpression: LEFT_PARENTHESIS logicalExpression RIGHT_PARENTHESIS;
 
 unaryArithmeticExpression
     : number
+    | randomNumber
+    | probability
     | identifier
     | groupArithmeticExpression
     | (PLUS|MINUS) arithmeticExpression;
@@ -84,7 +86,9 @@ logicalAndExpression
     : unaryLogicalExpression AND logicalExpression;
 
 
-number: DICE_TERM | INT | FRACTION | PERCENTAGE;
+number: INT | FRACTION;
+randomNumber: DICE_TERM;
+probability: PERCENTAGE;
 
 diceExpression: term ((PLUS|MINUS) term)*;
 
