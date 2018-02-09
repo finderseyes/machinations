@@ -36,7 +36,7 @@ public class MachinationsContext {
     }
 
     /**
-     * Add element.
+     * Addition element.
      *
      * @param element the element
      * @throws Exception the exception
