@@ -33,6 +33,15 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getResourceCapacity("Gold")).isEqualTo(-1);
 
             assertThat(pool.getOutgoingConnections().size()).isEqualTo(3);
+
+            assertThat(pool.getModifiers().size()).isEqualTo(1);
+            Modifier modifier = pool.getModifiers().stream().findFirst().get();
+            assertThat(modifier.getLabel()).isEqualTo("+2");
+            assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
+
+            assertThat(pool.getTriggers().size()).isEqualTo(4);
+
+            assertThat(pool.getActivators().size()).isEqualTo(1);
         }
 
         {
@@ -76,6 +85,11 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getTotalResourceCount()).isEqualTo(200);
 
             assertThat(pool.getIncomingConnections().size()).isEqualTo(2);
+
+            assertThat(pool.getModifiers().size()).isEqualTo(1);
+            Modifier modifier = pool.getModifiers().stream().findFirst().get();
+            assertThat(modifier.getLabel()).isEqualTo("+3");
+            assertThat(modifier.getTarget()).isEqualTo(context.findById("p4"));
         }
 
         {

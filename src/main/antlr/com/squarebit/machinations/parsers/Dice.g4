@@ -9,10 +9,24 @@ singleResourceExpression: INT IDENTIFIER?;
 /*
     Label of a connection or a trigger.
 */
-connectionLabel: implicitConnectionLabel | explicitConnectionLabel;
-implicitConnectionLabel: expression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
-explicitConnectionLabel: IDENTIFIER (TO expression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+connectionDefinition: implicitConnectionDefinition | explicitConnectionDefinition;
+implicitConnectionDefinition
+    : arithmeticExpression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+explicitConnectionDefinition
+    : IDENTIFIER (TO arithmeticExpression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 
+/* Modifier definition */
+modifierDefinition: (IDENTIFIER TO)? arithmeticExpression TO IDENTIFIER;
+
+
+/* Trigger definition. */
+triggerDefinition: IDENTIFIER? TO IDENTIFIER;
+
+
+/* Activator definition. */
+activatorDefinition: (IDENTIFIER TO)? logicalExpression TO IDENTIFIER;
+
+////////////////////////////////////////
 labelModifier: (PLUS|MINUS)INT?;
 
 groupArithmeticExpression: LEFT_PARENTHESIS arithmeticExpression RIGHT_PARENTHESIS;
@@ -68,6 +82,7 @@ logicalOrExpression
 
 logicalAndExpression
     : unaryLogicalExpression AND logicalExpression;
+
 
 number: DICE_TERM | INT | FRACTION | PERCENTAGE;
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,10 +12,11 @@ import java.util.List;
  */
 public class YamlSpec {
     private String timeMode;
-    private List<NodeSpec> nodes;
-    private List<String> connections;
-    private List<String> triggers;
-    private List<String> activators;
+    private List<NodeSpec> nodes = new ArrayList<>();
+    private List<String> connections = new ArrayList<>();
+    private List<String> modifiers = new ArrayList<>();
+    private List<String> triggers = new ArrayList<>();
+    private List<String> activators = new ArrayList<>();
 
     /**
      * Gets nodes.
@@ -53,6 +55,46 @@ public class YamlSpec {
      */
     public YamlSpec setConnections(List<String> connections) {
         this.connections = connections;
+        return this;
+    }
+
+    /**
+     * Gets time mode.
+     *
+     * @return the time mode
+     */
+    public String getTimeMode() {
+        return timeMode;
+    }
+
+    /**
+     * Sets time mode.
+     *
+     * @param timeMode the time mode
+     * @return the time mode
+     */
+    public YamlSpec setTimeMode(String timeMode) {
+        this.timeMode = timeMode;
+        return this;
+    }
+
+    /**
+     * Gets modifiers.
+     *
+     * @return the modifiers
+     */
+    public List<String> getModifiers() {
+        return modifiers;
+    }
+
+    /**
+     * Sets modifiers.
+     *
+     * @param modifiers the modifiers
+     * @return the modifiers
+     */
+    public YamlSpec setModifiers(List<String> modifiers) {
+        this.modifiers = modifiers;
         return this;
     }
 

@@ -76,14 +76,124 @@ public class MachinationsContextFactory {
         }
     }
 
+    private class ModifierBuildContext {
+        private AbstractNode owner;
+        private AbstractElement target;
+        private DiceParser.ArithmeticExpressionContext expression;
+
+        public AbstractNode getOwner() {
+            return owner;
+        }
+
+        public ModifierBuildContext setOwner(AbstractNode owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public AbstractElement getTarget() {
+            return target;
+        }
+
+        public ModifierBuildContext setTarget(AbstractElement target) {
+            this.target = target;
+            return this;
+        }
+
+        public DiceParser.ArithmeticExpressionContext getExpression() {
+            return expression;
+        }
+
+        public ModifierBuildContext setExpression(DiceParser.ArithmeticExpressionContext expression) {
+            this.expression = expression;
+            return this;
+        }
+    }
+
+    private class TriggerBuildContext {
+        private AbstractNode owner;
+        private AbstractElement target;
+
+        public AbstractNode getOwner() {
+            return owner;
+        }
+
+        public TriggerBuildContext setOwner(AbstractNode owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public AbstractElement getTarget() {
+            return target;
+        }
+
+        public TriggerBuildContext setTarget(AbstractElement target) {
+            this.target = target;
+            return this;
+        }
+    }
+
+    private class ActivatorBuildContext {
+        private AbstractNode owner;
+        private AbstractNode target;
+        private DiceParser.LogicalExpressionContext condition;
+
+        public AbstractNode getOwner() {
+            return owner;
+        }
+
+        public ActivatorBuildContext setOwner(AbstractNode owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public AbstractNode getTarget() {
+            return target;
+        }
+
+        public ActivatorBuildContext setTarget(AbstractNode target) {
+            this.target = target;
+            return this;
+        }
+
+        public DiceParser.LogicalExpressionContext getCondition() {
+            return condition;
+        }
+
+        public ActivatorBuildContext setCondition(DiceParser.LogicalExpressionContext condition) {
+            this.condition = condition;
+            return this;
+        }
+    }
+
+    /**
+     * From spec machinations context.
+     *
+     * @param spec the spec
+     * @return the machinations context
+     * @throws Exception the exception
+     */
     public MachinationsContext fromSpec(YamlSpec spec) throws Exception {
         BuildingContext context = new BuildingContext();
         context.machinations = new MachinationsContext();
         context.spec = spec;
 
         this.createNode(context, spec);
+
+        // Connections.
         this.createImplicitConnections(context);
         this.createExplicitConnections(context, spec);
+
+        // Modifiers.
+        this.createImplicitModifiers(context);
+        this.createExplicitModifiers(context, spec);
+
+        // Trigger
+        this.createImplicitTrigger(context);
+        this.createExplicitTrigger(context, spec);
+
+        // Activator.
+        this.createImplicitActivators(context);
+        this.createExplicitActivators(context, spec);
 
         return context.machinations;
     }
@@ -126,6 +236,153 @@ public class MachinationsContextFactory {
 
         if (lastError.get() != null)
             throw lastError.get();
+    }
+
+    private void createExplicitActivators(BuildingContext context, YamlSpec spec) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        spec.getActivators().forEach(a -> {
+            try {
+                ActivatorBuildContext buildContext = getActivatorBuildContext(context, a);
+                if (buildContext.owner == null)
+                    throw new Exception(String.format("Owner node identifier is required for activator %s", a));
+                createActivator(context, buildContext);
+            }
+            catch (Exception ex) {
+                lastError.compareAndSet(null, ex);
+            }
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createImplicitActivators(BuildingContext context) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        List<AbstractNode> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+
+        nodes.forEach(node -> {
+            NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
+            spec.getActivators().forEach(a -> {
+                try {
+                    ActivatorBuildContext buildContext = getActivatorBuildContext(context, a);
+                    buildContext.owner = node;
+                    createActivator(context, buildContext);
+                }
+                catch (Exception ex) {
+                    lastError.compareAndSet(null, ex);
+                }
+            });
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createActivator(BuildingContext context, ActivatorBuildContext buildContext) {
+        Activator activator = new Activator().setOwner(buildContext.owner).setTarget(buildContext.target)
+                .setLabel(buildContext.condition.getText());
+        buildContext.owner.getActivators().add(activator);
+    }
+
+    private void createExplicitTrigger(BuildingContext context, YamlSpec spec) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        spec.getTriggers().forEach(t -> {
+            try {
+                TriggerBuildContext triggerBuildContext = getTriggerBuildContext(context, t);
+                if (triggerBuildContext.owner == null)
+                    throw new Exception(String.format("Owner node identifier is required for trigger %s", t));
+                createTrigger(context, triggerBuildContext);
+            }
+            catch (Exception ex) {
+                lastError.compareAndSet(null, ex);
+            }
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createImplicitTrigger(BuildingContext context) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        List<AbstractNode> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+
+        nodes.forEach(node -> {
+            NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
+            spec.getTriggers().forEach(m -> {
+                try {
+                    TriggerBuildContext triggerBuildContext = getTriggerBuildContext(context, m);
+                    triggerBuildContext.owner = node;
+                    createTrigger(context, triggerBuildContext);
+                }
+                catch (Exception ex) {
+                    lastError.compareAndSet(null, ex);
+                }
+            });
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createTrigger(BuildingContext context, TriggerBuildContext buildContext) {
+        Trigger trigger = new Trigger().setOwner(buildContext.owner).setTarget(buildContext.target);
+        buildContext.owner.getTriggers().add(trigger);
+    }
+
+    private void createExplicitModifiers(BuildingContext context, YamlSpec spec) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        spec.getModifiers().forEach(m -> {
+            try {
+                ModifierBuildContext modifierBuildContext = getModifierBuildContext(context, m);
+                if (modifierBuildContext.owner == null)
+                    throw new Exception(String.format("Owner node identifier is required for modifier %s", m));
+
+                createModifier(context, modifierBuildContext);
+            }
+            catch (Exception ex) {
+                lastError.compareAndSet(null, ex);
+            }
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createImplicitModifiers(BuildingContext context) throws Exception {
+        AtomicReference<Exception> lastError = new AtomicReference<>();
+
+        List<AbstractNode> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+
+        nodes.forEach(node -> {
+            NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
+            spec.getModifiers().forEach(m -> {
+                try {
+                    ModifierBuildContext modifierBuildContext = getModifierBuildContext(context, m);
+                    modifierBuildContext.owner = node;
+                    createModifier(context, modifierBuildContext);
+                }
+                catch (Exception ex) {
+                    lastError.compareAndSet(null, ex);
+                }
+            });
+        });
+
+        if (lastError.get() != null)
+            throw lastError.get();
+    }
+
+    private void createModifier(BuildingContext context, ModifierBuildContext buildContext) throws Exception {
+        Modifier modifier = new Modifier();
+        modifier.setOwner(buildContext.owner).setTarget(buildContext.target).setLabel(buildContext.expression.getText());
+        buildContext.owner.getModifiers().add(modifier);
     }
 
     private void createExplicitConnections(BuildingContext context, YamlSpec spec) throws Exception {
@@ -185,15 +442,15 @@ public class MachinationsContextFactory {
         connectionBuildContext.to.getIncomingConnections().add(connection);
     }
 
-    private ConnectionBuildContext getConnectionBuildContext(BuildingContext context, String connection) throws Exception {
-        DiceParser parser = getParser(connection);
+    private ConnectionBuildContext getConnectionBuildContext(BuildingContext context, String definition) throws Exception {
+        DiceParser parser = getParser(definition);
         ConnectionBuildContext buildContext = new ConnectionBuildContext();
 
-        ParseTree decl = parser.connectionLabel().children.get(0);
+        ParseTree decl = parser.connectionDefinition().children.get(0);
         int next = 0;
         ParseTree nextDecl = decl.getChild(next);
 
-        if (decl instanceof DiceParser.ExplicitConnectionLabelContext) {
+        if (decl instanceof DiceParser.ExplicitConnectionDefinitionContext) {
             buildContext.from = (AbstractNode)context.machinations.findById(nextDecl.getText());
             if (buildContext.from == null)
                 throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
@@ -202,7 +459,7 @@ public class MachinationsContextFactory {
         }
 
         nextDecl = decl.getChild(next);
-        if (nextDecl instanceof DiceParser.ExpressionContext) {
+        if (nextDecl instanceof DiceParser.ArithmeticExpressionContext) {
             buildContext.label = nextDecl.getText();
             next += 2;
         }
@@ -219,6 +476,82 @@ public class MachinationsContextFactory {
         if (nextDecl != null) {
             buildContext.id =  nextDecl.getText();
         }
+
+        return buildContext;
+    }
+
+    private ModifierBuildContext getModifierBuildContext(BuildingContext context, String definition) throws Exception {
+        DiceParser parser = getParser(definition);
+        ModifierBuildContext buildContext = new ModifierBuildContext();
+
+        ParseTree decl = parser.modifierDefinition();
+        int next = 0;
+        ParseTree nextDecl = decl.getChild(next);
+
+        if (nextDecl instanceof TerminalNode) {
+            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+            if (buildContext.owner == null)
+                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+
+            next += 2;
+        }
+
+        nextDecl = decl.getChild(next);
+        buildContext.expression = (DiceParser.ArithmeticExpressionContext)nextDecl;
+        next += 2;
+
+        nextDecl = decl.getChild(next);
+        buildContext.target = context.machinations.findById(nextDecl.getText());
+
+        return buildContext;
+    }
+
+    private TriggerBuildContext getTriggerBuildContext(BuildingContext context, String definition) throws Exception {
+        DiceParser parser = getParser(definition);
+        TriggerBuildContext buildContext = new TriggerBuildContext();
+
+        ParseTree decl = parser.triggerDefinition();
+        int next = 0;
+        ParseTree nextDecl = decl.getChild(next);
+
+        if (decl.getChildCount() == 3) {
+            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+            if (buildContext.owner == null)
+                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+
+            next = 2;
+        }
+        else
+            next = 1;
+
+        nextDecl = decl.getChild(next);
+        buildContext.target = context.machinations.findById(nextDecl.getText());
+
+        return buildContext;
+    }
+
+    private ActivatorBuildContext getActivatorBuildContext(BuildingContext context, String definition) throws Exception {
+        DiceParser parser = getParser(definition);
+        ActivatorBuildContext buildContext = new ActivatorBuildContext();
+
+        ParseTree decl = parser.activatorDefinition();
+        int next = 0;
+        ParseTree nextDecl = decl.getChild(next);
+
+        if (nextDecl instanceof TerminalNode) {
+            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+            if (buildContext.owner == null)
+                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+
+            next = 2;
+        }
+
+        nextDecl = decl.getChild(next);
+        buildContext.condition = (DiceParser.LogicalExpressionContext)nextDecl;
+        next += 2;
+
+        nextDecl = decl.getChild(next);
+        buildContext.target = (AbstractNode)context.machinations.findById(nextDecl.getText());
 
         return buildContext;
     }

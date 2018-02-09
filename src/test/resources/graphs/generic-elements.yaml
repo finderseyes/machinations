@@ -13,12 +13,21 @@ nodes:
       - --> p1 (p0_p1)
       - 2D10 --> p2 (p0_p2)
       - --> p3
+    modifiers:
+      - +2 --> p1
+    triggers:
+      - --> p1
+      - --> p0_p1
+    activators:
+      - ">= 5 --> p1"
 
   - type: pool
     id: p1
     name: bbb
     activationMode: automatic
     flowMode: pushAny
+    modifiers:
+      - +3 --> p0_p1
 #    modifiers:
 #      - 1 --> e1
 #    triggers:
@@ -48,3 +57,12 @@ connections:
   - p2 --> p3 (p2_p3)
   - p2 --> 5D+10 --> p4 (p2_p4)
 
+modifiers:
+  - p3 --> +3 --> p4
+
+triggers:
+  - p0 --> p2
+  - p0 --> p2_p3
+
+activators:
+  - p2 --> == 1 --> p3

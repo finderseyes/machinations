@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractNode extends AbstractElement {
     private String name;
@@ -14,6 +13,10 @@ public abstract class AbstractNode extends AbstractElement {
     private Set<AbstractConnection> outgoingConnections = new HashSet<>();
     private Map<String, Integer> resources = new HashMap<>();
     private Map<String, Integer> capacity = new HashMap<>();
+
+    private Set<Modifier> modifiers = new HashSet<>();
+    private Set<Trigger> triggers = new HashSet<>();
+    private Set<Activator> activators = new HashSet<>();
 
     /**
      * Gets name.
@@ -136,5 +139,32 @@ public abstract class AbstractNode extends AbstractElement {
      */
     public int getResourceCapacity(String resourceName) {
         return capacity.getOrDefault(resourceName, -1);
+    }
+
+    /**
+     * Gets modifiers.
+     *
+     * @return the modifiers
+     */
+    public Set<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    /**
+     * Gets triggers.
+     *
+     * @return the triggers
+     */
+    public Set<Trigger> getTriggers() {
+        return triggers;
+    }
+
+    /**
+     * Gets activators.
+     *
+     * @return the activators
+     */
+    public Set<Activator> getActivators() {
+        return activators;
     }
 }
