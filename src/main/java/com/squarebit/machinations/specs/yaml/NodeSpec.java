@@ -3,6 +3,7 @@ package com.squarebit.machinations.specs.yaml;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,10 +28,10 @@ public abstract class NodeSpec extends ElementSpec {
     private String activationMode;
     private String flowMode;
 
-    private List<String> connections;
-    private List<String> modifiers;
-    private List<String> triggers;
-    private List<String> activators;
+    private List<String> connections = new ArrayList<>();
+    private List<String> modifiers = new ArrayList<>();
+    private List<String> triggers = new ArrayList<>();
+    private List<String> activators = new ArrayList<>();
 
     /**
      * Gets name.

@@ -27,6 +27,15 @@ public class MachinationsContext {
     }
 
     /**
+     * Gets elements.
+     *
+     * @return the elements
+     */
+    public Set<AbstractElement> getElements() {
+        return elements;
+    }
+
+    /**
      * Add element.
      *
      * @param element the element

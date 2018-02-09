@@ -31,6 +31,8 @@ public class MachinationsContextFactoryTests {
 
             assertThat(pool.getResourceCapacity("Mana")).isEqualTo(200);
             assertThat(pool.getResourceCapacity("Gold")).isEqualTo(-1);
+
+            assertThat(pool.getOutgoingConnections().size()).isEqualTo(3);
         }
 
         {
@@ -43,6 +45,8 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.AUTOMATIC);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ANY);
             assertThat(pool.getTotalResourceCount()).isEqualTo(0);
+
+            assertThat(pool.getIncomingConnections().size()).isEqualTo(1);
         }
 
         {
@@ -55,6 +59,9 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.INTERACTIVE);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PULL_ALL);
             assertThat(pool.getTotalResourceCount()).isEqualTo(100);
+
+            assertThat(pool.getOutgoingConnections().size()).isEqualTo(2);
+            assertThat(pool.getIncomingConnections().size()).isEqualTo(1);
         }
 
         {
@@ -67,6 +74,8 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.STARTING_ACTION);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PUSH_ALL);
             assertThat(pool.getTotalResourceCount()).isEqualTo(200);
+
+            assertThat(pool.getIncomingConnections().size()).isEqualTo(2);
         }
 
         {
@@ -78,6 +87,34 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getName()).isEqualTo("eee");
             assertThat(pool.getActivationMode()).isEqualTo(ActivationMode.PASSIVE);
             assertThat(pool.getFlowMode()).isEqualTo(FlowMode.PULL_ANY);
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p1");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p1"));
+            assertThat(connection.getLabel()).isEqualTo("");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+            assertThat(connection.getLabel()).isEqualTo("2D10");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p2_p3");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p2"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p3"));
+            assertThat(connection.getLabel()).isEqualTo("");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p2_p4");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p2"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p4"));
+            assertThat(connection.getLabel()).isEqualTo("5D+10");
         }
     }
 

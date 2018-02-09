@@ -1,7 +1,17 @@
 grammar Dice;
 
+/*
+    Resource and capacity declarations of a pool node.
+*/
 resourceExpression: singleResourceExpression (',' singleResourceExpression)*;
-singleResourceExpression: INT RESOURCE_NAME?;
+singleResourceExpression: INT IDENTIFIER?;
+
+/*
+    Label of a connection or a trigger.
+*/
+connectionLabel: implicitConnectionLabel | explicitConnectionLabel;
+implicitConnectionLabel: expression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+explicitConnectionLabel: IDENTIFIER (TO expression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 
 labelModifier: (PLUS|MINUS)INT?;
 
@@ -71,11 +81,12 @@ term
 diceTerm: DICE_TERM;
 integer: INT;
 fraction: FRACTION;
-identifier: IDENTIFIER;
+identifier: REFERENCE;
 
-RESOURCE_NAME: [a-zA-Z_]+;
-IDENTIFIER: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
-DICE_TERM: [0-9]?'D'[0-9]?;
+TO: '-->';
+IDENTIFIER: [a-zA-Z_]([a-zA-Z_0-9])*;
+REFERENCE: '$'[a-zA-Z_]([a-zA-Z_0-9])*;
+DICE_TERM: [0-9]*'D'[0-9]*;
 INT: [0-9]+;
 FRACTION: [0-9]+'/'[0-9]+;
 PERCENTAGE: [0-9]+'%';
