@@ -201,10 +201,34 @@ public class MachinationsContextFactory {
         context.machinations.getElements().stream()
                 .filter(e -> e instanceof ResourceConnection).map(e -> (ResourceConnection)e)
                 .forEach(connection -> {
-                    ConnectionBuildContext buildContext = (ConnectionBuildContext)context.buildContext.get(connection);
+                    ConnectionBuildContext buildContext =
+                            (ConnectionBuildContext)context.buildContext.get(connection);
                     if (buildContext.labelExpression != null) {
                         connection.setFlowRateExpression(buildArithmetic(context, buildContext.labelExpression));
                     }
+                });
+
+        // Modifiers, triggers and activators.
+        context.machinations.getElements().stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+                .forEach(node -> {
+                    node.getModifiers().forEach(modifier -> {
+                        ModifierBuildContext buildContext =
+                                (ModifierBuildContext)context.buildContext.get(modifier);
+
+                        if (buildContext.expression != null) {
+                            modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
+                        }
+                    });
+
+                    node.getActivators().forEach(activator -> {
+                        ActivatorBuildContext buildContext =
+                                (ActivatorBuildContext)context.buildContext.get(activator);
+
+                        if (buildContext.condition != null) {
+                            activator.setConditionExpression(buildBoolean(context, buildContext.condition));
+                        }
+                    });
                 });
 
         return context.machinations;
@@ -526,6 +550,7 @@ public class MachinationsContextFactory {
         Activator activator = new Activator().setOwner(buildContext.owner).setTarget(buildContext.target)
                 .setLabel(buildContext.condition.getText());
         buildContext.owner.getActivators().add(activator);
+        context.buildContext.put(activator, buildContext);
     }
 
     private void createExplicitTrigger(BuildingContext context, YamlSpec spec) throws Exception {
@@ -624,6 +649,8 @@ public class MachinationsContextFactory {
         Modifier modifier = new Modifier();
         modifier.setOwner(buildContext.owner).setTarget(buildContext.target).setLabel(buildContext.expression.getText());
         buildContext.owner.getModifiers().add(modifier);
+
+        context.buildContext.putIfAbsent(modifier, buildContext);
     }
 
     private void createExplicitConnections(BuildingContext context, YamlSpec spec) throws Exception {

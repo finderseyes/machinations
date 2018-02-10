@@ -49,6 +49,7 @@ public class MachinationsContextFactoryTests {
             Modifier modifier = pool.getModifiers().stream().findFirst().get();
             assertThat(modifier.getLabel()).isEqualTo("+2");
             assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(modifier.getRateExpression().evaluate()).isEqualTo(2);
 
             assertThat(pool.getTriggers().size()).isEqualTo(4);
 

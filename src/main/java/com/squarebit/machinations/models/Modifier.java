@@ -1,9 +1,12 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.engine.ArithmeticExpression;
+
 public class Modifier {
     private AbstractNode owner;
     private AbstractElement target;
     private String label;
+    private ArithmeticExpression rateExpression;
 
     public AbstractNode getOwner() {
         return owner;
@@ -29,6 +32,15 @@ public class Modifier {
 
     public Modifier setLabel(String label) {
         this.label = label;
+        return this;
+    }
+
+    public ArithmeticExpression getRateExpression() {
+        return rateExpression;
+    }
+
+    public Modifier setRateExpression(ArithmeticExpression rateExpression) {
+        this.rateExpression = rateExpression;
         return this;
     }
 }
