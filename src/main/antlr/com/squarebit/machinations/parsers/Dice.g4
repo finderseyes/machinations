@@ -11,9 +11,9 @@ singleResourceExpression: INT IDENTIFIER?;
 */
 connectionDefinition: implicitConnectionDefinition | explicitConnectionDefinition;
 implicitConnectionDefinition
-    : arithmeticExpression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+    : expression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 explicitConnectionDefinition
-    : IDENTIFIER (TO arithmeticExpression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+    : IDENTIFIER (TO expression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 
 /* Modifier definition */
 modifierDefinition: (IDENTIFIER TO)? arithmeticExpression TO IDENTIFIER;

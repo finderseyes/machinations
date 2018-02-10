@@ -36,7 +36,7 @@ public class MachinationsContextFactory {
     private class ConnectionBuildContext {
         private AbstractNode from;
         private AbstractNode to;
-        private DiceParser.ArithmeticExpressionContext labelExpression;
+        private DiceParser.ExpressionContext labelExpression;
         private String id;
 
         public AbstractNode getFrom() {
@@ -57,11 +57,11 @@ public class MachinationsContextFactory {
             return this;
         }
 
-        public DiceParser.ArithmeticExpressionContext getLabelExpression() {
+        public DiceParser.ExpressionContext getLabelExpression() {
             return labelExpression;
         }
 
-        public ConnectionBuildContext setLabelExpression(DiceParser.ArithmeticExpressionContext labelExpression) {
+        public ConnectionBuildContext setLabelExpression(DiceParser.ExpressionContext labelExpression) {
             this.labelExpression = labelExpression;
             return this;
         }
@@ -204,7 +204,7 @@ public class MachinationsContextFactory {
                     ConnectionBuildContext buildContext =
                             (ConnectionBuildContext)context.buildContext.get(connection);
                     if (buildContext.labelExpression != null) {
-                        connection.setFlowRateExpression(buildArithmetic(context, buildContext.labelExpression));
+                        connection.setFlowRateExpression(buildExpression(context, buildContext.labelExpression));
                     }
                 });
 
@@ -232,6 +232,19 @@ public class MachinationsContextFactory {
                 });
 
         return context.machinations;
+    }
+
+    public Expression buildExpression(BuildingContext context,
+                                      DiceParser.ExpressionContext expressionContext)
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof DiceParser.ArithmeticExpressionContext)
+            return buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)decl);
+        else if (decl instanceof DiceParser.LogicalExpressionContext)
+            return buildBoolean(context, (DiceParser.LogicalExpressionContext)decl);
+
+        return null;
     }
 
     public BooleanExpression buildBoolean(BuildingContext context,
@@ -731,8 +744,8 @@ public class MachinationsContextFactory {
         }
 
         nextDecl = decl.getChild(next);
-        if (nextDecl instanceof DiceParser.ArithmeticExpressionContext) {
-            buildContext.labelExpression = (DiceParser.ArithmeticExpressionContext)nextDecl;
+        if (nextDecl instanceof DiceParser.ExpressionContext) {
+            buildContext.labelExpression = (DiceParser.ExpressionContext)nextDecl;
             next += 2;
         }
         else if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
