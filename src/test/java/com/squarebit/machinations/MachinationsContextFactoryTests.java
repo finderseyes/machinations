@@ -1,6 +1,7 @@
 package com.squarebit.machinations;
 
 import com.squarebit.machinations.engine.ArithmeticExpression;
+import com.squarebit.machinations.engine.BooleanExpression;
 import com.squarebit.machinations.models.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
@@ -167,6 +168,11 @@ public class MachinationsContextFactoryTests {
         return factory.buildArithmetic(null, parse(decl, DiceParser::arithmeticExpression));
     }
 
+    private BooleanExpression bool(String decl) {
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        return factory.buildBoolean(null, parse(decl, DiceParser::logicalExpression));
+    }
+
     @Test
     public void should_construct_arithmetic_expressions() throws Exception {
         assertThat(arithmetic("1").evaluate()).isEqualTo(1);
@@ -182,5 +188,23 @@ public class MachinationsContextFactoryTests {
         assertThat(arithmetic("D5").evaluate()).isGreaterThan(0);
         assertThat(arithmetic("2D5").evaluate()).isGreaterThan(0);
         assertThat(arithmetic("2D5 + 3/4").evaluate()).isGreaterThan(0);
+    }
+
+    @Test
+    public void should_construct_boolean_expressions() throws Exception {
+        assertThat(bool("2 > 1").evaluate()).isTrue();
+        assertThat(bool("2 >= 2").evaluate()).isTrue();
+        assertThat(bool("2 < 3").evaluate()).isTrue();
+        assertThat(bool("2 <= 2").evaluate()).isTrue();
+        assertThat(bool("2 == 2").evaluate()).isTrue();
+        assertThat(bool("2 != 3").evaluate()).isTrue();
+
+        assertThat(bool("2 != 3 && 1 == 1").evaluate()).isTrue();
+        assertThat(bool("2 != 3 && 1 != 1").evaluate()).isFalse();
+
+        assertThat(bool("(((2 != 3)) && 1 == 1)").evaluate()).isTrue();
+
+        assertThat(bool("(((2 != 3)) && 1 * 2 == 1)").evaluate()).isFalse();
+        assertThat(bool("(((2 != 3)) || 1 * 2 == 1)").evaluate()).isTrue();
     }
 }

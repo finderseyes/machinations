@@ -7,6 +7,7 @@ import com.squarebit.machinations.specs.yaml.ElementSpec;
 import com.squarebit.machinations.specs.yaml.NodeSpec;
 import com.squarebit.machinations.specs.yaml.PoolSpec;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -207,6 +208,126 @@ public class MachinationsContextFactory {
                 });
 
         return context.machinations;
+    }
+
+    public BooleanExpression buildBoolean(BuildingContext context,
+                                          DiceParser.LogicalExpressionContext expressionContext)
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof DiceParser.UnaryLogicalExpressionContext) {
+            return buildUnaryBoolean(context, (DiceParser.UnaryLogicalExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.LogicalAndExpressionContext) {
+            return buildAnd(context, (DiceParser.LogicalAndExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.LogicalOrExpressionContext) {
+            return buildOr(context, (DiceParser.LogicalOrExpressionContext)decl);
+        }
+
+        return null;
+    }
+
+    private BooleanExpression buildAnd(BuildingContext context,
+                                       DiceParser.LogicalAndExpressionContext expressionContext)
+    {
+        BooleanExpression lhs = buildUnaryBoolean(context,
+                (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
+        BooleanExpression rhs = buildBoolean(context,
+                (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
+        return And.of(lhs, rhs);
+    }
+
+    private BooleanExpression buildOr(BuildingContext context,
+                                       DiceParser.LogicalOrExpressionContext expressionContext)
+    {
+        BooleanExpression lhs = buildUnaryBoolean(context,
+                (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
+        BooleanExpression rhs = buildBoolean(context,
+                (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
+        return Or.of(lhs, rhs);
+    }
+
+    private BooleanExpression buildUnaryBoolean(BuildingContext context,
+                                                DiceParser.UnaryLogicalExpressionContext expressionContext)
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof DiceParser.RelationalExpressionContext) {
+            return buildRelation(context, (DiceParser.RelationalExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.LeftImplicitRelationalExpressionContext) {
+            return buildLeftImplicitReleation(context, (DiceParser.LeftImplicitRelationalExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.RightImplicitRelationalExpressionContext) {
+            return buildRightImplicitReleation(context, (DiceParser.RightImplicitRelationalExpressionContext)decl);
+        }
+        else if (decl instanceof DiceParser.GroupLogicalExpressionContext) {
+            return buildBoolean(context, (DiceParser.LogicalExpressionContext)decl.getChild(1));
+        }
+        else if (decl instanceof TerminalNode) {
+            Token opToken = ((TerminalNode)decl).getSymbol();
+            BooleanExpression child =
+                    buildBoolean(context, (DiceParser.LogicalExpressionContext)expressionContext.getChild(1));
+
+            if (opToken.getType() == DiceParser.NOT) {
+                return Not.of(child);
+            }
+        }
+
+        return null;
+    }
+
+    private BooleanExpression buildLeftImplicitReleation(BuildingContext context,
+                                                         DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
+    {
+        ArithmeticExpression lhs = null; // TODO
+        ArithmeticExpression rhs =
+                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
+
+        Token optoken = ((TerminalNode)expressionContext.getChild(0)).getSymbol();
+
+        return Comparison.of(opFromToken(optoken), lhs, rhs);
+    }
+
+    private BooleanExpression buildRightImplicitReleation(BuildingContext context,
+                                                         DiceParser.RightImplicitRelationalExpressionContext expressionContext)
+    {
+        ArithmeticExpression lhs =
+                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
+        ArithmeticExpression rhs = null; //TODO
+
+        Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
+
+        return Comparison.of(opFromToken(optoken), lhs, rhs);
+    }
+
+    private BooleanExpression buildRelation(BuildingContext context,
+                                            DiceParser.RelationalExpressionContext expressionContext)
+    {
+        ArithmeticExpression lhs =
+                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
+        ArithmeticExpression rhs =
+                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+
+        Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
+
+        return Comparison.of(opFromToken(optoken), lhs, rhs);
+    }
+
+    private String opFromToken(Token token) {
+        String op = "";
+
+        switch (token.getType()) {
+            case DiceParser.GT: op = Comparison.GT; break;
+            case DiceParser.GTE: op = Comparison.GTE; break;
+            case DiceParser.LT: op = Comparison.LT; break;
+            case DiceParser.LTE: op = Comparison.LTE; break;
+            case DiceParser.EQ: op = Comparison.EQ; break;
+            case DiceParser.NEQ: op = Comparison.NEQ; break;
+        }
+
+        return op;
     }
 
     public ArithmeticExpression buildArithmetic(BuildingContext context,
