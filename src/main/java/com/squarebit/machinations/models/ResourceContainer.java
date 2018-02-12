@@ -80,6 +80,16 @@ public class ResourceContainer {
     }
 
     /**
+     *
+     * @param amount
+     * @return
+     */
+    public int add(ResourceContainer amount) {
+        amount.content.forEach(this::add);
+        return this.size;
+    }
+
+    /**
      * Remove int.
      *
      * @param name   the name
@@ -111,6 +121,16 @@ public class ResourceContainer {
     }
 
     /**
+     *
+     * @param amount
+     * @return
+     */
+    public int remove(ResourceContainer amount) {
+        amount.content.forEach(this::remove);
+        return amount.size;
+    }
+
+    /**
      * Copy resource container.
      *
      * @return the resource container
@@ -122,6 +142,13 @@ public class ResourceContainer {
         return instance;
     }
 
+    /**
+     *
+     * @param name
+     * @param amount
+     * @param isAllOrNone
+     * @return
+     */
     public ResourceContainer pull(String name, int amount, boolean isAllOrNone) {
         ResourceContainer result = new ResourceContainer();
 

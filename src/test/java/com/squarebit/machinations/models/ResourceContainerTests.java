@@ -42,5 +42,15 @@ public class ResourceContainerTests {
             ResourceContainer result = container.pull("G", 11, false);
             assertThat(result.size()).isEqualTo(0);
         }
+
+        {
+            ResourceContainer container = new ResourceContainer();
+            container.add(10);
+            container.add("G", 10);
+
+            ResourceContainer result = container.pull(null, 25, false);
+            assertThat(result.size()).isEqualTo(20);
+            assertThat(result.get("G")).isEqualTo(10);
+        }
     }
 }

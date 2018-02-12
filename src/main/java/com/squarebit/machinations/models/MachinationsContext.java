@@ -84,31 +84,84 @@ public class MachinationsContext {
      *
      */
     private void doSimulateOneTimeStep() {
-        // Generate candidate activate connections.
+        // Candidate connections required if any of active nodes are activated.
         Set<ResourceConnection> activeConnections = this.activeNodes.stream()
                 .map(this::getActiveConnection).flatMap(Set::stream).map(e -> (ResourceConnection)e)
                 .collect(Collectors.toSet());
 
         // Flow rate this time step.
-        Map<ResourceConnection, Pair<String, Integer>> requiredFlow = new HashMap<>();
-        activeConnections.forEach(c -> requiredFlow.put(c, new ImmutablePair<>(c.getResourceName(), c.getFlowRate())));
+        Map<ResourceConnection, Integer> requiredFlow = new HashMap<>();
+        activeConnections.forEach(c -> requiredFlow.put(c, c.getFlowRate()));
 
-        // Pool size.
+        // Active connections, grouped by node.
         Map<AbstractNode, List<ResourceConnection>> activeConnectionsByNode = activeConnections.stream()
                 .collect(Collectors.groupingBy(ResourceConnection::getFrom));
 
-        //
+        // The set of actually satisfied connections.
         Set<ResourceConnection> satisfiedConnections = new HashSet<>();
+
+        // The set of actual flow.
+        Map<ResourceConnection, ResourceContainer> actualFlows = new HashMap<>();
+
+        //
         if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
             activeConnectionsByNode.forEach((node, connections) -> {
-                Map<String, Integer> resourceSnapShot = new HashMap<>(node.getResources());
+                ResourceContainer resourceSnapshot = node.resources.copy();
+                boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
+
+                // Calculate the actual flow.
+                connections.forEach(c -> {
+                    int rate = requiredFlow.get(c);
+                    ResourceContainer flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
+                    actualFlows.put(c, flow);
+                });
+
+                // Synchronous time required all connections to be satisfied.
+                boolean allSatisfied = connections.stream().allMatch(c -> actualFlows.get(c).size() > 0);
+                if (allSatisfied)
+                    satisfiedConnections.addAll(connections);
             });
         }
         else {
             activeConnectionsByNode.forEach((node, connections) -> {
-                Map<String, Integer> resourceSnapShot = new HashMap<>(node.getResources());
+                ResourceContainer resourceSnapshot = node.resources.copy();
+                boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
+
+                // Calculate the actual flow.
+                connections.forEach(c -> {
+                    int rate = requiredFlow.get(c);
+                    ResourceContainer flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
+                    actualFlows.put(c, flow);
+
+                    if (flow.size() > 0)
+                        satisfiedConnections.add(c);
+                });
             });
         }
+
+        // Activate the nodes.
+        activeConnectionsByNode.forEach((node, connections) -> {
+            boolean isAllOrNoneFlow = node.isAllOrNoneFlow();
+            boolean shouldActivate = !isAllOrNoneFlow || satisfiedConnections.containsAll(connections);
+
+            if (shouldActivate) {
+                // Now send the resources along the satisfied connections.
+                connections.forEach(c -> {
+                    ResourceContainer flow = actualFlows.get(c);
+                    c.getFrom().removeResource(flow);
+                    c.getTo().addResource(flow);
+                    c.activate(this.time);
+                });
+
+                node.activate(this.time);
+            }
+        });
+
+        // Modifiers
+
+        // Triggers.
+
+        // Activators.
     }
 
     private Set<AbstractConnection> getActiveConnection(AbstractNode node) {

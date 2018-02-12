@@ -4,7 +4,6 @@ import com.squarebit.machinations.engine.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
 import com.squarebit.machinations.specs.yaml.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -878,7 +877,7 @@ public class MachinationsContextFactory {
                 String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
                         MachinationsContext.DEFAULT_RESOURCE_NAME;
 
-                node.resourceContainer.add(name, count);
+                node.resources.add(name, count);
 
 //                if (nodeResources.putIfAbsent(name, count) != null)
 //                    nodeResources.compute(name, (n, c0) -> (c0 + count));
