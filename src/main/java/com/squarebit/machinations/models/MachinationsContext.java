@@ -1,5 +1,8 @@
 package com.squarebit.machinations.models;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,19 +90,25 @@ public class MachinationsContext {
                 .collect(Collectors.toSet());
 
         // Flow rate this time step.
-        Map<ResourceConnection, Integer> flowRates = new HashMap<>();
-        activeConnections.forEach(c -> flowRates.put(c, c.getFlowRate()));
+        Map<ResourceConnection, Pair<String, Integer>> requiredFlow = new HashMap<>();
+        activeConnections.forEach(c -> requiredFlow.put(c, new ImmutablePair<>(c.getResourceName(), c.getFlowRate())));
+
+        // Pool size.
+        Map<AbstractNode, List<ResourceConnection>> activeConnectionsByNode = activeConnections.stream()
+                .collect(Collectors.groupingBy(ResourceConnection::getFrom));
 
         //
-        Map<ResourceConnection, Boolean> satisfiedConnections;
-
-
-//        // Resolve synchronous pulling conflicts.
-//        if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
-//
-//        }
-//        else
-//            activeNodes.forEach(node -> node.activate(this.time));
+        Set<ResourceConnection> satisfiedConnections = new HashSet<>();
+        if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
+            activeConnectionsByNode.forEach((node, connections) -> {
+                Map<String, Integer> resourceSnapShot = new HashMap<>(node.getResources());
+            });
+        }
+        else {
+            activeConnectionsByNode.forEach((node, connections) -> {
+                Map<String, Integer> resourceSnapShot = new HashMap<>(node.getResources());
+            });
+        }
     }
 
     private Set<AbstractConnection> getActiveConnection(AbstractNode node) {

@@ -8,6 +8,7 @@ public class ResourceConnection extends AbstractConnection {
     public static final IntNumber DEFAULT_FLOW_RATE = IntNumber.of(1);
 
     private Expression flowRateExpression = DEFAULT_FLOW_RATE;
+    private String resourceName = null; // if null, any resource.
 
     /**
      * Gets flow rate expression.
@@ -35,5 +36,25 @@ public class ResourceConnection extends AbstractConnection {
         }
         else
             return 0;
+    }
+
+    /**
+     * Gets resource name.
+     *
+     * @return the resource name
+     */
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    /**
+     * Sets resource name.
+     *
+     * @param resourceName the resource name
+     * @return the resource name
+     */
+    public ResourceConnection setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+        return this;
     }
 }
