@@ -86,7 +86,7 @@ public class ResourceSet {
      * @return the size of given resource
      */
     public int add(final String name, final int amount) {
-        checkArgument(amount > 0);
+        checkArgument(amount >= 0);
 
         size += amount;
         deltaSize += amount;
@@ -203,7 +203,7 @@ public class ResourceSet {
                         amount -= delta;
                     }
 
-                    if (!isAllOrNone && size <= 0)
+                    if (amount == 0 || (!isAllOrNone && size <= 0))
                         done = true;
                     else if (isAllOrNone)
                         throw new RuntimeException("FATAL! Should not reach here.");
