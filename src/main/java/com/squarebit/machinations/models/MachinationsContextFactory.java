@@ -862,8 +862,8 @@ public class MachinationsContextFactory {
     }
 
     private void buildResourcesDecl(AbstractNode node, String resourceExpression) {
-        Map<String, Integer> nodeResources = node.getResources();
-        nodeResources.clear();
+//        Map<String, Integer> nodeResources = node.getResources();
+//        nodeResources.clear();
 
         if (resourceExpression == null || resourceExpression.trim().equals(""))
             return;
@@ -878,8 +878,10 @@ public class MachinationsContextFactory {
                 String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
                         MachinationsContext.DEFAULT_RESOURCE_NAME;
 
-                if (nodeResources.putIfAbsent(name, count) != null)
-                    nodeResources.compute(name, (n, c0) -> (c0 + count));
+                node.resourceContainer.add(name, count);
+
+//                if (nodeResources.putIfAbsent(name, count) != null)
+//                    nodeResources.compute(name, (n, c0) -> (c0 + count));
             }
         });
     }
@@ -898,8 +900,8 @@ public class MachinationsContextFactory {
                 DiceParser.SingleResourceExpressionContext decl = (DiceParser.SingleResourceExpressionContext)c;
 
                 int count = Integer.parseInt(decl.INT().getText());
-            String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
-                        MachinationsContext.DEFAULT_RESOURCE_NAME;
+                String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
+                            MachinationsContext.DEFAULT_RESOURCE_NAME;
 
                 if (capacity.putIfAbsent(name, count) != null)
                     capacity.compute(name, (n, c0) -> (c0 + count));

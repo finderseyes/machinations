@@ -11,8 +11,7 @@ public abstract class AbstractNode extends AbstractElement {
     private FlowMode flowMode;
     private Set<AbstractConnection> incomingConnections = new HashSet<>();
     private Set<AbstractConnection> outgoingConnections = new HashSet<>();
-    private Map<String, Integer> resources = new HashMap<>();
-    private Map<String, Integer> capacity = new HashMap<>();
+    protected ResourceContainer resourceContainer = new ResourceContainer();
 
     private Set<Modifier> modifiers = new HashSet<>();
     private Set<Trigger> triggers = new HashSet<>();
@@ -102,7 +101,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @return the resources
      */
     public Map<String, Integer> getResources() {
-        return resources;
+        return resourceContainer.content;
     }
 
     /**
@@ -112,7 +111,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @return the resource
      */
     public int getResourceCount(String name) {
-        return resources.getOrDefault(name, 0);
+        return resourceContainer.get(name);
     }
 
     /**
@@ -120,7 +119,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @return
      */
     public int getTotalResourceCount() {
-        return resources.values().stream().mapToInt(i -> i).sum();
+        return resourceContainer.size();
     }
 
     /**
@@ -129,7 +128,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @return the capacity
      */
     public Map<String, Integer> getCapacity() {
-        return capacity;
+        return resourceContainer.capacity;
     }
 
     /**
@@ -138,7 +137,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @return the capacity
      */
     public int getResourceCapacity(String resourceName) {
-        return capacity.getOrDefault(resourceName, -1);
+        return resourceContainer.getCapacity(resourceName);
     }
 
     /**

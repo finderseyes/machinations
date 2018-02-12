@@ -9,7 +9,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class ResourceContainer {
     public static String DEFAULT_RESOURCE_NAME = "";
 
-    private Map<String, Integer> content = new HashMap<>();
+    protected Map<String, Integer> content = new HashMap<>();
+    protected Map<String, Integer> capacity = new HashMap<>();
     private int size = 0;
 
     /**
@@ -29,6 +30,16 @@ public class ResourceContainer {
      */
     public int get(String name) {
         return content.getOrDefault(name, 0);
+    }
+
+    /**
+     * Gets capacity.
+     *
+     * @param name the name
+     * @return the capacity
+     */
+    public int getCapacity(String name) {
+        return capacity.getOrDefault(name, -1);
     }
 
     /**
