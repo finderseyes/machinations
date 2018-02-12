@@ -1,0 +1,12 @@
+---
+nodes:
+  - type: pool
+    id: p0
+    activationMode: automatic
+    resources: 10
+    connections:
+      - --> p1
+
+  - type: pool
+    id: p1
+

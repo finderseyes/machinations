@@ -1,5 +1,6 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.engine.ArithmeticExpression;
 import com.squarebit.machinations.engine.Expression;
 import com.squarebit.machinations.engine.IntNumber;
 
@@ -26,5 +27,13 @@ public class ResourceConnection extends AbstractConnection {
     public ResourceConnection setFlowRateExpression(Expression flowRateExpression) {
         this.flowRateExpression = flowRateExpression;
         return this;
+    }
+
+    public int getFlowRate() {
+        if (flowRateExpression instanceof ArithmeticExpression) {
+            return ((ArithmeticExpression)flowRateExpression).evaluate();
+        }
+        else
+            return 0;
     }
 }

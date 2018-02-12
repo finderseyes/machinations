@@ -3,10 +3,7 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
-import com.squarebit.machinations.specs.yaml.ElementSpec;
-import com.squarebit.machinations.specs.yaml.NodeSpec;
-import com.squarebit.machinations.specs.yaml.PoolSpec;
-import com.squarebit.machinations.specs.yaml.YamlSpec;
+import com.squarebit.machinations.specs.yaml.*;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -493,6 +490,21 @@ public class MachinationsContextFactory {
                 buildResourcesDecl(pool, poolSpec.getResources());
                 buildCapacityDecl(pool, poolSpec.getCapacity());
                 node = pool;
+            }
+            else if (nodeSpec instanceof GateSpec) {
+                node = new Gate();
+            }
+            else if (nodeSpec instanceof SourceSpec) {
+                node = new Source();
+            }
+            else if (nodeSpec instanceof DrainSpec) {
+                node = new Drain();
+            }
+            else if (nodeSpec instanceof EndSpec) {
+                node = new End();
+            }
+            else if (nodeSpec instanceof TraderSpec) {
+                node = new Trader();
             }
 
             if (node != null) {

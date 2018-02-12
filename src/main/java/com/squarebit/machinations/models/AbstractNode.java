@@ -167,4 +167,9 @@ public abstract class AbstractNode extends AbstractElement {
     public Set<Activator> getActivators() {
         return activators;
     }
+
+    @Override
+    protected void doActivate(int time) {
+        super.doActivate(time);
+    }
 }
