@@ -1,8 +1,5 @@
 package com.squarebit.machinations.models;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,18 +98,18 @@ public class MachinationsContext {
         Set<ResourceConnection> satisfiedConnections = new HashSet<>();
 
         // The set of actual flow.
-        Map<ResourceConnection, ResourceContainer> actualFlows = new HashMap<>();
+        Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
 
         //
         if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
             activeConnectionsByNode.forEach((node, connections) -> {
-                ResourceContainer resourceSnapshot = node.resources.copy();
+                ResourceSet resourceSnapshot = node.resources.copy();
                 boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
 
                 // Calculate the actual flow.
                 connections.forEach(c -> {
                     int rate = requiredFlow.get(c);
-                    ResourceContainer flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
+                    ResourceSet flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
                     actualFlows.put(c, flow);
                 });
 
@@ -124,13 +121,13 @@ public class MachinationsContext {
         }
         else {
             activeConnectionsByNode.forEach((node, connections) -> {
-                ResourceContainer resourceSnapshot = node.resources.copy();
+                ResourceSet resourceSnapshot = node.resources.copy();
                 boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
 
                 // Calculate the actual flow.
                 connections.forEach(c -> {
                     int rate = requiredFlow.get(c);
-                    ResourceContainer flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
+                    ResourceSet flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
                     actualFlows.put(c, flow);
 
                     if (flow.size() > 0)
@@ -147,7 +144,7 @@ public class MachinationsContext {
             if (shouldActivate) {
                 // Now send the resources along the satisfied connections.
                 connections.forEach(c -> {
-                    ResourceContainer flow = actualFlows.get(c);
+                    ResourceSet flow = actualFlows.get(c);
                     c.getFrom().removeResource(flow);
                     c.getTo().addResource(flow);
                     c.activate(this.time);

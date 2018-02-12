@@ -6,12 +6,14 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class ResourceContainer {
+public class ResourceSet {
     public static String DEFAULT_RESOURCE_NAME = "";
 
     protected Map<String, Integer> content = new HashMap<>();
+    protected Map<String, Integer> delta = new HashMap<>();
     protected Map<String, Integer> capacity = new HashMap<>();
     private int size = 0;
+    private int deltaSize = 0;
 
     /**
      * Gets total number of resources in this container.
@@ -20,6 +22,31 @@ public class ResourceContainer {
      */
     public int size() {
         return size;
+    }
+
+    /**
+     * Gets the delta size.
+     * @return
+     */
+    public int deltaSize() {
+        return this.deltaSize;
+    }
+
+    /**
+     *
+     */
+    public void commit() {
+        this.deltaSize = 0;
+        this.delta.clear();
+    }
+
+    /**
+     *
+     */
+    public void discard() {
+        this.delta.forEach(this::remove);
+        this.deltaSize = 0;
+        this.delta.clear();
     }
 
     /**
@@ -62,6 +89,10 @@ public class ResourceContainer {
         checkArgument(amount > 0);
 
         size += amount;
+        deltaSize += amount;
+
+        if (delta.putIfAbsent(name, amount) != null)
+            delta.computeIfPresent(name, (n, a) -> (a + amount));
 
         if (content.putIfAbsent(name, amount) != null)
             return content.computeIfPresent(name, (n, a) -> (a + amount));
@@ -84,7 +115,7 @@ public class ResourceContainer {
      * @param amount
      * @return
      */
-    public int add(ResourceContainer amount) {
+    public int add(ResourceSet amount) {
         amount.content.forEach(this::add);
         return this.size;
     }
@@ -103,6 +134,10 @@ public class ResourceContainer {
         int removable = Math.min(currentAmount, amount);
 
         size -= amount;
+        deltaSize -= amount;
+
+        if (delta.putIfAbsent(name, -amount) != null)
+            delta.computeIfPresent(name, (n, a) -> (a - removable));
 
         if (content.putIfAbsent(name, 0) != null)
             return content.computeIfPresent(name, (n, a) -> (a - removable));
@@ -125,7 +160,7 @@ public class ResourceContainer {
      * @param amount
      * @return
      */
-    public int remove(ResourceContainer amount) {
+    public int remove(ResourceSet amount) {
         amount.content.forEach(this::remove);
         return amount.size;
     }
@@ -135,8 +170,8 @@ public class ResourceContainer {
      *
      * @return the resource container
      */
-    public ResourceContainer copy() {
-        ResourceContainer instance = new ResourceContainer();
+    public ResourceSet copy() {
+        ResourceSet instance = new ResourceSet();
         instance.content.putAll(this.content);
         instance.size = this.size;
         return instance;
@@ -149,8 +184,8 @@ public class ResourceContainer {
      * @param isAllOrNone
      * @return
      */
-    public ResourceContainer pull(String name, int amount, boolean isAllOrNone) {
-        ResourceContainer result = new ResourceContainer();
+    public ResourceSet pull(String name, int amount, boolean isAllOrNone) {
+        ResourceSet result = new ResourceSet();
 
         // Consume any resource.
         if (name == null) {

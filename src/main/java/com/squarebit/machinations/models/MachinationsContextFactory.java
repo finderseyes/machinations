@@ -204,6 +204,11 @@ public class MachinationsContextFactory {
                     }
                 });
 
+        // Now commit the initial resources.
+        context.machinations.getElements().stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+                .forEach(n -> n.resources.commit());
+
         // Modifiers, triggers and activators.
         context.machinations.getElements().stream()
                 .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)

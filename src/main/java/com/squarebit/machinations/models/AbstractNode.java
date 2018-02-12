@@ -10,7 +10,7 @@ public abstract class AbstractNode extends AbstractElement {
     private FlowMode flowMode;
     private Set<AbstractConnection> incomingConnections = new HashSet<>();
     private Set<AbstractConnection> outgoingConnections = new HashSet<>();
-    protected ResourceContainer resources = new ResourceContainer();
+    protected ResourceSet resources = new ResourceSet();
 
     private Set<Modifier> modifiers = new HashSet<>();
     private Set<Trigger> triggers = new HashSet<>();
@@ -158,7 +158,7 @@ public abstract class AbstractNode extends AbstractElement {
      *
      * @param amount
      */
-    public void removeResource(ResourceContainer amount) {
+    public void removeResource(ResourceSet amount) {
         this.resources.remove(amount);
     }
 
@@ -166,7 +166,7 @@ public abstract class AbstractNode extends AbstractElement {
      *
      * @param amount
      */
-    public void addResource(ResourceContainer amount) {
+    public void addResource(ResourceSet amount) {
         this.resources.add(amount);
     }
 
