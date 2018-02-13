@@ -1,5 +1,7 @@
 package com.squarebit.machinations.models;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,10 +79,98 @@ public class MachinationsContext {
             this.time++;
     }
 
+    private void doSimulateOneTimeStep() {
+        // STEP 1: try to resolve activation requirements
+        Set<ActivationRequirement> activationRequirements = this.activeNodes.stream()
+                .map(AbstractNode::getActivationRequirement)
+                .collect(Collectors.toSet());
+
+        Set<ResourceConnection> requiredConnections = activationRequirements.stream()
+                .flatMap(r -> r.getConnections().stream())
+                .collect(Collectors.toSet());
+
+        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
+        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+
+        // Active connections, grouped by providing node.
+        Map<AbstractNode, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
+                .collect(Collectors.groupingBy(ResourceConnection::getFrom));
+
+        // The set of actually satisfied connections.
+        Set<ResourceConnection> satisfiedConnections = new HashSet<>();
+
+        // The set of actual flow.
+        Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
+
+        // Get resource snapshot for each provider node.
+        Map<AbstractNode, ResourceSet> resourceSnapShots = new HashMap<>();
+        requiredConnectionsByProvider.forEach((n, c) -> resourceSnapShots.put(n, n.getResources().copy()));
+
+        // Calculate the actual flow.
+        activationRequirements.forEach(requirement ->
+                requirement.getConnections().forEach(c -> {
+                    ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
+                    int requiredRate = requiredFlows.get(c);
+                    ResourceSet extracted = snapshot.extract(requiredRate);
+
+                    if (extracted.size() > 0) {
+                        if (requirement.isRequiringAll() && extracted.size() < requiredRate)
+                            snapshot.add(extracted);
+                        else
+                            actualFlows.put(c, extracted);
+                    }
+                })
+        );
+
+        // Determines requirements actually satisfied.
+        if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
+            // synchronous time mode require each provider node to provide all or none dependent connections.
+            Set<ResourceConnection> nonFlows = requiredConnectionsByProvider.entrySet().stream()
+                    .map(e -> {
+                        List<ResourceConnection> dependentConnections = e.getValue();
+                        if (actualFlows.keySet().containsAll(dependentConnections))
+                            return dependentConnections;
+                        else
+                            return Collections.<ResourceConnection>emptyList();
+                    }).flatMap(List::stream).collect(Collectors.toSet());
+
+            // Remove those non-flow due to sync-time constraint.
+            nonFlows.forEach(actualFlows::remove);
+        }
+
+        activationRequirements.forEach(r -> {
+            Set<ResourceConnection> connections = r.getConnections();
+
+            // The requirement is satisfied.
+            if (connections.isEmpty() || (r.isRequiringAll() && actualFlows.keySet().containsAll(connections)) ||
+                    (!r.isRequiringAll() && connections.stream().anyMatch(actualFlows::containsKey)))
+            {
+                Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
+                actualFlows.entrySet().stream()
+                        .filter(e -> connections.contains(e.getKey()))
+                        .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+
+//                Set<ResourceConnection> actualConnections = actualFlows.keySet().stream()
+//                        .filter(connections::contains).collect(Collectors.toSet());
+//
+//                ResourceSet combinedFlow = actualFlows.entrySet().stream()
+//                        .filter(e -> connections.contains(e.getKey()))
+//                        .map(Map.Entry::getValue)
+//                        .collect(ResourceSet::new, ResourceSet::add, ResourceSet::add);
+
+                r.getTarget().activate(this.time, incomingFlows);
+            }
+        });
+    }
+
     /**
      *
      */
-    private void doSimulateOneTimeStep() {
+    private void __doSimulateOneTimeStep() {
+        // - try pull resources
+        // - activate satisfied nodes
+        // -
+
         // Candidate connections required if any of active nodes are activated.
         Set<ResourceConnection> activeConnections = this.activeNodes.stream()
                 .map(this::getActiveConnection).flatMap(Set::stream).map(e -> (ResourceConnection)e)
@@ -161,7 +251,7 @@ public class MachinationsContext {
         // Activators.
     }
 
-    private Set<AbstractConnection> getActiveConnection(AbstractNode node) {
+    private Set<ResourceConnection> getActiveConnection(AbstractNode node) {
         FlowMode mode = node.getFlowMode();
         if (mode == FlowMode.AUTOMATIC) {
             if (node.getIncomingConnections().size() == 0)

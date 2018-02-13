@@ -7,8 +7,38 @@ import com.squarebit.machinations.engine.IntNumber;
 public class ResourceConnection extends AbstractConnection {
     public static final IntNumber DEFAULT_FLOW_RATE = IntNumber.of(1);
 
+    private AbstractNode from;
+    private AbstractNode to;
+    private String label = "";
     private Expression flowRateExpression = DEFAULT_FLOW_RATE;
     private String resourceName = null; // if null, any resource.
+
+    public AbstractNode getFrom() {
+        return from;
+    }
+
+    public ResourceConnection setFrom(AbstractNode from) {
+        this.from = from;
+        return this;
+    }
+
+    public AbstractNode getTo() {
+        return to;
+    }
+
+    public ResourceConnection setTo(AbstractNode to) {
+        this.to = to;
+        return this;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public AbstractConnection setLabel(String label) {
+        this.label = label;
+        return this;
+    }
 
     /**
      * Gets flow rate expression.

@@ -7,9 +7,11 @@ import java.util.Set;
 public abstract class AbstractNode extends AbstractElement {
     private String name;
     private ActivationMode activationMode;
+
+    private Set<ResourceConnection> incomingConnections = new HashSet<>();
+    private Set<ResourceConnection> outgoingConnections = new HashSet<>();
+
     private FlowMode flowMode;
-    private Set<AbstractConnection> incomingConnections = new HashSet<>();
-    private Set<AbstractConnection> outgoingConnections = new HashSet<>();
     protected ResourceSet resources = new ResourceSet();
 
     private Set<Modifier> modifiers = new HashSet<>();
@@ -96,7 +98,7 @@ public abstract class AbstractNode extends AbstractElement {
      *
      * @return the incoming connections
      */
-    public Set<AbstractConnection> getIncomingConnections() {
+    public Set<ResourceConnection> getIncomingConnections() {
         return incomingConnections;
     }
 
@@ -105,17 +107,8 @@ public abstract class AbstractNode extends AbstractElement {
      *
      * @return the outgoing connections
      */
-    public Set<AbstractConnection> getOutgoingConnections() {
+    public Set<ResourceConnection> getOutgoingConnections() {
         return outgoingConnections;
-    }
-
-    /**
-     * Gets resources.
-     *
-     * @return the resources
-     */
-    public Map<String, Integer> getResources() {
-        return resources.content;
     }
 
     /**
@@ -200,5 +193,64 @@ public abstract class AbstractNode extends AbstractElement {
     @Override
     protected void doActivate(int time) {
         super.doActivate(time);
+    }
+
+    /**
+     * Gets the activation requirement.
+     * @return the activation requirement
+     */
+    public ActivationRequirement getActivationRequirement() {
+        // By default, node is activated if any of its incoming resource connections is activated.
+        return ActivationRequirement.any(this, incomingConnections);
+    }
+
+    /**
+     * Gets the resources stored in this node.
+     * @return the resource set.
+     */
+    public ResourceSet getResources() {
+        // By default, non-storing nodes do not provide any resources.
+        return ResourceSet.EMPTY_SET;
+    }
+
+    /**
+     * Determines if the node can provide a set of resources, without providing exact number of sub resources.
+     * @param resourceSet the resource set.
+     * @return true or false
+     */
+    public boolean canProvide(ResourceSet resourceSet) {
+        // By default, non-storing node cannot provide any resources.
+        return resourceSet.size() <= this.getResources().size();
+    }
+
+    /**
+     * Determines if the node can provide exactly the given resource set.
+     * @param resourceSet the resource set.
+     * @return
+     */
+    public boolean canProvideExact(ResourceSet resourceSet) {
+        // By default, non-storing node cannot provide any resources.
+        return resourceSet.isSubSetOf(this.getResources());
+    }
+
+    public ResourceSet extract(ResourceSet resourceSet) {
+        return ResourceSet.EMPTY_SET;
+    }
+
+    public ResourceSet extractExact(ResourceSet resourceSet) {
+        return ResourceSet.EMPTY_SET;
+    }
+
+    public boolean receive(ResourceSet resourceSet) {
+        return false;
+    }
+
+    /**
+     * Activates a node, giving incoming resource flow.
+     * @param time
+     * @param incomingFlows
+     */
+    public void activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+        // By default, do nothing.
     }
 }

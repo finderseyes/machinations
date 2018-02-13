@@ -7,6 +7,28 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class ResourceSet {
+    private static class EmptySet extends ResourceSet {
+        @Override
+        public int add(String name, int amount) {
+            return 0;
+        }
+
+        @Override
+        public int remove(String name, int amount) {
+            return 0;
+        }
+
+        @Override
+        public ResourceSet copy() {
+            return this;
+        }
+    }
+
+    /**
+     * The empty set.
+     */
+    public static final ResourceSet EMPTY_SET = new EmptySet();
+
     public static String DEFAULT_RESOURCE_NAME = "";
 
     protected Map<String, Integer> content = new HashMap<>();
@@ -76,6 +98,16 @@ public class ResourceSet {
      */
     public boolean isEmpty() {
         return size <= 0;
+    }
+
+    /**
+     * Determines if the resource set is subset of another one.
+     * @param superSet the super set to check.
+     * @return
+     */
+    public boolean isSubSetOf(ResourceSet superSet) {
+        return this.content.entrySet().stream()
+                .allMatch(e -> superSet.get(e.getKey()) >= e.getValue());
     }
 
     /**
@@ -217,6 +249,51 @@ public class ResourceSet {
                 int delta = Math.min(amount, available);
                 this.remove(name, delta);
             }
+        }
+
+        return result;
+    }
+
+    /**
+     * Extracts a certain resource with given name.
+     * @param name
+     * @param amount
+     * @return
+     */
+    public ResourceSet extract(String name, int amount) {
+        ResourceSet result = new ResourceSet();
+
+        int available = this.get(name);
+        int extractedAmount = Math.min(amount, available);
+        this.remove(name, extractedAmount);
+
+        result.add(name, extractedAmount);
+
+        return result;
+    }
+
+    /**
+     * Extract any resources with given amount.
+     * @param amount
+     * @return
+     */
+    public ResourceSet extract(int amount) {
+        ResourceSet result = new ResourceSet();
+        boolean done = false;
+        while (!done) {
+            Optional<Map.Entry<String, Integer>> nonZero =
+                    this.content.entrySet().stream().filter(e -> e.getValue() > 0).findFirst();
+
+            if (nonZero.isPresent()) {
+                Map.Entry<String, Integer> e = nonZero.get();
+                int extractedAmount = Math.min(amount, e.getValue());
+                this.remove(e.getKey(), extractedAmount);
+                result.add(e.getKey(), extractedAmount);
+                amount -= extractedAmount;
+            }
+
+            if (amount == 0 || size <= 0)
+                done = true;
         }
 
         return result;
