@@ -107,4 +107,70 @@ public class MachinationsContextTests {
             assertThat(p9.getTotalResourceCount()).isEqualTo(2);
         }
     }
+
+    @Test
+    public void should_support_synchronous_time() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/fig-5-10.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool A = (Pool) machinations.findById("a");
+        Pool B = (Pool) machinations.findById("b");
+        Pool C = (Pool) machinations.findById("c");
+        Pool D = (Pool) machinations.findById("d");
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(A.getResources().size()).isEqualTo(9);
+            assertThat(B.getResources().size()).isEqualTo(1);
+            assertThat(C.getResources().size()).isEqualTo(0);
+            assertThat(D.getResources().size()).isEqualTo(0);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(A.getResources().size()).isEqualTo(8);
+            assertThat(B.getResources().size()).isEqualTo(2);
+            assertThat(C.getResources().size()).isEqualTo(0);
+            assertThat(D.getResources().size()).isEqualTo(0);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(A.getResources().size()).isEqualTo(7);
+            assertThat(B.getResources().size()).isEqualTo(1);
+            assertThat(C.getResources().size()).isEqualTo(1);
+            assertThat(D.getResources().size()).isEqualTo(1);
+        }
+    }
+
+    @Test
+    public void should_support_triggers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-02.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+        Pool p4 = (Pool) machinations.findById("p4");
+        Pool p5 = (Pool) machinations.findById("p5");
+        ResourceConnection e45 = (ResourceConnection) machinations.findById("e45");
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p2.getResources().size()).isEqualTo(9);
+            assertThat(p3.getResources().size()).isEqualTo(1);
+
+            assertThat(p4.getResources().size()).isEqualTo(9);
+            assertThat(p5.getResources().size()).isEqualTo(1);
+        }
+    }
 }

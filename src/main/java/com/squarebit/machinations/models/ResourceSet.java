@@ -279,7 +279,7 @@ public class ResourceSet {
      */
     public ResourceSet extract(int amount) {
         ResourceSet result = new ResourceSet();
-        boolean done = false;
+        boolean done = size <= 0;
         while (!done) {
             Optional<Map.Entry<String, Integer>> nonZero =
                     this.content.entrySet().stream().filter(e -> e.getValue() > 0).findFirst();

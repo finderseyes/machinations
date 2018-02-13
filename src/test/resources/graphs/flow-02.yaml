@@ -1,0 +1,32 @@
+---
+nodes:
+  - type: pool
+    id: p0
+    activationMode: automatic
+    resources: 10
+    connections:
+    - --> p1
+
+  - type: pool
+    id: p1
+    triggers:
+      - --> p2
+      - --> e45
+
+  - type: pool
+    id: p2
+    resources: 10
+    connections:
+      - --> p3
+
+  - type: pool
+    id: p3
+
+  - type: pool
+    id: p4
+    resources: 10
+    connections:
+      - --> p5 (e45)
+
+  - type: pool
+    id: p5

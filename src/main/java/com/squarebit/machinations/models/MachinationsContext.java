@@ -1,5 +1,6 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.modelsex.Resource;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -21,6 +22,15 @@ public class MachinationsContext {
     public MachinationsContext() {
         this.elements = new HashSet<>();
         this.elementById = new HashMap<>();
+    }
+
+    /**
+     * Gets configs.
+     *
+     * @return the configs
+     */
+    public Configs getConfigs() {
+        return configs;
     }
 
     /**
@@ -135,29 +145,113 @@ public class MachinationsContext {
             nonFlows.forEach(actualFlows::remove);
         }
 
-        activationRequirements.forEach(r -> {
+        // Triggers the target nodes meeting requirements.
+        Set<ActivationRequirement> satisfiedRequirements = activationRequirements.stream()
+            .filter(r -> {
+                Set<ResourceConnection> connections = r.getConnections();
+
+                return (connections.isEmpty() ||
+                        (r.isRequiringAll() && actualFlows.keySet().containsAll(connections)) ||
+                        (!r.isRequiringAll() && connections.stream().anyMatch(actualFlows::containsKey)));
+            }).collect(Collectors.toSet());
+
+        // Activates the nodes.
+        Set<ResourceConnection> firedOutgoingConnections = satisfiedRequirements.stream().map(r -> {
             Set<ResourceConnection> connections = r.getConnections();
 
-            // The requirement is satisfied.
-            if (connections.isEmpty() || (r.isRequiringAll() && actualFlows.keySet().containsAll(connections)) ||
-                    (!r.isRequiringAll() && connections.stream().anyMatch(actualFlows::containsKey)))
-            {
-                Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
-                actualFlows.entrySet().stream()
-                        .filter(e -> connections.contains(e.getKey()))
-                        .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+            Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
+            actualFlows.entrySet().stream()
+                    .filter(e -> connections.contains(e.getKey()))
+                    .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
 
-//                Set<ResourceConnection> actualConnections = actualFlows.keySet().stream()
-//                        .filter(connections::contains).collect(Collectors.toSet());
-//
-//                ResourceSet combinedFlow = actualFlows.entrySet().stream()
-//                        .filter(e -> connections.contains(e.getKey()))
-//                        .map(Map.Entry::getValue)
-//                        .collect(ResourceSet::new, ResourceSet::add, ResourceSet::add);
+            return r.getTarget().activate(this.time, incomingFlows);
+        }).flatMap(Set::stream).collect(Collectors.toSet());
 
-                r.getTarget().activate(this.time, incomingFlows);
+        // STEP 2: triggers.
+        Set<ResourceConnection> firedConnections = firedOutgoingConnections;
+
+        Map<AbstractNode, List<ResourceConnection>> firedConnectionByTarget =
+                firedConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
+        Set<AbstractNode> triggerOwners = firedConnectionByTarget.entrySet().stream()
+                .filter(e -> e.getKey().getIncomingConnections().containsAll(e.getValue()))
+                .map(Map.Entry::getKey).collect(Collectors.toSet());
+
+        triggerOwners.addAll(
+                satisfiedRequirements.stream().map(ActivationRequirement::getTarget).collect(Collectors.toSet())
+        );
+
+        Set<AbstractElement> triggeredElements = triggerOwners.stream()
+                .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
+                .collect(Collectors.toSet());
+
+        triggeredElements.forEach(e -> {
+            if (e instanceof ResourceConnection) {
+                ResourceConnection connection = (ResourceConnection)e;
+                activateConnection(connection);
+            }
+            else if (e instanceof AbstractNode) {
+                AbstractNode node = (AbstractNode)e;
+                activateNode(node);
             }
         });
+
+        // STEP 3: activators
+        satisfiedRequirements.stream().flatMap(r -> r.getTarget().activateActivators().stream())
+                .map(Activator::getTarget)
+                .distinct()
+                .forEach(this::activateNode);
+    }
+
+    private void activateConnection(ResourceConnection connection) {
+        int rate = connection.getFlowRate();
+        ResourceSet resource = connection.getFrom().getResources().extract(rate);
+        connection.getTo().receive(resource);
+    }
+
+    private void activateNode(AbstractNode node) {
+        ActivationRequirement requirement = node.getActivationRequirement();
+
+        // Active connections, grouped by providing node.
+        Set<AbstractNode> providers =
+                requirement.getConnections().stream()
+                .map(ResourceConnection::getFrom)
+                .collect(Collectors.toSet());
+
+        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
+        requirement.getConnections().forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+
+        // The set of actual flow.
+        Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
+
+        // Get resource snapshot for each provider node.
+        Map<AbstractNode, ResourceSet> resourceSnapShots = new HashMap<>();
+        providers.forEach(n -> resourceSnapShots.put(n, n.getResources().copy()));
+
+        requirement.getConnections().forEach(c -> {
+            ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
+            int requiredRate = requiredFlows.get(c);
+            ResourceSet extracted = snapshot.extract(requiredRate);
+
+            if (extracted.size() > 0) {
+                if (requirement.isRequiringAll() && extracted.size() < requiredRate)
+                    snapshot.add(extracted);
+                else
+                    actualFlows.put(c, extracted);
+            }
+        });
+
+        Set<ResourceConnection> connections = requirement.getConnections();
+        if (connections.isEmpty() ||
+                (requirement.isRequiringAll() && actualFlows.keySet().containsAll(connections)) ||
+                (!requirement.isRequiringAll() && connections.stream().anyMatch(actualFlows::containsKey)))
+        {
+            Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
+            actualFlows.entrySet().stream()
+                    .filter(e -> connections.contains(e.getKey()))
+                    .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+
+            requirement.getTarget().activate(this.time, incomingFlows);
+        }
     }
 
     /**

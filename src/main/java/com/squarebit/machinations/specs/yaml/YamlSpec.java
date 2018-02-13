@@ -11,7 +11,7 @@ import java.util.List;
  * The type Yaml spec.
  */
 public class YamlSpec {
-    private String timeMode;
+    private ConfigsSpec configs = new ConfigsSpec();
     private List<NodeSpec> nodes = new ArrayList<>();
     private List<String> connections = new ArrayList<>();
     private List<String> modifiers = new ArrayList<>();
@@ -59,22 +59,22 @@ public class YamlSpec {
     }
 
     /**
-     * Gets time mode.
+     * Gets configs spec.
      *
-     * @return the time mode
+     * @return the configs spec
      */
-    public String getTimeMode() {
-        return timeMode;
+    public ConfigsSpec getConfigs() {
+        return configs;
     }
 
     /**
-     * Sets time mode.
+     * Sets configs spec.
      *
-     * @param timeMode the time mode
-     * @return the time mode
+     * @param configs the configs spec
+     * @return the configs spec
      */
-    public YamlSpec setTimeMode(String timeMode) {
-        this.timeMode = timeMode;
+    public YamlSpec setConfigs(ConfigsSpec configs) {
+        this.configs = configs;
         return this;
     }
 

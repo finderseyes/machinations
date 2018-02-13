@@ -1,5 +1,6 @@
 package com.squarebit.machinations.models;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +75,8 @@ public abstract class AbstractNode extends AbstractElement {
     public boolean isPulling() {
         return (
                 flowMode == FlowMode.PULL_ALL || flowMode == FlowMode.PULL_ANY ||
-                        (flowMode == FlowMode.AUTOMATIC && outgoingConnections.size() == 0)
+                        (flowMode == FlowMode.AUTOMATIC &&
+                                (outgoingConnections.size() == 0 || incomingConnections.size() > 0))
         );
     }
 
@@ -250,7 +252,16 @@ public abstract class AbstractNode extends AbstractElement {
      * @param time
      * @param incomingFlows
      */
-    public void activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
-        // By default, do nothing.
+    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+        // By default, does not activate any output resource connections.
+        return Collections.emptySet();
+    }
+
+    public Set<Trigger> activateTriggers() {
+        return this.triggers;
+    }
+
+    public Set<Activator> activateActivators() {
+        return this.activators;
     }
 }

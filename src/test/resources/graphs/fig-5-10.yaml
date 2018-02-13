@@ -1,0 +1,25 @@
+---
+configs:
+  timeMode: synchronous
+
+nodes:
+  - type: pool
+    id: a
+    resources: 10
+    connections:
+      - --> b
+
+  - type: pool
+    id: b
+    activationMode: automatic
+    connections:
+      - --> c
+      - --> d
+
+  - type: pool
+    id: c
+    activationMode: automatic
+
+  - type: pool
+    id: d
+    activationMode: automatic

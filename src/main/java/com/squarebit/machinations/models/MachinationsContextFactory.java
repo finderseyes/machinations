@@ -173,6 +173,8 @@ public class MachinationsContextFactory {
         context.machinations = new MachinationsContext();
         context.spec = spec;
 
+        context.machinations.getConfigs().setTimeMode(TimeMode.from(spec.getConfigs().getTimeMode()));
+
         this.createNode(context, spec);
 
         // Connections.
@@ -827,6 +829,8 @@ public class MachinationsContextFactory {
 
         nextDecl = decl.getChild(next);
         buildContext.target = context.machinations.findById(nextDecl.getText());
+        if (buildContext.target == null)
+            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
         return buildContext;
     }
