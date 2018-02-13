@@ -1,8 +1,21 @@
 package com.squarebit.machinations.models;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class Pool extends AbstractNode {
+    @Override
+    public ActivationRequirement getActivationRequirement() {
+        if (isPulling()) {
+            if (isAllOrNoneFlow())
+                return ActivationRequirement.all(this, this.getIncomingConnections());
+            else
+                return ActivationRequirement.any(this, this.getIncomingConnections());
+        }
+        else
+            return ActivationRequirement.any(this, Collections.emptySet());
+    }
+
     @Override
     public ResourceSet getResources() {
         return this.resources;

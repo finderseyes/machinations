@@ -96,9 +96,6 @@ public class MachinationsContext {
         Map<AbstractNode, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
                 .collect(Collectors.groupingBy(ResourceConnection::getFrom));
 
-        // The set of actually satisfied connections.
-        Set<ResourceConnection> satisfiedConnections = new HashSet<>();
-
         // The set of actual flow.
         Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
 
