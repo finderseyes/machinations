@@ -9,6 +9,8 @@ public abstract class AbstractNode extends AbstractElement {
     private String name;
     private ActivationMode activationMode;
 
+    private boolean enabled = true;
+
     private Set<ResourceConnection> incomingConnections = new HashSet<>();
     private Set<ResourceConnection> outgoingConnections = new HashSet<>();
 
@@ -56,6 +58,26 @@ public abstract class AbstractNode extends AbstractElement {
      */
     public AbstractNode setActivationMode(ActivationMode activationMode) {
         this.activationMode = activationMode;
+        return this;
+    }
+
+    /**
+     * Is enabled boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Sets enabled.
+     *
+     * @param enabled the enabled
+     * @return the enabled
+     */
+    public AbstractNode setEnabled(boolean enabled) {
+        this.enabled = enabled;
         return this;
     }
 

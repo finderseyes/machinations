@@ -1,8 +1,5 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.modelsex.Resource;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,7 +14,7 @@ public class MachinationsContext {
     private int time = -1;  // The time index now, negative means no simulation step has been executed.
     private int remainedActionPoints = -1;
     private Set<AbstractNode> activeNodes = new HashSet<>();
-    private Set<AbstractNode> automaticNodes;
+    private Set<AbstractNode> automaticOrInteractiveNodes;
 
     public MachinationsContext() {
         this.elements = new HashSet<>();
@@ -90,8 +87,9 @@ public class MachinationsContext {
     }
 
     private void doSimulateOneTimeStep() {
-        // STEP 1: try to resolve activation requirements
+        // --> STEP 1: try to resolve activation requirements
         Set<ActivationRequirement> activationRequirements = this.activeNodes.stream()
+                .filter(AbstractNode::isEnabled)
                 .map(AbstractNode::getActivationRequirement)
                 .collect(Collectors.toSet());
 
@@ -135,7 +133,7 @@ public class MachinationsContext {
             Set<ResourceConnection> nonFlows = requiredConnectionsByProvider.entrySet().stream()
                     .map(e -> {
                         List<ResourceConnection> dependentConnections = e.getValue();
-                        if (actualFlows.keySet().containsAll(dependentConnections))
+                        if (!actualFlows.keySet().containsAll(dependentConnections))
                             return dependentConnections;
                         else
                             return Collections.<ResourceConnection>emptyList();
@@ -167,22 +165,52 @@ public class MachinationsContext {
             return r.getTarget().activate(this.time, incomingFlows);
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
-        // STEP 2: triggers.
-        Set<ResourceConnection> firedConnections = firedOutgoingConnections;
-
+        // --> STEP 2: triggers.
         Map<AbstractNode, List<ResourceConnection>> firedConnectionByTarget =
-                firedConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
+                firedOutgoingConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
+
+        // Trigger owners are those having all input connections satisfied.
         Set<AbstractNode> triggerOwners = firedConnectionByTarget.entrySet().stream()
                 .filter(e -> e.getKey().getIncomingConnections().containsAll(e.getValue()))
                 .map(Map.Entry::getKey).collect(Collectors.toSet());
 
+        // Add those nodes previously fired but do not have any input requirements.
         triggerOwners.addAll(
-                satisfiedRequirements.stream().map(ActivationRequirement::getTarget).collect(Collectors.toSet())
+                satisfiedRequirements.stream()
+                        .filter(r -> r.getTarget().getIncomingConnections().size() == 0)
+                        .map(ActivationRequirement::getTarget)
+                        .collect(Collectors.toSet())
         );
 
+        // Elements will be triggered.
         Set<AbstractElement> triggeredElements = triggerOwners.stream()
                 .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
+
+        doTrigger(triggeredElements);
+
+        // --> STEP 3: activators
+        Map<AbstractNode, List<Activator>> activatorsByTarget = elements.stream()
+                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+                .flatMap(n -> n.getActivators().stream())
+                .collect(Collectors.groupingBy(Activator::getTarget));
+
+        activatorsByTarget.forEach((target, activators) ->
+            target.setEnabled(
+                    activators.stream().map(Activator::evaluate).reduce(true, (a, b) -> a && b)
+            )
+        );
+
+        // --> Clean up, update active node set
+        this.activeNodes.clear();
+        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
+    }
+
+    private void doTrigger(Set<AbstractElement> triggeredElements) {
+        if (triggeredElements.size() == 0)
+            return;
+
+        Set<Trigger> chainedTriggers = new HashSet<>();
 
         triggeredElements.forEach(e -> {
             if (e instanceof ResourceConnection) {
@@ -192,14 +220,13 @@ public class MachinationsContext {
             else if (e instanceof AbstractNode) {
                 AbstractNode node = (AbstractNode)e;
                 activateNode(node);
+
+                if (node.getIncomingConnections().size() == 0)
+                    chainedTriggers.addAll(node.getTriggers());
             }
         });
 
-        // STEP 3: activators
-        satisfiedRequirements.stream().flatMap(r -> r.getTarget().activateActivators().stream())
-                .map(Activator::getTarget)
-                .distinct()
-                .forEach(this::activateNode);
+        doTrigger(chainedTriggers.stream().map(Trigger::getTarget).collect(Collectors.toSet()));
     }
 
     private void activateConnection(ResourceConnection connection) {
@@ -364,9 +391,10 @@ public class MachinationsContext {
         if (this.time >= 0)
             return;
 
-        this.automaticNodes = automaticNodes = elements.stream()
+        this.automaticOrInteractiveNodes = elements.stream()
                 .filter(e -> e instanceof AbstractNode &&
-                        ((AbstractNode)e).getActivationMode() == ActivationMode.AUTOMATIC
+                        (((AbstractNode)e).getActivationMode() == ActivationMode.AUTOMATIC ||
+                                ((AbstractNode)e).getActivationMode() == ActivationMode.INTERACTIVE)
                 ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
 
         Set<AbstractNode> startingNodes = elements.stream()
@@ -375,7 +403,7 @@ public class MachinationsContext {
                 ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
 
         this.activeNodes.clear();
-        this.activeNodes.addAll(this.automaticNodes);
+        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
         this.activeNodes.addAll(startingNodes);
 
         // Reset the action points of this turn.
