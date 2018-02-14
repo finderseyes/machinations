@@ -173,4 +173,88 @@ public class MachinationsContextTests {
             assertThat(p5.getResources().size()).isEqualTo(1);
         }
     }
+
+    @Test
+    public void should_support_activators() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-03.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+        Pool p4 = (Pool) machinations.findById("p4");
+
+        assertThat(p0.isEnabled()).isTrue();
+        assertThat(p1.isEnabled()).isTrue();
+        assertThat(p2.isEnabled()).isTrue();
+        assertThat(p3.isEnabled()).isFalse();
+        assertThat(p4.isEnabled()).isTrue();
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.isEnabled()).isTrue();
+            assertThat(p1.isEnabled()).isTrue();
+            assertThat(p2.isEnabled()).isTrue();
+            assertThat(p3.isEnabled()).isTrue();
+            assertThat(p4.isEnabled()).isTrue();
+
+            assertThat(p0.getResources().size()).isEqualTo(18);
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(10);
+            assertThat(p4.getResources().size()).isEqualTo(0);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.isEnabled()).isTrue();
+            assertThat(p1.isEnabled()).isTrue();
+            assertThat(p2.isEnabled()).isTrue();
+            assertThat(p3.isEnabled()).isTrue();
+            assertThat(p4.isEnabled()).isTrue();
+
+            assertThat(p0.getResources().size()).isEqualTo(16);
+            assertThat(p1.getResources().size()).isEqualTo(2);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+            assertThat(p3.getResources().size()).isEqualTo(9);
+            assertThat(p4.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.isEnabled()).isTrue();
+            assertThat(p1.isEnabled()).isTrue();
+            assertThat(p2.isEnabled()).isTrue();
+            assertThat(p3.isEnabled()).isFalse();
+            assertThat(p4.isEnabled()).isTrue();
+
+            assertThat(p0.getResources().size()).isEqualTo(14);
+            assertThat(p1.getResources().size()).isEqualTo(3);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+            assertThat(p3.getResources().size()).isEqualTo(8);
+            assertThat(p4.getResources().size()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.isEnabled()).isTrue();
+            assertThat(p1.isEnabled()).isTrue();
+            assertThat(p2.isEnabled()).isTrue();
+            assertThat(p3.isEnabled()).isFalse();
+            assertThat(p4.isEnabled()).isTrue();
+
+            assertThat(p0.getResources().size()).isEqualTo(12);
+            assertThat(p1.getResources().size()).isEqualTo(4);
+            assertThat(p2.getResources().size()).isEqualTo(4);
+            assertThat(p3.getResources().size()).isEqualTo(8);
+            assertThat(p4.getResources().size()).isEqualTo(2);
+        }
+    }
 }

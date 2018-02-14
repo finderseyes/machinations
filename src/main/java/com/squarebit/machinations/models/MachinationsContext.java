@@ -190,20 +190,24 @@ public class MachinationsContext {
         doTrigger(triggeredElements);
 
         // --> STEP 3: activators
+        this.updateNodeEnablingStates();
+
+        // --> Clean up, update active node set
+        this.activeNodes.clear();
+        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
+    }
+
+    private void updateNodeEnablingStates() {
         Map<AbstractNode, List<Activator>> activatorsByTarget = elements.stream()
                 .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
                 .flatMap(n -> n.getActivators().stream())
                 .collect(Collectors.groupingBy(Activator::getTarget));
 
         activatorsByTarget.forEach((target, activators) ->
-            target.setEnabled(
-                    activators.stream().map(Activator::evaluate).reduce(true, (a, b) -> a && b)
-            )
+                target.setEnabled(
+                        activators.stream().map(Activator::evaluate).reduce(true, (a, b) -> a && b)
+                )
         );
-
-        // --> Clean up, update active node set
-        this.activeNodes.clear();
-        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
     }
 
     private void doTrigger(Set<AbstractElement> triggeredElements) {
@@ -386,7 +390,7 @@ public class MachinationsContext {
     /**
      * Initializes the context if needed before simulation.
      */
-    private void initializeIfNeeded() {
+    protected void initializeIfNeeded() {
         // already simulated at least one step, no need to initialize.
         if (this.time >= 0)
             return;
@@ -405,6 +409,8 @@ public class MachinationsContext {
         this.activeNodes.clear();
         this.activeNodes.addAll(this.automaticOrInteractiveNodes);
         this.activeNodes.addAll(startingNodes);
+
+        this.updateNodeEnablingStates();
 
         // Reset the action points of this turn.
         this.remainedActionPoints = configs.getActionPointsPerTurn();

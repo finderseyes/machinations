@@ -24,6 +24,7 @@ public class MachinationsContextFactory {
         private YamlSpec spec;
         private Map<AbstractElement, ElementSpec> elementSpec = new HashMap<>();
         private Map<Object, Object> buildContext = new HashMap<>();
+        private Object currentObject;
     }
 
     /**
@@ -218,6 +219,7 @@ public class MachinationsContextFactory {
                     node.getModifiers().forEach(modifier -> {
                         ModifierBuildContext buildContext =
                                 (ModifierBuildContext)context.buildContext.get(modifier);
+                        context.currentObject = modifier;
 
                         if (buildContext.expression != null) {
                             modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
@@ -227,6 +229,7 @@ public class MachinationsContextFactory {
                     node.getActivators().forEach(activator -> {
                         ActivatorBuildContext buildContext =
                                 (ActivatorBuildContext)context.buildContext.get(activator);
+                        context.currentObject = activator;
 
                         if (buildContext.condition != null) {
                             activator.setConditionExpression(buildBoolean(context, buildContext.condition));
@@ -234,6 +237,7 @@ public class MachinationsContextFactory {
                     });
                 });
 
+        context.machinations.initializeIfNeeded();
         return context.machinations;
     }
 
@@ -321,7 +325,8 @@ public class MachinationsContextFactory {
     private BooleanExpression buildLeftImplicitReleation(BuildingContext context,
                                                          DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
-        ArithmeticExpression lhs = null; // TODO
+        Activator activator = (Activator)context.currentObject;
+        ArithmeticExpression lhs = AbstractNodeRef.of(activator.getOwner());
         ArithmeticExpression rhs =
                 buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
 
@@ -333,9 +338,10 @@ public class MachinationsContextFactory {
     private BooleanExpression buildRightImplicitReleation(BuildingContext context,
                                                          DiceParser.RightImplicitRelationalExpressionContext expressionContext)
     {
+        Activator activator = (Activator)context.currentObject;
         ArithmeticExpression lhs =
                 buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
-        ArithmeticExpression rhs = null; //TODO
+        ArithmeticExpression rhs = AbstractNodeRef.of(activator.getOwner());
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
@@ -857,6 +863,8 @@ public class MachinationsContextFactory {
 
         nextDecl = decl.getChild(next);
         buildContext.target = (AbstractNode)context.machinations.findById(nextDecl.getText());
+        if (buildContext.target == null)
+            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
         return buildContext;
     }
