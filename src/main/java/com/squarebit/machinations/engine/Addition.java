@@ -11,6 +11,11 @@ public class Addition extends BinaryOperator {
         return this.lhs.evaluate() + this.rhs.evaluate();
     }
 
+    @Override
+    public float evaluate(EvaluationContext context) {
+        return this.lhs.evaluate(context) + this.rhs.evaluate(context);
+    }
+
     /**
      * Of addition.
      *

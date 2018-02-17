@@ -11,4 +11,14 @@ public abstract class ArithmeticExpression extends Expression {
      * @return integer result.
      */
     public abstract int evaluate();
+
+    /**
+     * Evaluate int.
+     *
+     * @param context the context
+     * @return the int
+     */
+    public float evaluate(EvaluationContext context) {
+        return evaluate();
+    }
 }

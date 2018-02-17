@@ -257,4 +257,44 @@ public class MachinationsContextTests {
             assertThat(p4.getResources().size()).isEqualTo(2);
         }
     }
+
+    @Test
+    public void should_support_gates() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-04.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Gate p1 = (Gate) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.getResources().size()).isEqualTo(9);
+            assertThat(p1.getResources().size()).isEqualTo(0);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(0);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.getResources().size()).isEqualTo(8);
+            assertThat(p1.getResources().size()).isEqualTo(0);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+
+            assertThat(p0.getResources().size()).isEqualTo(7);
+            assertThat(p1.getResources().size()).isEqualTo(0);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(2);
+        }
+    }
 }
