@@ -32,6 +32,16 @@ public class FractionNumber extends ArithmeticExpression {
         return 0;
     }
 
+    /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        return numerator / (float)denominator;
+    }
+
     public static FractionNumber of(int numerator, int denominator) {
         return new FractionNumber().setNumerator(numerator).setDenominator(denominator);
     }

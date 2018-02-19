@@ -34,6 +34,16 @@ public class Negation extends ArithmeticExpression {
     }
 
     /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        return -this.value.evaluate();
+    }
+
+    /**
      * Of negate.
      *
      * @param expression the expression

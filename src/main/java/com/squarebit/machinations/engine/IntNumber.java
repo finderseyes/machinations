@@ -34,6 +34,16 @@ public class IntNumber extends ArithmeticExpression {
     }
 
     /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        return this.value;
+    }
+
+    /**
      * Of number.
      *
      * @param value the value

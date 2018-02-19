@@ -57,6 +57,19 @@ public class Variable extends ArithmeticExpression {
     }
 
     /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        if (evaluator.get() >= 1)
+            return 1.0f;
+        else
+            return 0.0f;
+    }
+
+    /**
      * Of variable.
      *
      * @param name      the name

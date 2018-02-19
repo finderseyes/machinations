@@ -11,6 +11,16 @@ public class Addition extends BinaryOperator {
         return this.lhs.evaluate() + this.rhs.evaluate();
     }
 
+    /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        return this.lhs.evaluateAsProbable() + this.rhs.evaluateAsProbable();
+    }
+
     @Override
     public float evaluate(EvaluationContext context) {
         return this.lhs.evaluate(context) + this.rhs.evaluate(context);

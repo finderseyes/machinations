@@ -735,7 +735,12 @@ public class MachinationsContextFactory {
     }
 
     private void createConnection(BuildingContext context, ConnectionBuildContext connectionBuildContext) throws Exception {
-        ResourceConnection connection = new ResourceConnection();
+        ResourceConnection connection;
+
+        if (connectionBuildContext.from instanceof Gate)
+            connection = new GateConnection();
+        else
+            connection = new ResourceConnection();
 
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)

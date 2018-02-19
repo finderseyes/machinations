@@ -59,6 +59,17 @@ public class DiceNumber extends ArithmeticExpression {
         return sum;
     }
 
+    /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        // Return 0 due to dice expression can have distribution other than uniform.
+        return 0;
+    }
+
     public static DiceNumber of(int times, int faces) {
         return new DiceNumber().setTimes(times).setFaces(faces);
     }

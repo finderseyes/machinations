@@ -13,6 +13,12 @@ public abstract class ArithmeticExpression extends Expression {
     public abstract int evaluate();
 
     /**
+     * Evaluate as probable and return probability.
+     * @return probability
+     */
+    public abstract float evaluateAsProbable();
+
+    /**
      * Evaluate int.
      *
      * @param context the context

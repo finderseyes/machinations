@@ -36,6 +36,21 @@ public class AbstractNodeRef extends ArithmeticExpression {
         return node.getResources().size();
     }
 
+    /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        int size = node.getResources().size();
+
+        if (size >= 1)
+            return 1.0f;
+        else
+            return 0.0f;
+    }
+
     public static AbstractNodeRef of(AbstractNode node) {
         return new AbstractNodeRef().setNode(node);
     }

@@ -13,28 +13,61 @@ public class ResourceConnection extends AbstractConnection {
     private Expression flowRateExpression = DEFAULT_FLOW_RATE;
     private String resourceName = null; // if null, any resource.
 
+    /**
+     * Gets from.
+     *
+     * @return the from
+     */
     public AbstractNode getFrom() {
         return from;
     }
 
+    /**
+     * Sets from.
+     *
+     * @param from the from
+     * @return the from
+     */
     public ResourceConnection setFrom(AbstractNode from) {
         this.from = from;
         return this;
     }
 
+    /**
+     * Gets to.
+     *
+     * @return the to
+     */
     public AbstractNode getTo() {
         return to;
     }
 
+    /**
+     * Sets to.
+     *
+     * @param to the to
+     * @return the to
+     */
     public ResourceConnection setTo(AbstractNode to) {
         this.to = to;
         return this;
     }
 
+    /**
+     * Gets label.
+     *
+     * @return the label
+     */
     public String getLabel() {
         return label;
     }
 
+    /**
+     * Sets label.
+     *
+     * @param label the label
+     * @return the label
+     */
     public AbstractConnection setLabel(String label) {
         this.label = label;
         return this;

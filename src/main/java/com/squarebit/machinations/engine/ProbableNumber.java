@@ -53,6 +53,16 @@ public class ProbableNumber extends ArithmeticExpression {
         return rand <= probability ? 1 : 0;
     }
 
+    /**
+     * Evaluate as probable and return probability.
+     *
+     * @return probability
+     */
+    @Override
+    public float evaluateAsProbable() {
+        return probability;
+    }
+
     @Override
     public float evaluate(EvaluationContext context) {
         if (!context.doesForceDeterministic())
