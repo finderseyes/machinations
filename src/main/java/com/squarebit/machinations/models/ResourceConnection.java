@@ -69,6 +69,19 @@ public class ResourceConnection extends AbstractConnection {
     }
 
     /**
+     * Activates the resource connection and gets the required resource set should be passed on it.
+     * @return the required resource set
+     */
+    public ResourceSet activate() {
+        if (flowRateExpression instanceof ArithmeticExpression) {
+            int amount = ((ArithmeticExpression)flowRateExpression).evaluate();
+            return ResourceSet.of(this.resourceName, amount);
+        }
+        else
+            return ResourceSet.empty();
+    }
+
+    /**
      * Gets resource name.
      *
      * @return the resource name

@@ -97,8 +97,11 @@ public class MachinationsContext {
                 .flatMap(r -> r.getConnections().stream())
                 .collect(Collectors.toSet());
 
-        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
-        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+//        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
+//        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+
+        Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
+        requiredConnections.forEach(c -> requiredResources.put(c, c.activate()));
 
         // Active connections, grouped by providing node.
         Map<AbstractNode, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
@@ -115,11 +118,11 @@ public class MachinationsContext {
         activationRequirements.forEach(requirement ->
                 requirement.getConnections().forEach(c -> {
                     ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
-                    int requiredRate = requiredFlows.get(c);
-                    ResourceSet extracted = snapshot.extract(requiredRate);
+                    ResourceSet requiredResource = requiredResources.get(c);
+                    ResourceSet extracted = snapshot.remove(requiredResource);
 
                     if (extracted.size() > 0) {
-                        if (requirement.isRequiringAll() && extracted.size() < requiredRate)
+                        if (requirement.isRequiringAll() && !requiredResource.isSubSetOf(extracted))
                             snapshot.add(extracted);
                         else
                             actualFlows.put(c, extracted);
@@ -235,7 +238,7 @@ public class MachinationsContext {
 
     private void activateConnection(ResourceConnection connection) {
         int rate = connection.getFlowRate();
-        ResourceSet resource = connection.getFrom().getResources().extract(rate);
+        ResourceSet resource = connection.getFrom().getResources().remove(rate);
         connection.getTo().receive(resource);
     }
 
@@ -248,8 +251,8 @@ public class MachinationsContext {
                 .map(ResourceConnection::getFrom)
                 .collect(Collectors.toSet());
 
-        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
-        requirement.getConnections().forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+        Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
+        requirement.getConnections().forEach(c -> requiredResources.put(c, c.activate()));
 
         // The set of actual flow.
         Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
@@ -260,11 +263,11 @@ public class MachinationsContext {
 
         requirement.getConnections().forEach(c -> {
             ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
-            int requiredRate = requiredFlows.get(c);
-            ResourceSet extracted = snapshot.extract(requiredRate);
+            ResourceSet requiredResource = requiredResources.get(c);
+            ResourceSet extracted = snapshot.remove(requiredResource);
 
             if (extracted.size() > 0) {
-                if (requirement.isRequiringAll() && extracted.size() < requiredRate)
+                if (requirement.isRequiringAll() && !requiredResource.isSubSetOf(extracted))
                     snapshot.add(extracted);
                 else
                     actualFlows.put(c, extracted);
@@ -283,94 +286,6 @@ public class MachinationsContext {
 
             requirement.getTarget().activate(this.time, incomingFlows);
         }
-    }
-
-    /**
-     *
-     */
-    private void __doSimulateOneTimeStep() {
-        // - try pull resources
-        // - activate satisfied nodes
-        // -
-
-        // Candidate connections required if any of active nodes are activated.
-        Set<ResourceConnection> activeConnections = this.activeNodes.stream()
-                .map(this::getActiveConnection).flatMap(Set::stream).map(e -> (ResourceConnection)e)
-                .collect(Collectors.toSet());
-
-        // Flow rate this time step.
-        Map<ResourceConnection, Integer> requiredFlow = new HashMap<>();
-        activeConnections.forEach(c -> requiredFlow.put(c, c.getFlowRate()));
-
-        // Active connections, grouped by node.
-        Map<AbstractNode, List<ResourceConnection>> activeConnectionsByNode = activeConnections.stream()
-                .collect(Collectors.groupingBy(ResourceConnection::getFrom));
-
-        // The set of actually satisfied connections.
-        Set<ResourceConnection> satisfiedConnections = new HashSet<>();
-
-        // The set of actual flow.
-        Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
-
-        //
-        if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
-            activeConnectionsByNode.forEach((node, connections) -> {
-                ResourceSet resourceSnapshot = node.resources.copy();
-                boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
-
-                // Calculate the actual flow.
-                connections.forEach(c -> {
-                    int rate = requiredFlow.get(c);
-                    ResourceSet flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
-                    actualFlows.put(c, flow);
-                });
-
-                // Synchronous time required all connections to be satisfied.
-                boolean allSatisfied = connections.stream().allMatch(c -> actualFlows.get(c).size() > 0);
-                if (allSatisfied)
-                    satisfiedConnections.addAll(connections);
-            });
-        }
-        else {
-            activeConnectionsByNode.forEach((node, connections) -> {
-                ResourceSet resourceSnapshot = node.resources.copy();
-                boolean isPullingAllOrNone = node.getFlowMode() == FlowMode.PULL_ALL;
-
-                // Calculate the actual flow.
-                connections.forEach(c -> {
-                    int rate = requiredFlow.get(c);
-                    ResourceSet flow = resourceSnapshot.pull(c.getResourceName(), rate, isPullingAllOrNone);
-                    actualFlows.put(c, flow);
-
-                    if (flow.size() > 0)
-                        satisfiedConnections.add(c);
-                });
-            });
-        }
-
-        // Activate the nodes.
-        activeConnectionsByNode.forEach((node, connections) -> {
-            boolean isAllOrNoneFlow = node.isAllOrNoneFlow();
-            boolean shouldActivate = !isAllOrNoneFlow || satisfiedConnections.containsAll(connections);
-
-            if (shouldActivate) {
-                // Now send the resources along the satisfied connections.
-                connections.forEach(c -> {
-                    ResourceSet flow = actualFlows.get(c);
-                    c.getFrom().removeResource(flow);
-                    c.getTo().addResource(flow);
-                    c.activate(this.time);
-                });
-
-                node.activate(this.time);
-            }
-        });
-
-        // Modifiers
-
-        // Triggers.
-
-        // Activators.
     }
 
     private Set<ResourceConnection> getActiveConnection(AbstractNode node) {

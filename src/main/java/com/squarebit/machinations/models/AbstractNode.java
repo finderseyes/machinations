@@ -234,7 +234,7 @@ public abstract class AbstractNode extends AbstractElement {
      */
     public ResourceSet getResources() {
         // By default, non-storing nodes do not provide any resources.
-        return ResourceSet.EMPTY_SET;
+        return ResourceSet.empty();
     }
 
     /**
@@ -258,11 +258,11 @@ public abstract class AbstractNode extends AbstractElement {
     }
 
     public ResourceSet extract(ResourceSet resourceSet) {
-        return ResourceSet.EMPTY_SET;
+        return ResourceSet.empty();
     }
 
     public ResourceSet extractExact(ResourceSet resourceSet) {
-        return ResourceSet.EMPTY_SET;
+        return ResourceSet.empty();
     }
 
     public boolean receive(ResourceSet resourceSet) {

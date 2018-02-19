@@ -3,21 +3,16 @@ package com.squarebit.machinations.models;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class ResourceSet {
+    /**
+     * Empty set implementation.
+     */
     private static class EmptySet extends ResourceSet {
-        @Override
-        public int add(String name, int amount) {
-            return 0;
-        }
-
-        @Override
-        public int remove(String name, int amount) {
-            return 0;
-        }
-
         @Override
         public ResourceSet copy() {
             return this;
@@ -27,48 +22,52 @@ public class ResourceSet {
     /**
      * The empty set.
      */
-    public static final ResourceSet EMPTY_SET = new EmptySet();
+    private static final ResourceSet EMPTY_SET = new EmptySet();
 
+    /**
+     * Default resource name.
+     */
     public static String DEFAULT_RESOURCE_NAME = "";
 
-    protected Map<String, Integer> content = new HashMap<>();
-    protected Map<String, Integer> delta = new HashMap<>();
+    private Map<String, Integer> content = new HashMap<>();
+    private Map<String, Integer> change = new HashMap<>();
     protected Map<String, Integer> capacity = new HashMap<>();
-    private int size = 0;
-    private int deltaSize = 0;
+
+    private int contentSize = 0;
+    private int changeSize = 0;
 
     /**
      * Gets total number of resources in this container.
      *
-     * @return the container size.
+     * @return the container contentSize.
      */
     public int size() {
-        return size;
+        return contentSize;
     }
 
     /**
-     * Gets the delta size.
+     * Gets the change contentSize.
      * @return
      */
     public int deltaSize() {
-        return this.deltaSize;
+        return this.changeSize;
     }
 
     /**
      *
      */
     public void commit() {
-        this.deltaSize = 0;
-        this.delta.clear();
+        this.changeSize = 0;
+        this.change.clear();
     }
 
     /**
      *
      */
     public void discard() {
-        this.delta.forEach(this::remove);
-        this.deltaSize = 0;
-        this.delta.clear();
+        this.change.forEach(this::doRemove);
+        this.changeSize = 0;
+        this.change.clear();
     }
 
     /**
@@ -97,7 +96,7 @@ public class ResourceSet {
      * @return the boolean
      */
     public boolean isEmpty() {
-        return size <= 0;
+        return contentSize <= 0;
     }
 
     /**
@@ -115,16 +114,18 @@ public class ResourceSet {
      *
      * @param name  the name
      * @param amount the value
-     * @return the size of given resource
+     * @return the contentSize of given resource
      */
-    public int add(final String name, final int amount) {
+    private int doAdd(String name, final int amount) {
         checkArgument(amount >= 0);
 
-        size += amount;
-        deltaSize += amount;
+        name = (name == null) ? DEFAULT_RESOURCE_NAME : name;
 
-        if (delta.putIfAbsent(name, amount) != null)
-            delta.computeIfPresent(name, (n, a) -> (a + amount));
+        contentSize += amount;
+        changeSize += amount;
+
+        if (change.putIfAbsent(name, amount) != null)
+            change.computeIfPresent(name, (n, a) -> (a + amount));
 
         if (content.putIfAbsent(name, amount) != null)
             return content.computeIfPresent(name, (n, a) -> (a + amount));
@@ -133,12 +134,25 @@ public class ResourceSet {
     }
 
     /**
+     * Adds a certain amount of resource with specified name.
+     *
+     * @param name  the name
+     * @param amount the value
+     * @return the contentSize of given resource
+     */
+    public ResourceSet add(String name, final int amount) {
+        name = (name == null) ? DEFAULT_RESOURCE_NAME : name;
+        int result = doAdd(name, amount);
+        return ResourceSet.of(name, result);
+    }
+
+    /**
      * Adds a certain amount of default resource.
      *
      * @param amount the amount
-     * @return the new default resource size
+     * @return the new default resource contentSize
      */
-    public int add(final int amount) {
+    public ResourceSet add(final int amount) {
         return this.add(DEFAULT_RESOURCE_NAME, amount);
     }
 
@@ -147,9 +161,13 @@ public class ResourceSet {
      * @param amount
      * @return
      */
-    public int add(ResourceSet amount) {
-        amount.content.forEach(this::add);
-        return this.size;
+    public ResourceSet add(ResourceSet amount) {
+        ResourceSet result = new ResourceSet();
+        amount.content.forEach((n, a) -> {
+            result.doAdd(n, this.doAdd(n, a));
+        });
+        result.commit();
+        return result;
     }
 
     /**
@@ -159,17 +177,18 @@ public class ResourceSet {
      * @param amount the amount
      * @return the int
      */
-    public int remove(final String name, final int amount) {
+    private int doRemove(String name, final int amount) {
         checkArgument(amount >= 0);
+        name = (name == null) ? DEFAULT_RESOURCE_NAME : name;
 
         int currentAmount = content.getOrDefault(name, 0);
         int removable = Math.min(currentAmount, amount);
 
-        size -= amount;
-        deltaSize -= amount;
+        contentSize -= amount;
+        changeSize -= amount;
 
-        if (delta.putIfAbsent(name, -amount) != null)
-            delta.computeIfPresent(name, (n, a) -> (a - removable));
+        if (change.putIfAbsent(name, -amount) != null)
+            change.computeIfPresent(name, (n, a) -> (a - removable));
 
         if (content.putIfAbsent(name, 0) != null)
             return content.computeIfPresent(name, (n, a) -> (a - removable));
@@ -178,23 +197,83 @@ public class ResourceSet {
     }
 
     /**
-     * Remove int.
-     *
-     * @param amount the amount
-     * @return the int
+     * Removes given amount of resources, regardless of their names.
+     * @param amount the amount to remove
+     * @return removed resource set
      */
-    public int remove(final int amount) {
-        return this.remove(DEFAULT_RESOURCE_NAME, amount);
+    private ResourceSet doRemoveAny(int amount) {
+        ResourceSet result = new ResourceSet();
+        boolean done = contentSize <= 0;
+        while (!done) {
+            Optional<Map.Entry<String, Integer>> nonZeroResource =
+                    this.content.entrySet().stream()
+                            .filter(e -> e.getValue() > 0).findFirst();
+
+            if (nonZeroResource.isPresent()) {
+                Map.Entry<String, Integer> e = nonZeroResource.get();
+                int extractedAmount = Math.min(amount, e.getValue());
+                this.doRemove(e.getKey(), extractedAmount);
+                result.add(e.getKey(), extractedAmount);
+                amount -= extractedAmount;
+            }
+
+            if (amount == 0 || contentSize <= 0)
+                done = true;
+        }
+
+        result.commit();
+
+        return result;
     }
 
     /**
-     *
-     * @param amount
-     * @return
+     * Remove a certain amount of resources with given name.
+     * @param name the resource name. if null or default resource name, remove any resources. Otherwise, remove
+     *             the resource with exact name.
+     * @param amount the amount to remove
+     * @return the removed resource set
      */
-    public int remove(ResourceSet amount) {
-        amount.content.forEach(this::remove);
-        return amount.size;
+    public ResourceSet remove(String name, int amount) {
+        checkArgument(amount >= 0);
+        name = (name == null) ? DEFAULT_RESOURCE_NAME : name;
+
+        if (name.equals(DEFAULT_RESOURCE_NAME))
+            return doRemoveAny(amount);
+        else
+            return ResourceSet.of(name, doRemove(name, amount));
+    }
+
+    /**
+     * Removes any resources from this set, up to given amount.
+     * @param amount amount
+     * @return removed resource set
+     */
+    public ResourceSet remove(int amount) {
+        return this.doRemoveAny(amount);
+    }
+
+    /**
+     * Removes a resource set from this set.
+     * @param subSet the subset to remove.
+     * @return remove resource set.
+     */
+    public ResourceSet remove(ResourceSet subSet) {
+        Set<String> namedResources = subSet.content.keySet().stream()
+                .filter(n -> !n.equals(DEFAULT_RESOURCE_NAME))
+                .collect(Collectors.toSet());
+
+        ResourceSet result = new ResourceSet();
+        namedResources.stream()
+                .map(n -> remove(n, subSet.get(n)))
+                .forEach(result::add);
+
+        if (subSet.content.containsKey(DEFAULT_RESOURCE_NAME)) {
+            result.add(this.doRemoveAny(subSet.content.get(DEFAULT_RESOURCE_NAME)));
+        }
+
+        result.commit();
+
+        return result;
     }
 
     /**
@@ -205,97 +284,41 @@ public class ResourceSet {
     public ResourceSet copy() {
         ResourceSet instance = new ResourceSet();
         instance.content.putAll(this.content);
-        instance.size = this.size;
+        instance.contentSize = this.contentSize;
         return instance;
     }
 
     /**
-     *
-     * @param name
-     * @param amount
-     * @param isAllOrNone
-     * @return
+     * Creates a new resource set with given resource name and amount.
+     * @param name resource name
+     * @param amount amount
+     * @return resource set
      */
-    public ResourceSet pull(String name, int amount, boolean isAllOrNone) {
-        ResourceSet result = new ResourceSet();
+    public static ResourceSet of(String name, int amount) {
+        checkArgument(amount >= 0);
 
-        // Consume any resource.
-        if (name == null) {
-            if (!isAllOrNone || this.size >= amount) {
-                boolean done = false;
-                while (!done) {
-                    Optional<Map.Entry<String, Integer>> nonZero =
-                            this.content.entrySet().stream().filter(e -> e.getValue() > 0).findFirst();
+        name = (name == null) ? DEFAULT_RESOURCE_NAME : name;
 
-                    if (nonZero.isPresent()) {
-                        Map.Entry<String, Integer> e = nonZero.get();
-                        int delta = Math.min(amount, e.getValue());
-                        this.remove(e.getKey(), delta);
-                        result.add(e.getKey(), delta);
-                        amount -= delta;
-                    }
-
-                    if (amount == 0 || (!isAllOrNone && size <= 0))
-                        done = true;
-                    else if (isAllOrNone)
-                        throw new RuntimeException("FATAL! Should not reach here.");
-                }
-            }
-        }
-        else {
-            int available = this.get(name);
-
-            if (!isAllOrNone || available >= amount) {
-                int delta = Math.min(amount, available);
-                this.remove(name, delta);
-            }
-        }
-
-        return result;
+        ResourceSet set = new ResourceSet();
+        set.content.put(name, amount);
+        set.contentSize = amount;
+        return set;
     }
 
     /**
-     * Extracts a certain resource with given name.
-     * @param name
-     * @param amount
-     * @return
+     * Creates a new resource set of default resource and given amount.
+     * @param amount amount
+     * @return resource set
      */
-    public ResourceSet extract(String name, int amount) {
-        ResourceSet result = new ResourceSet();
-
-        int available = this.get(name);
-        int extractedAmount = Math.min(amount, available);
-        this.remove(name, extractedAmount);
-
-        result.add(name, extractedAmount);
-
-        return result;
+    public static ResourceSet of(int amount) {
+        return of(null, amount);
     }
 
     /**
-     * Extract any resources with given amount.
-     * @param amount
-     * @return
+     * Returns an empty resource set.
+     * @return an empty resource set
      */
-    public ResourceSet extract(int amount) {
-        ResourceSet result = new ResourceSet();
-        boolean done = size <= 0;
-        while (!done) {
-            Optional<Map.Entry<String, Integer>> nonZero =
-                    this.content.entrySet().stream().filter(e -> e.getValue() > 0).findFirst();
-
-            if (nonZero.isPresent()) {
-                Map.Entry<String, Integer> e = nonZero.get();
-                int extractedAmount = Math.min(amount, e.getValue());
-                this.remove(e.getKey(), extractedAmount);
-                result.add(e.getKey(), extractedAmount);
-                amount -= extractedAmount;
-            }
-
-            if (amount == 0 || size <= 0)
-                done = true;
-        }
-
-        return result;
+    public static ResourceSet empty() {
+        return EMPTY_SET;
     }
 }
