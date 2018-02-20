@@ -1,9 +1,7 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.ArithmeticExpression;
-import com.squarebit.machinations.engine.BooleanExpression;
-import com.squarebit.machinations.engine.Expression;
-import com.squarebit.machinations.engine.ExpressionUtils;
+import com.squarebit.machinations.engine.*;
+import com.squarebit.machinations.parsers.DiceExpression;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
@@ -13,13 +11,17 @@ import java.util.stream.Collectors;
 
 public class Gate extends AbstractNode {
     private static final ResourceConnection NULL_CONNECTION = new ResourceConnection();
+    private static final DiceNumber DEFAULT_DRAW = new DiceNumber();
 
     private boolean random = false;
+    private ArithmeticExpression drawExpression = DEFAULT_DRAW;
+
     private boolean isInitialized = false;
     private boolean useProbableOutputs = true;
 
     private EnumeratedDistribution<ResourceConnection> outgoingProbabilities;
     private int passedThroughResources = 0;
+    private int currentDraw = 0;
 
     /**
      * Is random gate?.
@@ -41,12 +43,32 @@ public class Gate extends AbstractNode {
         return this;
     }
 
+    /**
+     * Gets draw expression.
+     *
+     * @return the draw expression
+     */
+    public ArithmeticExpression getDrawExpression() {
+        return drawExpression;
+    }
+
+    /**
+     * Sets draw expression.
+     *
+     * @param drawExpression the draw expression
+     * @return the draw expression
+     */
+    public Gate setDrawExpression(ArithmeticExpression drawExpression) {
+        this.drawExpression = drawExpression;
+        return this;
+    }
+
     @Override
     public int evaluate() {
         if (!this.random)
             return this.passedThroughResources;
         else
-            return RandomUtils.nextInt(1, 6);
+            return this.currentDraw;
     }
 
     @Override
@@ -63,7 +85,23 @@ public class Gate extends AbstractNode {
         });
 
         if (this.isRandom()) {
-            return super.activate(time, incomingFlows);
+            if (this.useProbableOutputs) {
+                ResourceConnection connection = this.outgoingProbabilities.sample();
+                if (connection != NULL_CONNECTION) {
+                    outgoingConnections.add(connection);
+                    connection.getTo().receive(resources);
+                }
+            }
+            else {
+                currentDraw = drawExpression.evaluate();
+                this.getOutgoingConnections().forEach(c -> {
+                    BooleanExpression expression = (BooleanExpression)c.getFlowRateExpression();
+                    if (expression.evaluate()) {
+                        outgoingConnections.add(c);
+                        c.getTo().receive(resources);
+                    }
+                });
+            }
         }
         else {
             if (this.useProbableOutputs) {
@@ -94,9 +132,9 @@ public class Gate extends AbstractNode {
                     this.passedThroughResources++;
                 }
             }
-
-            return outgoingConnections;
         }
+
+        return outgoingConnections;
     }
 
     /**
@@ -107,6 +145,8 @@ public class Gate extends AbstractNode {
             return;
 
         isInitialized = true;
+
+        currentDraw = drawExpression.evaluate();
 
         Set<ResourceConnection> connections = this.getOutgoingConnections();
         boolean allArithmetic = connections.stream()

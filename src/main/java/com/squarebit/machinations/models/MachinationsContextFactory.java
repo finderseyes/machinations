@@ -521,7 +521,14 @@ public class MachinationsContextFactory {
                 node = pool;
             }
             else if (nodeSpec instanceof GateSpec) {
-                node = new Gate();
+                GateSpec gateSpec = (GateSpec)nodeSpec;
+                Gate gate = new Gate();
+
+                DiceParser parser = getParser(gateSpec.getDraw());
+                gate.setDrawExpression(buildArithmetic(context, parser.arithmeticExpression()));
+                gate.setRandom(gateSpec.isRandom());
+                node = gate;
+
             }
             else if (nodeSpec instanceof SourceSpec) {
                 node = new Source();

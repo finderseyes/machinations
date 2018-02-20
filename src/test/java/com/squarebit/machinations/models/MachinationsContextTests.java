@@ -328,4 +328,50 @@ public class MachinationsContextTests {
         assertThat(p2.getResources().size()).isEqualTo(3);
         assertThat(p3.getResources().size()).isEqualTo(5);
     }
+
+    @Test
+    public void should_support_random_gates_with_condition() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-07.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Gate p1 = (Gate) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+
+        int totalResources = p0.getResources().size();
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat((float)p2.getResources().size() / totalResources).isCloseTo(.25f, Offset.offset(5e-2f));
+        assertThat((float)p3.getResources().size() / totalResources).isCloseTo(.25f, Offset.offset(5e-2f));
+    }
+
+    @Test
+    public void should_support_random_gates_with_probable() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-08.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Gate p1 = (Gate) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+
+        int totalResources = p0.getResources().size();
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat((float)p2.getResources().size() / totalResources).isCloseTo(.40f, Offset.offset(5e-2f));
+        assertThat((float)p3.getResources().size() / totalResources).isCloseTo(.30f, Offset.offset(5e-2f));
+    }
 }
