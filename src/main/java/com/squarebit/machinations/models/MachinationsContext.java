@@ -31,6 +31,15 @@ public class MachinationsContext {
     }
 
     /**
+     * Gets time.
+     *
+     * @return the time
+     */
+    public int getTime() {
+        return time;
+    }
+
+    /**
      * Find by id abstract element.
      *
      * @param id the id

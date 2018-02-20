@@ -20,7 +20,11 @@ modifierDefinition: (IDENTIFIER TO)? arithmeticExpression TO IDENTIFIER;
 
 
 /* Trigger definition. */
-triggerDefinition: IDENTIFIER? TO IDENTIFIER;
+triggerDefinition: implicitTriggerDefinition | explicitTriggerDefinition;
+implicitTriggerDefinition
+    : expression? TO IDENTIFIER;
+explicitTriggerDefinition
+    : IDENTIFIER (TO expression)? TO IDENTIFIER;
 
 
 /* Activator definition. */

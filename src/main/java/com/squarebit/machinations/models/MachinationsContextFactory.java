@@ -108,6 +108,7 @@ public class MachinationsContextFactory {
 
     private class TriggerBuildContext {
         private AbstractNode owner;
+        private DiceParser.ExpressionContext expression;
         private AbstractElement target;
 
         public AbstractNode getOwner() {
@@ -116,6 +117,15 @@ public class MachinationsContextFactory {
 
         public TriggerBuildContext setOwner(AbstractNode owner) {
             this.owner = owner;
+            return this;
+        }
+
+        public DiceParser.ExpressionContext getExpression() {
+            return expression;
+        }
+
+        public TriggerBuildContext setExpression(DiceParser.ExpressionContext expression) {
+            this.expression = expression;
             return this;
         }
 
@@ -227,6 +237,16 @@ public class MachinationsContextFactory {
                         }
                     });
 
+                    node.getTriggers().forEach(trigger -> {
+                        TriggerBuildContext buildContext =
+                                (TriggerBuildContext)context.buildContext.get(trigger);
+                        context.currentObject = trigger;
+
+                        if (buildContext.expression != null) {
+                            trigger.setLabelExpression(buildExpression(context, buildContext.expression));
+                        }
+                    });
+
                     node.getActivators().forEach(activator -> {
                         ActivatorBuildContext buildContext =
                                 (ActivatorBuildContext)context.buildContext.get(activator);
@@ -326,7 +346,8 @@ public class MachinationsContextFactory {
     private BooleanExpression buildLeftImplicitRelation(BuildingContext context,
                                                         DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
-        ArithmeticExpression lhs = null, rhs = null;
+        AbstractNodeRef lhs = null;
+        ArithmeticExpression rhs = null;
 
         if (context.currentObject instanceof Activator) {
             Activator activator = (Activator)context.currentObject;
@@ -336,18 +357,28 @@ public class MachinationsContextFactory {
             GateConnection connection = (GateConnection)context.currentObject;
             lhs = AbstractNodeRef.of(connection.getFrom());
         }
+        else if (context.currentObject instanceof  Trigger) {
+            Trigger trigger = (Trigger)context.currentObject;
+            lhs = AbstractNodeRef.of(trigger.getOwner());
+        }
 
         rhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(0)).getSymbol();
 
-        return Comparison.of(opFromToken(optoken), lhs, rhs);
+        BooleanExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
+
+        if (lhs != null)
+            lhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
+
+        return expression;
     }
 
     private BooleanExpression buildRightImplicitRelation(BuildingContext context,
                                                          DiceParser.RightImplicitRelationalExpressionContext expressionContext)
     {
-        ArithmeticExpression lhs = null, rhs = null;
+        ArithmeticExpression lhs = null;
+        AbstractNodeRef rhs = null;
 
         if (context.currentObject instanceof Activator) {
             Activator activator = (Activator)context.currentObject;
@@ -357,12 +388,21 @@ public class MachinationsContextFactory {
             GateConnection connection = (GateConnection)context.currentObject;
             rhs = AbstractNodeRef.of(connection.getFrom());
         }
+        else if (context.currentObject instanceof  Trigger) {
+            Trigger trigger = (Trigger)context.currentObject;
+            rhs = AbstractNodeRef.of(trigger.getOwner());
+        }
 
         lhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
-        return Comparison.of(opFromToken(optoken), lhs, rhs);
+        BooleanExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
+
+        if (rhs != null)
+            rhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
+
+        return expression;
     }
 
     private BooleanExpression buildRelation(BuildingContext context,
@@ -524,8 +564,11 @@ public class MachinationsContextFactory {
                 GateSpec gateSpec = (GateSpec)nodeSpec;
                 Gate gate = new Gate();
 
-                DiceParser parser = getParser(gateSpec.getDraw());
-                gate.setDrawExpression(buildArithmetic(context, parser.arithmeticExpression()));
+                if (gateSpec.getDraw() != null) {
+                    DiceParser parser = getParser(gateSpec.getDraw());
+                    gate.setDrawExpression(buildArithmetic(context, parser.arithmeticExpression()));
+                }
+
                 gate.setRandom(gateSpec.isRandom());
                 node = gate;
 
@@ -658,8 +701,11 @@ public class MachinationsContextFactory {
     }
 
     private void createTrigger(BuildingContext context, TriggerBuildContext buildContext) {
-        Trigger trigger = new Trigger().setOwner(buildContext.owner).setTarget(buildContext.target);
+        Trigger trigger = new Trigger()
+                .setOwner(buildContext.owner)
+                .setTarget(buildContext.target);
         buildContext.owner.getTriggers().add(trigger);
+        context.buildContext.put(trigger, buildContext);
     }
 
     private void createExplicitModifiers(BuildingContext context, YamlSpec spec) throws Exception {
@@ -848,24 +894,51 @@ public class MachinationsContextFactory {
         DiceParser parser = getParser(definition);
         TriggerBuildContext buildContext = new TriggerBuildContext();
 
-        ParseTree decl = parser.triggerDefinition();
+        ParseTree decl = parser.triggerDefinition().children.get(0);
         int next = 0;
         ParseTree nextDecl = decl.getChild(next);
 
-        if (decl.getChildCount() == 3) {
+        if (decl instanceof DiceParser.ExplicitTriggerDefinitionContext) {
             buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
             if (buildContext.owner == null)
                 throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
-            next = 2;
+            next += 2;
         }
-        else
-            next = 1;
+
+        nextDecl = decl.getChild(next);
+        if (nextDecl instanceof DiceParser.ExpressionContext) {
+            buildContext.expression = (DiceParser.ExpressionContext)nextDecl;
+            next += 2;
+        }
+        else if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
+            next += 1;
 
         nextDecl = decl.getChild(next);
         buildContext.target = context.machinations.findById(nextDecl.getText());
         if (buildContext.target == null)
             throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+
+//        next += 2;
+//        nextDecl = decl.getChild(next);
+//        if (nextDecl != null) {
+//            buildContext.id =  nextDecl.getText();
+//        }
+//
+//        if (decl.getChildCount() == 3) {
+//            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//            if (buildContext.owner == null)
+//                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+//
+//            next = 2;
+//        }
+//        else
+//            next = 1;
+//
+//        nextDecl = decl.getChild(next);
+//        buildContext.target = context.machinations.findById(nextDecl.getText());
+//        if (buildContext.target == null)
+//            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
         return buildContext;
     }

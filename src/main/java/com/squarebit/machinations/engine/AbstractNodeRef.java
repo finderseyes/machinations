@@ -1,9 +1,11 @@
 package com.squarebit.machinations.engine;
 
 import com.squarebit.machinations.models.AbstractNode;
+import com.squarebit.machinations.models.NodeEvaluationContext;
 
 public class AbstractNodeRef extends ArithmeticExpression {
     private AbstractNode node;
+    private NodeEvaluationContext context;
 
     /**
      * Gets node.
@@ -26,6 +28,26 @@ public class AbstractNodeRef extends ArithmeticExpression {
     }
 
     /**
+     * Gets context.
+     *
+     * @return the context
+     */
+    public NodeEvaluationContext getContext() {
+        return context;
+    }
+
+    /**
+     * Sets context.
+     *
+     * @param context the context
+     * @return the context
+     */
+    public AbstractNodeRef setContext(NodeEvaluationContext context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
      * Evaluates the expression and returns its result.
      *
      * @return integer result.
@@ -33,7 +55,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
     @Override
     public int evaluate() {
         // Default to getting all resources count.
-        return node.evaluate();
+        return node.evaluate(context);
     }
 
     /**
@@ -43,7 +65,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      */
     @Override
     public float evaluateAsProbable() {
-        int size = node.evaluate();
+        int size = node.evaluate(context);
 
         if (size >= 1)
             return 1.0f;

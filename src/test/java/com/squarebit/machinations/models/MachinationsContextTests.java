@@ -374,4 +374,48 @@ public class MachinationsContextTests {
         assertThat((float)p2.getResources().size() / totalResources).isCloseTo(.40f, Offset.offset(5e-2f));
         assertThat((float)p3.getResources().size() / totalResources).isCloseTo(.30f, Offset.offset(5e-2f));
     }
+
+    @Test
+    public void should_support_gates_with_triggers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-09.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+        Gate p2 = (Gate) machinations.findById("p2");
+
+        int totalResources = p0.getResources().size();
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(totalResources);
+        assertThat(p2.getResources().size()).isEqualTo(0);
+        assertThat(totalResources / (float)machinations.getTime()).isCloseTo(.30f, Offset.offset(5e-2f));
+    }
+
+    @Test
+    public void should_support_gates_with_conditional_triggers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-10.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+        Gate p2 = (Gate) machinations.findById("p2");
+
+        int totalResources = p0.getResources().size();
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(totalResources);
+        assertThat(p2.getResources().size()).isEqualTo(0);
+        assertThat(totalResources / (float)machinations.getTime()).isCloseTo(.50f, Offset.offset(5e-2f));
+    }
 }

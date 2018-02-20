@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class Gate extends AbstractNode {
     private static final ResourceConnection NULL_CONNECTION = new ResourceConnection();
+    private static final Trigger NULL_TRIGGER = new Trigger();
     private static final DiceNumber DEFAULT_DRAW = new DiceNumber();
 
     private boolean random = false;
@@ -18,10 +19,13 @@ public class Gate extends AbstractNode {
 
     private boolean isInitialized = false;
     private boolean useProbableOutputs = true;
+    private boolean useProbableTriggers = true;
 
     private EnumeratedDistribution<ResourceConnection> outgoingProbabilities;
     private int passedThroughResources = 0;
     private int currentDraw = 0;
+
+    private EnumeratedDistribution<Trigger> triggerProbabilities;
 
     /**
      * Is random gate?.
@@ -64,11 +68,18 @@ public class Gate extends AbstractNode {
     }
 
     @Override
-    public int evaluate() {
-        if (!this.random)
-            return this.passedThroughResources;
-        else
+    public int evaluate(NodeEvaluationContext context) {
+        if (context.getOwner() instanceof ResourceConnection) {
+            if (!this.random)
+                return this.passedThroughResources;
+            else
+                return this.currentDraw;
+        }
+        else if (context.getOwner() instanceof Trigger) {
             return this.currentDraw;
+        }
+        else
+            throw new RuntimeException("Should not reach here.");
     }
 
     @Override
@@ -137,6 +148,29 @@ public class Gate extends AbstractNode {
         return outgoingConnections;
     }
 
+    @Override
+    public Set<Trigger> activateTriggers() {
+        Set<Trigger> triggers = new HashSet<>();
+
+        if (this.useProbableTriggers) {
+            Trigger trigger = this.triggerProbabilities.sample();
+            if (trigger != NULL_TRIGGER) {
+                triggers.add(trigger);
+            }
+        }
+        else {
+            currentDraw = drawExpression.evaluate();
+            this.getTriggers().forEach(t -> {
+                BooleanExpression expression = (BooleanExpression)t.getLabelExpression();
+                if (expression.evaluate()) {
+                    triggers.add(t);
+                }
+            });
+        }
+
+        return triggers;
+    }
+
     /**
      * Initializes the node if needed.
      */
@@ -148,33 +182,67 @@ public class Gate extends AbstractNode {
 
         currentDraw = drawExpression.evaluate();
 
-        Set<ResourceConnection> connections = this.getOutgoingConnections();
-        boolean allArithmetic = connections.stream()
-                .allMatch(c -> c.getFlowRateExpression() instanceof ArithmeticExpression);
+        {
+            Set<ResourceConnection> connections = this.getOutgoingConnections();
+            boolean allArithmetic = connections.stream()
+                    .allMatch(c -> c.getFlowRateExpression() instanceof ArithmeticExpression);
 
-        boolean allConditional = connections.stream()
-                .allMatch(c -> c.getFlowRateExpression() instanceof BooleanExpression);
+            boolean allConditional = connections.stream()
+                    .allMatch(c -> c.getFlowRateExpression() instanceof BooleanExpression);
 
-        if (!allArithmetic && !allConditional)
-            throw new RuntimeException("Gate outgoing connections must agree on their expression types.");
+            if (!allArithmetic && !allConditional)
+                throw new RuntimeException("Gate outgoing connections must agree on their expression types.");
 
-        this.useProbableOutputs = allArithmetic;
+            this.useProbableOutputs = allArithmetic;
 
-        if (this.useProbableOutputs) {
-            Map<ResourceConnection, Float> probabilities = new HashMap<>();
-            connections.forEach(c ->
-                    probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).evaluateAsProbable())
-            );
+            if (this.useProbableOutputs) {
+                Map<ResourceConnection, Float> probabilities = new HashMap<>();
+                connections.forEach(c ->
+                        probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).evaluateAsProbable())
+                );
 
-            float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
-            if (sumProb < 1.0f) {
-                probabilities.put(NULL_CONNECTION, 1.0f - sumProb);
+                float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
+                if (sumProb < 1.0f) {
+                    probabilities.put(NULL_CONNECTION, 1.0f - sumProb);
+                }
+
+                List<Pair<ResourceConnection, Double>> items = probabilities.entrySet().stream()
+                        .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
+                        .collect(Collectors.toList());
+                this.outgoingProbabilities = new EnumeratedDistribution<>(items);
             }
+        }
 
-            List<Pair<ResourceConnection, Double>> items = probabilities.entrySet().stream()
-                    .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
-                    .collect(Collectors.toList());
-            this.outgoingProbabilities = new EnumeratedDistribution<>(items);
+        {
+            Set<Trigger> triggers = this.getTriggers();
+            boolean allArithmetic = triggers.stream()
+                    .allMatch(c -> c.getLabelExpression() instanceof ArithmeticExpression);
+
+            boolean allConditional = triggers.stream()
+                    .allMatch(c -> c.getLabelExpression() instanceof BooleanExpression);
+
+            if (!allArithmetic && !allConditional)
+                throw new RuntimeException("Gate triggers must agree on their expression types.");
+
+            this.useProbableTriggers = allArithmetic;
+
+            if (this.useProbableTriggers) {
+                Map<Trigger, Float> probabilities = new HashMap<>();
+                getTriggers().forEach(t ->
+                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).evaluateAsProbable())
+                );
+
+                float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
+                if (sumProb < 1.0f) {
+                    probabilities.put(NULL_TRIGGER, 1.0f - sumProb);
+                }
+
+                this.triggerProbabilities = new EnumeratedDistribution<>(
+                        probabilities.entrySet().stream()
+                                .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
+                                .collect(Collectors.toList())
+                );
+            }
         }
     }
 }

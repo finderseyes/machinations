@@ -283,7 +283,22 @@ public abstract class AbstractNode extends AbstractElement {
         return this.triggers;
     }
 
+    /**
+     * Evaluate int.
+     *
+     * @return the int
+     */
     public int evaluate() {
+        return evaluate(null);
+    }
+
+    /**
+     * Evaluate int.
+     *
+     * @param context the context
+     * @return the int
+     */
+    public int evaluate(NodeEvaluationContext context) {
         return this.resources.size();
     }
 }

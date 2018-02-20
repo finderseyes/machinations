@@ -1,0 +1,18 @@
+# Gate tests
+---
+nodes:
+  - type: pool
+    id: p0
+    resources: 100
+    connections:
+      - --> p1 (e01)
+
+  - type: pool
+    id: p1
+
+  - type: gate
+    id: p2
+    activationMode: automatic
+    draw: 1D4
+    triggers:
+      - " == 1 || == 2 --> e01"
