@@ -2,6 +2,7 @@ package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.Utils;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
+import org.assertj.core.data.Offset;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -270,31 +271,15 @@ public class MachinationsContextTests {
         Pool p2 = (Pool) machinations.findById("p2");
         Pool p3 = (Pool) machinations.findById("p3");
 
-        {
-            machinations.simulateOneTimeStep();
+        int totalResources = p0.getResources().size();
 
-            assertThat(p0.getResources().size()).isEqualTo(9);
-            assertThat(p1.getResources().size()).isEqualTo(0);
-            assertThat(p2.getResources().size()).isEqualTo(1);
-            assertThat(p3.getResources().size()).isEqualTo(0);
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
         }
 
-        {
-            machinations.simulateOneTimeStep();
-
-            assertThat(p0.getResources().size()).isEqualTo(8);
-            assertThat(p1.getResources().size()).isEqualTo(0);
-            assertThat(p2.getResources().size()).isEqualTo(1);
-            assertThat(p3.getResources().size()).isEqualTo(1);
-        }
-
-        {
-            machinations.simulateOneTimeStep();
-
-            assertThat(p0.getResources().size()).isEqualTo(7);
-            assertThat(p1.getResources().size()).isEqualTo(0);
-            assertThat(p2.getResources().size()).isEqualTo(1);
-            assertThat(p3.getResources().size()).isEqualTo(2);
-        }
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat((float)p2.getResources().size() / totalResources).isCloseTo((float)1/3, Offset.offset(5e-2f));
+        assertThat((float)p3.getResources().size() / totalResources).isCloseTo((float)2/3, Offset.offset(5e-2f));
     }
 }

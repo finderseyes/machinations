@@ -52,6 +52,7 @@ dependencies {
             'com.google.guava:guava:21.0',
             'org.apache.commons:commons-collections4:4.1',
             'org.apache.commons:commons-lang3:3.4',
+            'org.apache.commons:commons-math3:3.6.1',
             'commons-io:commons-io:2.5',
             'com.amazonaws:aws-java-sdk-s3:1.11.135',
             'org.projectlombok:lombok:1.16.20',

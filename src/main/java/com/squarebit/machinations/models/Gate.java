@@ -4,18 +4,20 @@ import com.squarebit.machinations.engine.ArithmeticExpression;
 import com.squarebit.machinations.engine.BooleanExpression;
 import com.squarebit.machinations.engine.Expression;
 import com.squarebit.machinations.engine.ExpressionUtils;
+import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.apache.commons.math3.util.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Gate extends AbstractNode {
+    private static final ResourceConnection NULL_CONNECTION = new ResourceConnection();
 
     private boolean random = false;
     private boolean isInitialized = false;
     private boolean useProbableOutputs = true;
 
-    private Map<ResourceConnection, Float> probabilities = new HashMap<>();
+    private EnumeratedDistribution<ResourceConnection> outgoingProbabilities;
 
     /**
      * Is random gate?.
@@ -41,12 +43,14 @@ public class Gate extends AbstractNode {
     public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
         this.initializeIfNeeded();
 
+        Set<ResourceConnection> outgoingConnections = new HashSet<>();
+
         // Total incoming resources.
-        ResourceSet resources = incomingFlows.values().stream()
-                .reduce(new ResourceSet(), (a, b) -> {
-                    a.add(b);
-                    return a;
-                });
+        ResourceSet resources = new ResourceSet();
+        incomingFlows.forEach((c, a) -> {
+            c.getFrom().extract(a);
+            resources.add(a);
+        });
 
         if (this.isRandom()) {
             return super.activate(time, incomingFlows);
@@ -54,9 +58,16 @@ public class Gate extends AbstractNode {
         else {
             // Deterministic. Distribute incoming resources one by one.
             while (resources.size() > 0) {
+                ResourceSet extracted = resources.remove(1);
 
+                ResourceConnection connection = this.outgoingProbabilities.sample();
+                if (connection != NULL_CONNECTION) {
+                    outgoingConnections.add(connection);
+                    connection.getTo().receive(extracted);
+                }
             }
-            return super.activate(time, incomingFlows);
+
+            return outgoingConnections;
         }
     }
 
@@ -82,9 +93,20 @@ public class Gate extends AbstractNode {
         this.useProbableOutputs = allArithmetic;
 
         if (this.useProbableOutputs) {
+            Map<ResourceConnection, Float> probabilities = new HashMap<>();
             connections.forEach(c ->
                     probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).evaluateAsProbable())
             );
+
+            float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
+            if (sumProb < 1.0f) {
+                probabilities.put(NULL_CONNECTION, 1.0f - sumProb);
+            }
+
+            List<Pair<ResourceConnection, Double>> items = probabilities.entrySet().stream()
+                    .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
+                    .collect(Collectors.toList());
+            this.outgoingProbabilities = new EnumeratedDistribution<>(items);
         }
     }
 }

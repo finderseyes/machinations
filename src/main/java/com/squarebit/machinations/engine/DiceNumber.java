@@ -66,8 +66,8 @@ public class DiceNumber extends ArithmeticExpression {
      */
     @Override
     public float evaluateAsProbable() {
-        // Return 0 due to dice expression can have distribution other than uniform.
-        return 0;
+        // Return 1 due to dice expression always returns value larger than or equal to 1
+        return 1.0f;
     }
 
     public static DiceNumber of(int times, int faces) {

@@ -3,7 +3,7 @@
 nodes:
   - type: pool
     id: p0
-    resources: 10
+    resources: 1000
     connections:
       - --> p1
 
