@@ -202,6 +202,7 @@ public class MachinationsContextFactory {
                 .forEach(connection -> {
                     ConnectionBuildContext buildContext =
                             (ConnectionBuildContext)context.buildContext.get(connection);
+                    context.currentObject = connection;
                     if (buildContext.labelExpression != null) {
                         connection.setFlowRateExpression(buildExpression(context, buildContext.labelExpression));
                     }
@@ -301,10 +302,10 @@ public class MachinationsContextFactory {
             return buildRelation(context, (DiceParser.RelationalExpressionContext)decl);
         }
         else if (decl instanceof DiceParser.LeftImplicitRelationalExpressionContext) {
-            return buildLeftImplicitReleation(context, (DiceParser.LeftImplicitRelationalExpressionContext)decl);
+            return buildLeftImplicitRelation(context, (DiceParser.LeftImplicitRelationalExpressionContext)decl);
         }
         else if (decl instanceof DiceParser.RightImplicitRelationalExpressionContext) {
-            return buildRightImplicitReleation(context, (DiceParser.RightImplicitRelationalExpressionContext)decl);
+            return buildRightImplicitRelation(context, (DiceParser.RightImplicitRelationalExpressionContext)decl);
         }
         else if (decl instanceof DiceParser.GroupLogicalExpressionContext) {
             return buildBoolean(context, (DiceParser.LogicalExpressionContext)decl.getChild(1));
@@ -322,26 +323,42 @@ public class MachinationsContextFactory {
         return null;
     }
 
-    private BooleanExpression buildLeftImplicitReleation(BuildingContext context,
-                                                         DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
+    private BooleanExpression buildLeftImplicitRelation(BuildingContext context,
+                                                        DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
-        Activator activator = (Activator)context.currentObject;
-        ArithmeticExpression lhs = AbstractNodeRef.of(activator.getOwner());
-        ArithmeticExpression rhs =
-                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
+        ArithmeticExpression lhs = null, rhs = null;
+
+        if (context.currentObject instanceof Activator) {
+            Activator activator = (Activator)context.currentObject;
+            lhs = AbstractNodeRef.of(activator.getOwner());
+        }
+        else if (context.currentObject instanceof ResourceConnection) {
+            GateConnection connection = (GateConnection)context.currentObject;
+            lhs = AbstractNodeRef.of(connection.getFrom());
+        }
+
+        rhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(0)).getSymbol();
 
         return Comparison.of(opFromToken(optoken), lhs, rhs);
     }
 
-    private BooleanExpression buildRightImplicitReleation(BuildingContext context,
+    private BooleanExpression buildRightImplicitRelation(BuildingContext context,
                                                          DiceParser.RightImplicitRelationalExpressionContext expressionContext)
     {
-        Activator activator = (Activator)context.currentObject;
-        ArithmeticExpression lhs =
-                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
-        ArithmeticExpression rhs = AbstractNodeRef.of(activator.getOwner());
+        ArithmeticExpression lhs = null, rhs = null;
+
+        if (context.currentObject instanceof Activator) {
+            Activator activator = (Activator)context.currentObject;
+            rhs = AbstractNodeRef.of(activator.getOwner());
+        }
+        else if (context.currentObject instanceof ResourceConnection) {
+            GateConnection connection = (GateConnection)context.currentObject;
+            rhs = AbstractNodeRef.of(connection.getFrom());
+        }
+
+        lhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 

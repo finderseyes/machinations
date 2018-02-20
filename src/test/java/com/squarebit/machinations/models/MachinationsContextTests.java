@@ -260,7 +260,7 @@ public class MachinationsContextTests {
     }
 
     @Test
-    public void should_support_gates() throws Exception {
+    public void should_support_deterministic_gates_with_integers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-04.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
         MachinationsContextFactory factory = new MachinationsContextFactory();
@@ -281,5 +281,51 @@ public class MachinationsContextTests {
         assertThat(p1.getResources().size()).isEqualTo(0);
         assertThat((float)p2.getResources().size() / totalResources).isCloseTo((float)1/3, Offset.offset(5e-2f));
         assertThat((float)p3.getResources().size() / totalResources).isCloseTo((float)2/3, Offset.offset(5e-2f));
+    }
+
+    @Test
+    public void should_support_deterministic_gates_with_probable() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-05.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Gate p1 = (Gate) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+
+        int totalResources = p0.getResources().size();
+
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat((float)p2.getResources().size() / totalResources).isCloseTo(.3f, Offset.offset(5e-2f));
+        assertThat((float)p3.getResources().size() / totalResources).isCloseTo(.3f, Offset.offset(5e-2f));
+    }
+
+    @Test
+    public void should_support_deterministic_gates_with_condition() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-06.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Pool p0 = (Pool) machinations.findById("p0");
+        Gate p1 = (Gate) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+
+        while (p0.getResources().size() > 0) {
+            machinations.simulateOneTimeStep();
+        }
+
+        assertThat(p0.getResources().size()).isEqualTo(0);
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat(p2.getResources().size()).isEqualTo(3);
+        assertThat(p3.getResources().size()).isEqualTo(5);
     }
 }

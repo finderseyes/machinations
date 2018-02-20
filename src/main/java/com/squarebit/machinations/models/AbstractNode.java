@@ -283,7 +283,7 @@ public abstract class AbstractNode extends AbstractElement {
         return this.triggers;
     }
 
-    public Set<Activator> activateActivators() {
-        return this.activators;
+    public int evaluate() {
+        return this.resources.size();
     }
 }

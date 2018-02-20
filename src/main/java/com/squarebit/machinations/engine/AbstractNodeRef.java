@@ -33,7 +33,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
     @Override
     public int evaluate() {
         // Default to getting all resources count.
-        return node.getResources().size();
+        return node.evaluate();
     }
 
     /**
@@ -43,7 +43,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      */
     @Override
     public float evaluateAsProbable() {
-        int size = node.getResources().size();
+        int size = node.evaluate();
 
         if (size >= 1)
             return 1.0f;
