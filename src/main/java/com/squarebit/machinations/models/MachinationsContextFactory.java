@@ -585,6 +585,11 @@ public class MachinationsContextFactory {
             else if (nodeSpec instanceof TraderSpec) {
                 node = new Trader();
             }
+            else if (nodeSpec instanceof ConverterSpec) {
+                ConverterSpec converterSpec = (ConverterSpec)nodeSpec;
+                Converter converter = new Converter();
+                node = converter;
+            }
 
             if (node != null) {
                 try {

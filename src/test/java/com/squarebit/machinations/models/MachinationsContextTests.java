@@ -436,4 +436,21 @@ public class MachinationsContextTests {
 
         assertThat(p1.getResources().size()).isEqualTo(1);
     }
+
+    @Test
+    public void should_support_converter() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-12.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Source p0 = (Source) machinations.findById("p0");
+        Converter p1 = (Converter) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        machinations.simulateOneTimeStep();
+
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat(p2.getResources().size()).isEqualTo(2);
+    }
 }

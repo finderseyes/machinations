@@ -1,0 +1,16 @@
+# Converters
+---
+nodes:
+  - type: source
+    id: p0
+    connections:
+      - --> p1
+
+  - type: converter
+    activationMode: automatic
+    id: p1
+    connections:
+      - 2 --> p2
+
+  - type: pool
+    id: p2

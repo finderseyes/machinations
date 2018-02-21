@@ -224,8 +224,14 @@ public abstract class AbstractNode extends AbstractElement {
      * @return the activation requirement
      */
     public ActivationRequirement getActivationRequirement() {
-        // By default, node is activated if any of its incoming resource connections is activated.
-        return ActivationRequirement.any(this, incomingConnections);
+        if (isPulling()) {
+            if (isAllOrNoneFlow())
+                return ActivationRequirement.all(this, this.getIncomingConnections());
+            else
+                return ActivationRequirement.any(this, this.getIncomingConnections());
+        }
+        else
+            return ActivationRequirement.any(this, Collections.emptySet());
     }
 
     /**
