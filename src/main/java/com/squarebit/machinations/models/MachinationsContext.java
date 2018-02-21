@@ -15,6 +15,7 @@ public class MachinationsContext {
     private int remainedActionPoints = -1;
     private Set<AbstractNode> activeNodes = new HashSet<>();
     private Set<AbstractNode> automaticOrInteractiveNodes;
+    private boolean terminated = false;
 
     public MachinationsContext() {
         this.elements = new HashSet<>();
@@ -37,6 +38,15 @@ public class MachinationsContext {
      */
     public int getTime() {
         return time;
+    }
+
+    /**
+     * Is terminated boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isTerminated() {
+        return terminated;
     }
 
     /**
@@ -77,7 +87,7 @@ public class MachinationsContext {
     /**
      * Performs one simulation step.
      */
-    public void simulateOneTimeStep() {
+    public boolean simulateOneTimeStep() {
         this.initializeIfNeeded();
 
         if (this.previousSimulatedTime < this.time) {
@@ -93,9 +103,14 @@ public class MachinationsContext {
         }
         else
             this.time++;
+
+        return (!this.terminated);
     }
 
-    private void doSimulateOneTimeStep() {
+    private boolean doSimulateOneTimeStep() {
+        if (this.terminated)
+            return false;
+
         // --> STEP 1: try to resolve activation requirements
         Set<ActivationRequirement> activationRequirements = this.activeNodes.stream()
                 .filter(AbstractNode::isEnabled)
@@ -174,6 +189,9 @@ public class MachinationsContext {
                     .filter(e -> connections.contains(e.getKey()))
                     .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
 
+            if (r.getTarget() instanceof End)
+                this.terminated = true;
+
             return r.getTarget().activate(this.time, incomingFlows);
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
@@ -207,6 +225,8 @@ public class MachinationsContext {
         // --> Clean up, update active node set
         this.activeNodes.clear();
         this.activeNodes.addAll(this.automaticOrInteractiveNodes);
+
+        return true;
     }
 
     private void updateNodeEnablingStates() {
@@ -215,11 +235,13 @@ public class MachinationsContext {
                 .flatMap(n -> n.getActivators().stream())
                 .collect(Collectors.groupingBy(Activator::getTarget));
 
-        activatorsByTarget.forEach((target, activators) ->
-                target.setEnabled(
-                        activators.stream().map(Activator::evaluate).reduce(true, (a, b) -> a && b)
-                )
-        );
+        activatorsByTarget.forEach((target, activators) -> {
+                boolean newState = activators.stream().map(Activator::evaluate).reduce(true, (a, b) -> a && b);
+                target.setEnabled(newState);
+
+            if (target instanceof End && target.isEnabled())
+                this.terminated = true;
+        });
     }
 
     private void doTrigger(Set<AbstractElement> triggeredElements) {
@@ -252,6 +274,9 @@ public class MachinationsContext {
     }
 
     private void activateNode(AbstractNode node) {
+        if (node instanceof End)
+            this.terminated = true;
+
         ActivationRequirement requirement = node.getActivationRequirement();
 
         // Active connections, grouped by providing node.

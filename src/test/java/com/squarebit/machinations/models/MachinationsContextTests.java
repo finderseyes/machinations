@@ -479,4 +479,22 @@ public class MachinationsContextTests {
         assertThat(p3.getResources().size()).isEqualTo(10);
         assertThat(p4.getResources().size()).isEqualTo(1);
     }
+
+    @Test
+    public void should_support_end() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-14.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Source p0 = (Source) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+
+        while (true) {
+            if (!machinations.simulateOneTimeStep())
+                break;
+        }
+
+        assertThat(machinations.getTime()).isEqualTo(5);
+    }
 }
