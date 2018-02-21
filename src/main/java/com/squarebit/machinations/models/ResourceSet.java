@@ -236,7 +236,7 @@ public class ResourceSet {
             change.computeIfPresent(name, (n, a) -> (a + amount));
 
         if (content.putIfAbsent(name, amount) != null)
-            return content.computeIfPresent(name, (n, a) -> (a + amount));
+            content.computeIfPresent(name, (n, a) -> (a + amount));
 
         return amount;
     }
@@ -299,9 +299,9 @@ public class ResourceSet {
             change.computeIfPresent(name, (n, a) -> (a - removable));
 
         if (content.putIfAbsent(name, 0) != null)
-            return content.computeIfPresent(name, (n, a) -> (a - removable));
+            content.computeIfPresent(name, (n, a) -> (a - removable));
 
-        return 0;
+        return removable;
     }
 
     /**

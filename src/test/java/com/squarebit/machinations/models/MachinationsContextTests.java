@@ -416,7 +416,7 @@ public class MachinationsContextTests {
         assertThat(p0.getResources().size()).isEqualTo(0);
         assertThat(p1.getResources().size()).isEqualTo(totalResources);
         assertThat(p2.getResources().size()).isEqualTo(0);
-        assertThat(totalResources / (float)machinations.getTime()).isCloseTo(.50f, Offset.offset(5e-2f));
+        assertThat(totalResources / (float)machinations.getTime()).isCloseTo(.50f, Offset.offset(1e-1f));
     }
 
     @Test
@@ -452,5 +452,31 @@ public class MachinationsContextTests {
 
         assertThat(p1.getResources().size()).isEqualTo(0);
         assertThat(p2.getResources().size()).isEqualTo(2);
+    }
+
+    @Test
+    public void should_support_flow_of_named_resources() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-13.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Source p0 = (Source) machinations.findById("p0");
+        Converter p1 = (Converter) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+        Pool p4 = (Pool) machinations.findById("p4");
+
+        machinations.simulateOneTimeStep();
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat(p2.getResources().size()).isEqualTo(2);
+        assertThat(p3.getResources().size()).isEqualTo(10);
+        assertThat(p4.getResources().size()).isEqualTo(1);
+
+        machinations.simulateOneTimeStep();
+        assertThat(p1.getResources().size()).isEqualTo(0);
+        assertThat(p2.getResources().size()).isEqualTo(4);
+        assertThat(p3.getResources().size()).isEqualTo(10);
+        assertThat(p4.getResources().size()).isEqualTo(1);
     }
 }

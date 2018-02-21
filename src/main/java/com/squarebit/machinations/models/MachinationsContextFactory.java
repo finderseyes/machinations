@@ -35,6 +35,7 @@ public class MachinationsContextFactory {
         private AbstractNode to;
         private DiceParser.ExpressionContext labelExpression;
         private String id;
+        private String resourceName;
 
         public AbstractNode getFrom() {
             return from;
@@ -69,6 +70,15 @@ public class MachinationsContextFactory {
 
         public ConnectionBuildContext setId(String id) {
             this.id = id;
+            return this;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public ConnectionBuildContext setResourceName(String resourceName) {
+            this.resourceName = resourceName;
             return this;
         }
     }
@@ -819,6 +829,7 @@ public class MachinationsContextFactory {
 
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)
+                .setResourceName(connectionBuildContext.resourceName)
                 .setId(getOrCreateId(connectionBuildContext.id));
 
         if (connectionBuildContext.labelExpression != null)
@@ -850,9 +861,17 @@ public class MachinationsContextFactory {
         nextDecl = decl.getChild(next);
         if (nextDecl instanceof DiceParser.ExpressionContext) {
             buildContext.labelExpression = (DiceParser.ExpressionContext)nextDecl;
-            next += 2;
+            next += 1;
         }
-        else if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
+
+        nextDecl = decl.getChild(next);
+        if (nextDecl instanceof DiceParser.ResourceNameContext) {
+            buildContext.resourceName = nextDecl.getChild(1).getText();
+            next += 1;
+        }
+
+        nextDecl = decl.getChild(next);
+        if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
             next += 1;
 
         nextDecl = decl.getChild(next);

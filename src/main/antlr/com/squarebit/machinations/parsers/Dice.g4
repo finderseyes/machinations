@@ -11,9 +11,9 @@ singleResourceExpression: INT IDENTIFIER?;
 */
 connectionDefinition: implicitConnectionDefinition | explicitConnectionDefinition;
 implicitConnectionDefinition
-    : expression? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+    : expression? resourceName? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 explicitConnectionDefinition
-    : IDENTIFIER (TO expression)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
+    : IDENTIFIER (TO expression resourceName?)? TO IDENTIFIER (LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS)?;
 
 /* Modifier definition */
 modifierDefinition: (IDENTIFIER TO)? arithmeticExpression TO IDENTIFIER;
@@ -29,6 +29,8 @@ explicitTriggerDefinition
 
 /* Activator definition. */
 activatorDefinition: (IDENTIFIER TO)? logicalExpression TO IDENTIFIER;
+
+resourceName: '[' IDENTIFIER ']';
 
 ////////////////////////////////////////
 labelModifier: (PLUS|MINUS)INT?;
@@ -107,6 +109,7 @@ fraction: FRACTION;
 identifier: REFERENCE;
 
 TO: '-->';
+//RESOURCE_NAME: '['[a-zA-Z_]([a-zA-Z_0-9])* ']';
 IDENTIFIER: [a-z_]([a-zA-Z_0-9])*;
 REFERENCE: '$'[a-z_]([a-zA-Z_0-9])*;
 DICE_TERM: [0-9]*'D'[0-9]*;
