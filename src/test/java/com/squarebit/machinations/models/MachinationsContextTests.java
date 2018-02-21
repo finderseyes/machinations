@@ -418,4 +418,22 @@ public class MachinationsContextTests {
         assertThat(p2.getResources().size()).isEqualTo(0);
         assertThat(totalResources / (float)machinations.getTime()).isCloseTo(.50f, Offset.offset(5e-2f));
     }
+
+    @Test
+    public void should_support_source_and_drain() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-11.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsContext machinations = factory.fromSpec(spec);
+
+        Source p0 = (Source) machinations.findById("p0");
+        Pool p1 = (Pool) machinations.findById("p1");
+        Drain p2 = (Drain) machinations.findById("p2");
+
+        int count = 10;
+        for (int i = 0; i < count; i++)
+            machinations.simulateOneTimeStep();
+
+        assertThat(p1.getResources().size()).isEqualTo(1);
+    }
 }

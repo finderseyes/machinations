@@ -55,6 +55,16 @@ nodes:
     activationMode: passive
     flowMode: pullAny
 
+  - type: source
+    id: p5
+    activationMode: automatic
+    flowMode: pushAll
+    connections:
+      - --> p6
+
+  - type: pool
+    id: p6
+
 connections:
   - p2 --> p3 (p2_p3)
   - p2 --> 5D+10 --> p4 (p2_p4)

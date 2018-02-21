@@ -14,6 +14,113 @@ public class ResourceSet {
      */
     private static class EmptySet extends ResourceSet {
         @Override
+        public ResourceSet add(String name, int amount) {
+            return this;
+        }
+
+        @Override
+        public ResourceSet add(int amount) {
+            return this;
+        }
+
+        @Override
+        public ResourceSet add(ResourceSet amount) {
+            return this;
+        }
+
+        @Override
+        public ResourceSet remove(String name, int amount) {
+            return this;
+        }
+
+        @Override
+        public ResourceSet remove(int amount) {
+            return this;
+        }
+
+        @Override
+        public ResourceSet remove(ResourceSet subSet) {
+            return this;
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public int deltaSize() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public int getCapacity(String name) {
+            return 0;
+        }
+
+        @Override
+        public ResourceSet copy() {
+            return this;
+        }
+    }
+
+    private static class InfiniteSet extends ResourceSet {
+        @Override
+        public ResourceSet add(String name, int amount) {
+            return ResourceSet.of(name, amount);
+        }
+
+        @Override
+        public ResourceSet add(int amount) {
+            return ResourceSet.of(amount);
+        }
+
+        @Override
+        public ResourceSet add(ResourceSet amount) {
+            return amount;
+        }
+
+        @Override
+        public ResourceSet remove(String name, int amount) {
+            return ResourceSet.of(name, amount);
+        }
+
+        @Override
+        public ResourceSet remove(int amount) {
+            return ResourceSet.of(amount);
+        }
+
+        @Override
+        public ResourceSet remove(ResourceSet subSet) {
+            return subSet.copy();
+        }
+
+        @Override
+        public int size() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int deltaSize() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public int getCapacity(String name) {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
         public ResourceSet copy() {
             return this;
         }
@@ -23,6 +130,7 @@ public class ResourceSet {
      * The empty set.
      */
     private static final ResourceSet EMPTY_SET = new EmptySet();
+    private static final ResourceSet INFINITE_SET = new InfiniteSet();
 
     /**
      * Default resource name.
@@ -320,5 +428,14 @@ public class ResourceSet {
      */
     public static ResourceSet empty() {
         return EMPTY_SET;
+    }
+
+    /**
+     * Infinite resource set.
+     *
+     * @return the resource set
+     */
+    public static ResourceSet infinite() {
+        return INFINITE_SET;
     }
 }

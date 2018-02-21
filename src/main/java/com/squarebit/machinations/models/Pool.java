@@ -35,7 +35,7 @@ public class Pool extends AbstractNode {
         else {
             this.getOutgoingConnections().forEach(c -> {
                 int rate = c.getFlowRate();
-                ResourceSet extracted = this.resources.remove(rate);
+                ResourceSet extracted = this.extract(ResourceSet.of(rate));
                 c.getTo().receive(extracted);
             });
 
@@ -46,11 +46,6 @@ public class Pool extends AbstractNode {
     @Override
     public ResourceSet extract(ResourceSet resourceSet) {
         return resources.remove(resourceSet.size());
-    }
-
-    @Override
-    public ResourceSet extractExact(ResourceSet resourceSet) {
-        return extract(resourceSet);
     }
 
     @Override

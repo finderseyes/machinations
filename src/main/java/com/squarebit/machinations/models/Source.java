@@ -1,4 +1,15 @@
 package com.squarebit.machinations.models;
 
-public class Source extends AbstractNode {
+/**
+ * The type Source.
+ */
+public class Source extends Pool {
+    public Source() {
+        this.resources = ResourceSet.infinite();
+    }
+
+    @Override
+    public ResourceSet extract(ResourceSet resourceSet) {
+        return resourceSet.copy();
+    }
 }

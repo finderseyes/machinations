@@ -238,33 +238,19 @@ public abstract class AbstractNode extends AbstractElement {
     }
 
     /**
-     * Determines if the node can provide a set of resources, without providing exact number of sub resources.
-     * @param resourceSet the resource set.
-     * @return true or false
-     */
-    public boolean canProvide(ResourceSet resourceSet) {
-        // By default, non-storing node cannot provide any resources.
-        return resourceSet.size() <= this.getResources().size();
-    }
-
-    /**
-     * Determines if the node can provide exactly the given resource set.
-     * @param resourceSet the resource set.
+     * Extracts a certain amount of resource from the node.
+     * @param resourceSet
      * @return
      */
-    public boolean canProvideExact(ResourceSet resourceSet) {
-        // By default, non-storing node cannot provide any resources.
-        return resourceSet.isSubSetOf(this.getResources());
-    }
-
     public ResourceSet extract(ResourceSet resourceSet) {
         return ResourceSet.empty();
     }
 
-    public ResourceSet extractExact(ResourceSet resourceSet) {
-        return ResourceSet.empty();
-    }
-
+    /**
+     * Receives a given amount of resources.
+     * @param resourceSet
+     * @return
+     */
     public boolean receive(ResourceSet resourceSet) {
         return false;
     }
@@ -279,6 +265,11 @@ public abstract class AbstractNode extends AbstractElement {
         return Collections.emptySet();
     }
 
+    /**
+     * Activate triggers set.
+     *
+     * @return the set
+     */
     public Set<Trigger> activateTriggers() {
         return this.triggers;
     }
