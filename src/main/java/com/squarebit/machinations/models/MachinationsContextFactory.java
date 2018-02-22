@@ -285,7 +285,7 @@ public class MachinationsContextFactory {
         return null;
     }
 
-    public BooleanExpression buildBoolean(BuildingContext context,
+    public LogicalExpression buildBoolean(BuildingContext context,
                                           DiceParser.LogicalExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
@@ -303,27 +303,27 @@ public class MachinationsContextFactory {
         return null;
     }
 
-    private BooleanExpression buildAnd(BuildingContext context,
+    private LogicalExpression buildAnd(BuildingContext context,
                                        DiceParser.LogicalAndExpressionContext expressionContext)
     {
-        BooleanExpression lhs = buildUnaryBoolean(context,
+        LogicalExpression lhs = buildUnaryBoolean(context,
                 (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
-        BooleanExpression rhs = buildBoolean(context,
+        LogicalExpression rhs = buildBoolean(context,
                 (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
         return And.of(lhs, rhs);
     }
 
-    private BooleanExpression buildOr(BuildingContext context,
-                                       DiceParser.LogicalOrExpressionContext expressionContext)
+    private LogicalExpression buildOr(BuildingContext context,
+                                      DiceParser.LogicalOrExpressionContext expressionContext)
     {
-        BooleanExpression lhs = buildUnaryBoolean(context,
+        LogicalExpression lhs = buildUnaryBoolean(context,
                 (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
-        BooleanExpression rhs = buildBoolean(context,
+        LogicalExpression rhs = buildBoolean(context,
                 (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
         return Or.of(lhs, rhs);
     }
 
-    private BooleanExpression buildUnaryBoolean(BuildingContext context,
+    private LogicalExpression buildUnaryBoolean(BuildingContext context,
                                                 DiceParser.UnaryLogicalExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
@@ -342,7 +342,7 @@ public class MachinationsContextFactory {
         }
         else if (decl instanceof TerminalNode) {
             Token opToken = ((TerminalNode)decl).getSymbol();
-            BooleanExpression child =
+            LogicalExpression child =
                     buildBoolean(context, (DiceParser.LogicalExpressionContext)expressionContext.getChild(1));
 
             if (opToken.getType() == DiceParser.NOT) {
@@ -353,7 +353,7 @@ public class MachinationsContextFactory {
         return null;
     }
 
-    private BooleanExpression buildLeftImplicitRelation(BuildingContext context,
+    private LogicalExpression buildLeftImplicitRelation(BuildingContext context,
                                                         DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
         AbstractNodeRef lhs = null;
@@ -376,7 +376,7 @@ public class MachinationsContextFactory {
 
         Token optoken = ((TerminalNode)expressionContext.getChild(0)).getSymbol();
 
-        BooleanExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
+        LogicalExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
 
         if (lhs != null)
             lhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
@@ -384,7 +384,7 @@ public class MachinationsContextFactory {
         return expression;
     }
 
-    private BooleanExpression buildRightImplicitRelation(BuildingContext context,
+    private LogicalExpression buildRightImplicitRelation(BuildingContext context,
                                                          DiceParser.RightImplicitRelationalExpressionContext expressionContext)
     {
         ArithmeticExpression lhs = null;
@@ -407,7 +407,7 @@ public class MachinationsContextFactory {
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
-        BooleanExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
+        LogicalExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
 
         if (rhs != null)
             rhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
@@ -415,7 +415,7 @@ public class MachinationsContextFactory {
         return expression;
     }
 
-    private BooleanExpression buildRelation(BuildingContext context,
+    private LogicalExpression buildRelation(BuildingContext context,
                                             DiceParser.RelationalExpressionContext expressionContext)
     {
         ArithmeticExpression lhs =

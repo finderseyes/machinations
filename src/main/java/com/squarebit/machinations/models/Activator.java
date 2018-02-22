@@ -1,12 +1,12 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.BooleanExpression;
+import com.squarebit.machinations.engine.LogicalExpression;
 
 public class Activator {
     private AbstractNode owner;
     private AbstractNode target;
     private String label;
-    private BooleanExpression conditionExpression;
+    private LogicalExpression conditionExpression;
 
     public AbstractNode getOwner() {
         return owner;
@@ -35,11 +35,11 @@ public class Activator {
         return this;
     }
 
-    public BooleanExpression getConditionExpression() {
+    public LogicalExpression getConditionExpression() {
         return conditionExpression;
     }
 
-    public Activator setConditionExpression(BooleanExpression conditionExpression) {
+    public Activator setConditionExpression(LogicalExpression conditionExpression) {
         this.conditionExpression = conditionExpression;
         return this;
     }

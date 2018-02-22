@@ -38,7 +38,7 @@ public class FractionNumber extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         return numerator / (float)denominator;
     }
 

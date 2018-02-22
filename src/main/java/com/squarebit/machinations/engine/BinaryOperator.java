@@ -11,17 +11,6 @@ public abstract class BinaryOperator extends ArithmeticExpression {
     }
 
     /**
-     * Instantiates a new Addition.
-     *
-     * @param lhs the lhs
-     * @param rhs the rhs
-     */
-    public BinaryOperator(ArithmeticExpression lhs, ArithmeticExpression rhs) {
-        this.lhs = lhs;
-        this.rhs = rhs;
-    }
-
-    /**
      * Gets lhs.
      *
      * @return the lhs

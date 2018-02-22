@@ -59,16 +59,8 @@ public class ProbableNumber extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         return probability;
-    }
-
-    @Override
-    public float evaluate(EvaluationContext context) {
-        if (!context.doesForceDeterministic())
-            return super.evaluate(context);
-        else
-            return this.probability;
     }
 
     /**

@@ -1,11 +1,6 @@
 package com.squarebit.machinations.engine;
 
-public abstract class BooleanExpression extends Expression {
-    @Override
-    public DataType getType() {
-        return DataType.BOOLEAN;
-    }
-
+public abstract class LogicalExpression extends Expression {
     /**
      * Evaluate boolean.
      *

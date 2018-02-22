@@ -1,6 +1,6 @@
 package com.squarebit.machinations.engine;
 
-public abstract class RelationOperator extends BooleanExpression {
+public abstract class RelationOperator extends LogicalExpression {
     protected ArithmeticExpression lhs, rhs;
 
     public ArithmeticExpression getLhs() {

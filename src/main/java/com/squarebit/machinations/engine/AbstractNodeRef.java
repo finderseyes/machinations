@@ -64,7 +64,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         int size = node.evaluate(context);
 
         if (size >= 1)

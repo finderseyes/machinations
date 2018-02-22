@@ -65,7 +65,7 @@ public class DiceNumber extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         // Return 1 due to dice expression always returns value larger than or equal to 1
         return 1.0f;
     }

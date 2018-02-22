@@ -1,11 +1,6 @@
 package com.squarebit.machinations.engine;
 
 public abstract class ArithmeticExpression extends Expression {
-    @Override
-    public DataType getType() {
-        return DataType.INTEGER;
-    }
-
     /**
      * Evaluates the expression and returns its result.
      * @return integer result.
@@ -13,18 +8,8 @@ public abstract class ArithmeticExpression extends Expression {
     public abstract int evaluate();
 
     /**
-     * Evaluate as probable and return probability.
-     * @return probability
+     * Gets the probability that this expression will evaluate to a non-zero value.
+     * @return non-zero probability
      */
-    public abstract float evaluateAsProbable();
-
-    /**
-     * Evaluate int.
-     *
-     * @param context the context
-     * @return the int
-     */
-    public float evaluate(EvaluationContext context) {
-        return evaluate();
-    }
+    public abstract float nonZeroProbability();
 }

@@ -62,7 +62,7 @@ public class Variable extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         if (evaluator.get() >= 1)
             return 1.0f;
         else

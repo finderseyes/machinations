@@ -1,8 +1,6 @@
 package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
-import com.squarebit.machinations.parsers.DiceExpression;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
 
@@ -106,7 +104,7 @@ public class Gate extends AbstractNode {
             else {
                 currentDraw = drawExpression.evaluate();
                 this.getOutgoingConnections().forEach(c -> {
-                    BooleanExpression expression = (BooleanExpression)c.getFlowRateExpression();
+                    LogicalExpression expression = (LogicalExpression)c.getFlowRateExpression();
                     if (expression.evaluate()) {
                         outgoingConnections.add(c);
                         c.getTo().receive(resources);
@@ -133,7 +131,7 @@ public class Gate extends AbstractNode {
                     ResourceSet extracted = resources.remove(1);
 
                     this.getOutgoingConnections().forEach(c -> {
-                        BooleanExpression expression = (BooleanExpression)c.getFlowRateExpression();
+                        LogicalExpression expression = (LogicalExpression)c.getFlowRateExpression();
                         if (expression.evaluate()) {
                             outgoingConnections.add(c);
                             c.getTo().receive(extracted);
@@ -161,7 +159,7 @@ public class Gate extends AbstractNode {
         else {
             currentDraw = drawExpression.evaluate();
             this.getTriggers().forEach(t -> {
-                BooleanExpression expression = (BooleanExpression)t.getLabelExpression();
+                LogicalExpression expression = (LogicalExpression)t.getLabelExpression();
                 if (expression.evaluate()) {
                     triggers.add(t);
                 }
@@ -188,7 +186,7 @@ public class Gate extends AbstractNode {
                     .allMatch(c -> c.getFlowRateExpression() instanceof ArithmeticExpression);
 
             boolean allConditional = connections.stream()
-                    .allMatch(c -> c.getFlowRateExpression() instanceof BooleanExpression);
+                    .allMatch(c -> c.getFlowRateExpression() instanceof LogicalExpression);
 
             if (!allArithmetic && !allConditional)
                 throw new RuntimeException("Gate outgoing connections must agree on their expression types.");
@@ -198,7 +196,7 @@ public class Gate extends AbstractNode {
             if (this.useProbableOutputs) {
                 Map<ResourceConnection, Float> probabilities = new HashMap<>();
                 connections.forEach(c ->
-                        probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).evaluateAsProbable())
+                        probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).nonZeroProbability())
                 );
 
                 float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
@@ -219,7 +217,7 @@ public class Gate extends AbstractNode {
                     .allMatch(c -> c.getLabelExpression() instanceof ArithmeticExpression);
 
             boolean allConditional = triggers.stream()
-                    .allMatch(c -> c.getLabelExpression() instanceof BooleanExpression);
+                    .allMatch(c -> c.getLabelExpression() instanceof LogicalExpression);
 
             if (!allArithmetic && !allConditional)
                 throw new RuntimeException("Gate triggers must agree on their expression types.");
@@ -229,7 +227,7 @@ public class Gate extends AbstractNode {
             if (this.useProbableTriggers) {
                 Map<Trigger, Float> probabilities = new HashMap<>();
                 getTriggers().forEach(t ->
-                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).evaluateAsProbable())
+                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).nonZeroProbability())
                 );
 
                 float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();

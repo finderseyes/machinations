@@ -1,13 +1,9 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.BooleanExpression;
-import com.squarebit.machinations.engine.Expression;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class AbstractNode extends AbstractElement {
     private String name;
@@ -286,8 +282,8 @@ public abstract class AbstractNode extends AbstractElement {
 //                .filter(t -> {
 //                    Expression expression = t.getLabelExpression();
 //
-//                    if (expression instanceof BooleanExpression)
-//                        return ((BooleanExpression)expression).evaluate();
+//                    if (expression instanceof LogicalExpression)
+//                        return ((LogicalExpression)expression).evaluate();
 //
 //                    return true;
 //                }).collect(Collectors.toSet());

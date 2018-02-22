@@ -1,7 +1,7 @@
 package com.squarebit.machinations;
 
 import com.squarebit.machinations.engine.ArithmeticExpression;
-import com.squarebit.machinations.engine.BooleanExpression;
+import com.squarebit.machinations.engine.LogicalExpression;
 import com.squarebit.machinations.models.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
@@ -168,7 +168,7 @@ public class MachinationsContextFactoryTests {
         return factory.buildArithmetic(null, parse(decl, DiceParser::arithmeticExpression));
     }
 
-    private BooleanExpression bool(String decl) {
+    private LogicalExpression bool(String decl) {
         MachinationsContextFactory factory = new MachinationsContextFactory();
         return factory.buildBoolean(null, parse(decl, DiceParser::logicalExpression));
     }

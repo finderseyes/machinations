@@ -39,7 +39,7 @@ public class IntNumber extends ArithmeticExpression {
      * @return probability
      */
     @Override
-    public float evaluateAsProbable() {
+    public float nonZeroProbability() {
         return this.value;
     }
 

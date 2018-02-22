@@ -1,6 +1,6 @@
 package com.squarebit.machinations.engine;
 
-public class And extends BinaryBooleanOperator {
+public class And extends BinaryLogicalOperator {
     /**
      * Evaluate boolean.
      *
@@ -18,7 +18,7 @@ public class And extends BinaryBooleanOperator {
      * @param rhs the rhs
      * @return the and
      */
-    public static And of(BooleanExpression lhs, BooleanExpression rhs) {
+    public static And of(LogicalExpression lhs, LogicalExpression rhs) {
         return (And)(new And().setLhs(lhs).setRhs(rhs));
     }
 }
