@@ -1,7 +1,14 @@
 grammar GameML;
 
+// Resource connection.
 resourceConnection
-    : resourceConnectionLabel? TO IDENTIFIER;
+    : resourceConnectionLabel? TO IDENTIFIER resourceConnectionId?
+    | IDENTIFIER TO (resourceConnectionLabel TO)? IDENTIFIER resourceConnectionId?
+    ;
+
+resourceConnectionId
+    : LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS
+    ;
 
 resourceConnectionLabel
     : flowRate
@@ -14,36 +21,36 @@ resourceConnectionLabel
     ;
 
 probability
-    : unitaryProbability
+    : unaryProbability
     | multipliedProbability;
 
-unitaryProbability
+unaryProbability
     : PERCENTAGE;
 
 multipliedProbability
     : INTEGER TIMES PERCENTAGE;
 
 flowRate
-    : unitaryFlowRate
+    : unaryFlowRate
     | multipliedFlowRate
     | allFlowRate
     ;
 
-unitaryFlowRate
+unaryFlowRate
     : numberExpression ('/' numberExpression)?;
 
 multipliedFlowRate
-    : INTEGER TIMES unitaryFlowRate;
+    : INTEGER TIMES unaryFlowRate;
 
 allFlowRate
     : ALL ('/' numberExpression)?;
 
 numberExpression
-    : unitaryNumberExpression
+    : unaryNumberExpression
     | groupNumberExpression
     | compoundNumberExpression;
 
-unitaryNumberExpression
+unaryNumberExpression
     : INTEGER
     | REAL
     | DICE
@@ -54,7 +61,51 @@ groupNumberExpression
     : LEFT_PARENTHESIS numberExpression RIGHT_PARENTHESIS;
 
 compoundNumberExpression
-    : unitaryNumberExpression (PLUS|MINUS) numberExpression;
+    : unaryNumberExpression (PLUS|MINUS) numberExpression;
+
+// Modifiers
+
+modifier
+    : modifierLabel? TO IDENTIFIER
+    | IDENTIFIER TO (modifierLabel TO)? IDENTIFIER
+    ;
+
+modifierLabel
+    : flowRateModifier
+    | intervalModifier
+    | multiplierModifier
+    | probabilityModifier
+    ;
+
+flowRateModifier
+    : (PLUS|MINUS)? (INTEGER|REAL);
+
+intervalModifier
+    : (PLUS|MINUS)? INTERVAL;
+
+multiplierModifier
+    : (PLUS|MINUS)? MULTIPLIER;
+
+probabilityModifier
+    : (PLUS|MINUS)? PERCENTAGE;
+
+
+// Triggers
+trigger
+    : triggerProbability? TO IDENTIFIER
+    ;
+
+triggerProbability
+    : PERCENTAGE
+    | INTEGER
+    | REAL
+    ;
+
+// Activators
+activator
+    : logicalExpression TO IDENTIFIER
+    ;
+
 
 // Logical expression
 groupArithmeticExpression: LEFT_PARENTHESIS arithmeticExpression RIGHT_PARENTHESIS;
@@ -115,6 +166,8 @@ logicalAndExpression
 INTEGER: [0-9]+;
 REAL: [0-9]*'.'[0-9]+;
 DICE: [0-9]*'D'[0-9]*;
+INTERVAL: [0-9]+'i';
+MULTIPLIER: [0-9]+'m';
 ALL: 'all';
 DRAW: 'draw'[0-9]+;
 PERCENTAGE: [0-9]+'%';
