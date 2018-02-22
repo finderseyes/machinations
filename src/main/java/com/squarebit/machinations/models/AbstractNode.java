@@ -283,7 +283,7 @@ public abstract class AbstractNode extends AbstractElement {
 //                    Expression expression = t.getLabelExpression();
 //
 //                    if (expression instanceof LogicalExpression)
-//                        return ((LogicalExpression)expression).evaluate();
+//                        return ((LogicalExpression)expression).eval();
 //
 //                    return true;
 //                }).collect(Collectors.toSet());

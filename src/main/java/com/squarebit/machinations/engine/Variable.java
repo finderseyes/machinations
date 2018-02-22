@@ -52,21 +52,8 @@ public class Variable extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
+    public int eval() {
         return evaluator.get();
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float nonZeroProbability() {
-        if (evaluator.get() >= 1)
-            return 1.0f;
-        else
-            return 0.0f;
     }
 
     /**

@@ -12,27 +12,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ArithmeticExpressionTests {
     @Test
     public void should_evalute_arithmetic_expressions() {
-        assertThat(Addition.of(IntNumber.of(2), IntNumber.of(3)).evaluate()).isEqualTo(5);
-        assertThat(Addition.of(IntNumber.of(9), Negation.of(IntNumber.of(3))).evaluate()).isEqualTo(6);
-        assertThat(Subtraction.of(IntNumber.of(2), IntNumber.of(3)).evaluate()).isEqualTo(-1);
-        assertThat(Subtraction.of(IntNumber.of(2), Negation.of(IntNumber.of(3))).evaluate()).isEqualTo(5);
+        assertThat(Addition.of(IntNumber.of(2), IntNumber.of(3)).eval()).isEqualTo(5);
+        assertThat(Addition.of(IntNumber.of(9), Negation.of(IntNumber.of(3))).eval()).isEqualTo(6);
+        assertThat(Subtraction.of(IntNumber.of(2), IntNumber.of(3)).eval()).isEqualTo(-1);
+        assertThat(Subtraction.of(IntNumber.of(2), Negation.of(IntNumber.of(3))).eval()).isEqualTo(5);
 
         assertThat(
-                Multiplication.of(IntNumber.of(2), IntNumber.of(3)).evaluate()
+                Multiplication.of(IntNumber.of(2), IntNumber.of(3)).eval()
         ).isEqualTo(6);
 
         assertThat(
                 Multiplication.of(
                         IntNumber.of(4),
                         Addition.of(IntNumber.of(2), IntNumber.of(3))
-                ).evaluate()
+                ).eval()
         ).isEqualTo(20);
 
         assertThat(
                 Multiplication.of(
                         IntNumber.of(4),
                         Subtraction.of(IntNumber.of(2), IntNumber.of(3))
-                ).evaluate()
+                ).eval()
         ).isEqualTo(-4);
     }
 
@@ -42,10 +42,10 @@ public class ArithmeticExpressionTests {
         Variable xvar = Variable.of("x", x::get);
 
         x.set(10);
-        assertThat(Addition.of(IntNumber.of(2), xvar).evaluate()).isEqualTo(12);
+        assertThat(Addition.of(IntNumber.of(2), xvar).eval()).isEqualTo(12);
 
         x.set(20);
-        assertThat(Addition.of(IntNumber.of(2), xvar).evaluate()).isEqualTo(22);
+        assertThat(Addition.of(IntNumber.of(2), xvar).eval()).isEqualTo(22);
     }
 
     private float predicateProbability(Supplier<Boolean> predicate) {
@@ -63,19 +63,19 @@ public class ArithmeticExpressionTests {
     @Test
     public void should_support_probable_number() {
         assertThat(predicateProbability(
-                () -> ProbableNumber.of(0.5f).evaluate() == 1
+                () -> ProbableNumber.of(0.5f).eval() == 1
         )).isCloseTo(0.5f, Offset.offset(3e-2f));
 
         assertThat(predicateProbability(
-                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(0.0f)).evaluate() == 2
+                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(0.0f)).eval() == 2
         )).isCloseTo(0.0f, Offset.offset(3e-2f));
 
         assertThat(predicateProbability(
-                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(1.0f)).evaluate() == 2
+                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(1.0f)).eval() == 2
         )).isCloseTo(1.0f, Offset.offset(3e-2f));
 
         assertThat(predicateProbability(
-                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(0.75f)).evaluate() == 2
+                () -> Addition.of(IntNumber.of(1), ProbableNumber.of(0.75f)).eval() == 2
         )).isCloseTo(0.75f, Offset.offset(3e-2f));
     }
 }

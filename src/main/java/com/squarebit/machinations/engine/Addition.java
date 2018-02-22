@@ -7,18 +7,8 @@ public class Addition extends BinaryOperator {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
-        return this.lhs.evaluate() + this.rhs.evaluate();
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float nonZeroProbability() {
-        return this.lhs.nonZeroProbability() + this.rhs.nonZeroProbability();
+    public int eval() {
+        return this.lhs.eval() + this.rhs.eval();
     }
 
     /**

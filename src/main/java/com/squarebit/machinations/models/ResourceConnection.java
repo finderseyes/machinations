@@ -95,7 +95,7 @@ public class ResourceConnection extends AbstractConnection {
 
     public int getFlowRate() {
         if (flowRateExpression instanceof ArithmeticExpression) {
-            return ((ArithmeticExpression)flowRateExpression).evaluate();
+            return ((ArithmeticExpression)flowRateExpression).eval();
         }
         else
             return 0;
@@ -107,7 +107,7 @@ public class ResourceConnection extends AbstractConnection {
      */
     public ResourceSet activate() {
         if (flowRateExpression instanceof ArithmeticExpression) {
-            int amount = ((ArithmeticExpression)flowRateExpression).evaluate();
+            int amount = ((ArithmeticExpression)flowRateExpression).eval();
             return ResourceSet.of(this.resourceName, amount);
         }
         else

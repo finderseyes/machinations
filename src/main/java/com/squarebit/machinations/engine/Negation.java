@@ -29,18 +29,8 @@ public class Negation extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
-        return -this.value.evaluate();
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float nonZeroProbability() {
-        return -this.value.evaluate();
+    public int eval() {
+        return -this.value.eval();
     }
 
     /**

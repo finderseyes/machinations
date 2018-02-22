@@ -102,7 +102,7 @@ public class Gate extends AbstractNode {
                 }
             }
             else {
-                currentDraw = drawExpression.evaluate();
+                currentDraw = drawExpression.eval();
                 this.getOutgoingConnections().forEach(c -> {
                     LogicalExpression expression = (LogicalExpression)c.getFlowRateExpression();
                     if (expression.evaluate()) {
@@ -157,7 +157,7 @@ public class Gate extends AbstractNode {
             }
         }
         else {
-            currentDraw = drawExpression.evaluate();
+            currentDraw = drawExpression.eval();
             this.getTriggers().forEach(t -> {
                 LogicalExpression expression = (LogicalExpression)t.getLabelExpression();
                 if (expression.evaluate()) {
@@ -178,7 +178,7 @@ public class Gate extends AbstractNode {
 
         isInitialized = true;
 
-        currentDraw = drawExpression.evaluate();
+        currentDraw = drawExpression.eval();
 
         {
             Set<ResourceConnection> connections = this.getOutgoingConnections();
@@ -195,9 +195,9 @@ public class Gate extends AbstractNode {
 
             if (this.useProbableOutputs) {
                 Map<ResourceConnection, Float> probabilities = new HashMap<>();
-                connections.forEach(c ->
-                        probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).nonZeroProbability())
-                );
+//                connections.forEach(c ->
+//                        probabilities.put(c, ((ArithmeticExpression)c.getFlowRateExpression()).nonZeroProbability())
+//                );
 
                 float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
                 if (sumProb < 1.0f) {
@@ -226,9 +226,9 @@ public class Gate extends AbstractNode {
 
             if (this.useProbableTriggers) {
                 Map<Trigger, Float> probabilities = new HashMap<>();
-                getTriggers().forEach(t ->
-                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).nonZeroProbability())
-                );
+//                getTriggers().forEach(t ->
+//                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).nonZeroProbability())
+//                );
 
                 float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
                 if (sumProb < 1.0f) {

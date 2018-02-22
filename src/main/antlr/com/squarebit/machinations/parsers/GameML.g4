@@ -7,17 +7,17 @@ resourceConnection
     ;
 
 resourceConnectionId
-    : LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS
+    : ':' IDENTIFIER
     ;
 
 resourceConnectionLabel
-    : flowRate
+    : namedFlowRate
     | probability
     | logicalExpression
-    | probability ',' flowRate
+    | probability ',' namedFlowRate
     | logicalExpression ',' probability
-    | logicalExpression ',' flowRate
-    | logicalExpression ',' probability ',' flowRate
+    | logicalExpression ',' namedFlowRate
+    | logicalExpression ',' probability ',' namedFlowRate
     ;
 
 probability
@@ -29,6 +29,13 @@ unaryProbability
 
 multipliedProbability
     : INTEGER TIMES PERCENTAGE;
+
+namedFlowRate
+    : flowRate
+    | resourceName
+    | flowRate resourceName;
+
+resourceName: LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS;
 
 flowRate
     : unaryFlowRate
@@ -171,7 +178,7 @@ MULTIPLIER: [0-9]+'m';
 ALL: 'all';
 DRAW: 'draw'[0-9]+;
 PERCENTAGE: [0-9]+'%';
-IDENTIFIER: [a-z_]([a-zA-Z_0-9])*;
+IDENTIFIER: [a-zA-Z_]([a-zA-Z_0-9])*;
 TO: '-->';
 PLUS: '+';
 MINUS: '-';

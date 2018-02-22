@@ -53,24 +53,9 @@ public class AbstractNodeRef extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
+    public int eval() {
         // Default to getting all resources count.
         return node.evaluate(context);
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float nonZeroProbability() {
-        int size = node.evaluate(context);
-
-        if (size >= 1)
-            return 1.0f;
-        else
-            return 0.0f;
     }
 
     public static AbstractNodeRef of(AbstractNode node) {

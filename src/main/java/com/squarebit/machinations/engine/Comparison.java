@@ -39,17 +39,17 @@ public class Comparison extends RelationOperator {
     public boolean evaluate() {
         if (this.operator != null) {
             if (this.operator.equals(GT))
-                return this.lhs.evaluate() > this.rhs.evaluate();
+                return this.lhs.eval() > this.rhs.eval();
             else if (this.operator.equals(GTE))
-                return this.lhs.evaluate() >= this.rhs.evaluate();
+                return this.lhs.eval() >= this.rhs.eval();
             else if (this.operator.equals(LT))
-                return this.lhs.evaluate() < this.rhs.evaluate();
+                return this.lhs.eval() < this.rhs.eval();
             else if (this.operator.equals(LTE))
-                return this.lhs.evaluate() <= this.rhs.evaluate();
+                return this.lhs.eval() <= this.rhs.eval();
             else if (this.operator.equals(EQ))
-                return this.lhs.evaluate() == this.rhs.evaluate();
+                return this.lhs.eval() == this.rhs.eval();
             else if (this.operator.equals(NEQ))
-                return this.lhs.evaluate() != this.rhs.evaluate();
+                return this.lhs.eval() != this.rhs.eval();
         }
         return false;
     }

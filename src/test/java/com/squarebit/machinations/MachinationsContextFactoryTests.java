@@ -48,7 +48,7 @@ public class MachinationsContextFactoryTests {
             Modifier modifier = pool.getModifiers().stream().findFirst().get();
             assertThat(modifier.getLabel()).isEqualTo("+2");
             assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
-            assertThat(modifier.getRateExpression().evaluate()).isEqualTo(2);
+            assertThat(modifier.getRateExpression().eval()).isEqualTo(2);
 
             assertThat(pool.getTriggers().size()).isEqualTo(4);
 
@@ -175,19 +175,19 @@ public class MachinationsContextFactoryTests {
 
     @Test
     public void should_construct_arithmetic_expressions() throws Exception {
-        assertThat(arithmetic("1").evaluate()).isEqualTo(1);
-        assertThat(arithmetic("1+2").evaluate()).isEqualTo(3);
-        assertThat(arithmetic("1 - 3").evaluate()).isEqualTo(-2);
-        assertThat(arithmetic("3* 2").evaluate()).isEqualTo(6);
-        assertThat(arithmetic("3*(3+4)").evaluate()).isEqualTo(21);
+        assertThat(arithmetic("1").eval()).isEqualTo(1);
+        assertThat(arithmetic("1+2").eval()).isEqualTo(3);
+        assertThat(arithmetic("1 - 3").eval()).isEqualTo(-2);
+        assertThat(arithmetic("3* 2").eval()).isEqualTo(6);
+        assertThat(arithmetic("3*(3+4)").eval()).isEqualTo(21);
 
-        assertThat(arithmetic("1 + 5%").evaluate()).isGreaterThan(0);
+        assertThat(arithmetic("1 + 5%").eval()).isGreaterThan(0);
 
-        assertThat(arithmetic("D").evaluate()).isGreaterThan(0);
-        assertThat(arithmetic("2D").evaluate()).isGreaterThan(0);
-        assertThat(arithmetic("D5").evaluate()).isGreaterThan(0);
-        assertThat(arithmetic("2D5").evaluate()).isGreaterThan(0);
-        assertThat(arithmetic("2D5 + 3/4").evaluate()).isGreaterThan(0);
+        assertThat(arithmetic("D").eval()).isGreaterThan(0);
+        assertThat(arithmetic("2D").eval()).isGreaterThan(0);
+        assertThat(arithmetic("D5").eval()).isGreaterThan(0);
+        assertThat(arithmetic("2D5").eval()).isGreaterThan(0);
+        assertThat(arithmetic("2D5 + 3/4").eval()).isGreaterThan(0);
     }
 
     @Test

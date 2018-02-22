@@ -496,10 +496,6 @@ public class MachinationsContextFactory {
 
         if (token.getType() == DiceParser.INT)
             return IntNumber.of(Integer.parseInt(token.getText()));
-        else if (token.getType() == DiceParser.FRACTION) {
-            String[] parts = token.getText().split("/");
-            return FractionNumber.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-        }
 
         return IntNumber.of(1);
     }
