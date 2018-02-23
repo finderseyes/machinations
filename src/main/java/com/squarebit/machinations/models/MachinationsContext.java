@@ -359,7 +359,7 @@ public class MachinationsContext {
         this.activeNodes.addAll(this.automaticOrInteractiveNodes);
         this.activeNodes.addAll(startingNodes);
 
-        this.updateNodeEnablingStates();
+//        this.updateNodeEnablingStates();
 
         // Reset the action points of this turn.
         this.remainedActionPoints = configs.getActionPointsPerTurn();

@@ -91,6 +91,8 @@ public class MachinationsContextFactory {
     private class ModifierBuildContext {
         private AbstractNode owner;
         private AbstractElement target;
+        private GameMLParser.ModifierLabelContext labelContext;
+
         private DiceParser.ArithmeticExpressionContext expression;
 
         public AbstractNode getOwner() {
@@ -768,8 +770,77 @@ public class MachinationsContextFactory {
     }
 
     private void createModifier(BuildingContext context, ModifierBuildContext buildContext) throws Exception {
-        Modifier modifier = new Modifier();
-        modifier.setOwner(buildContext.owner).setTarget(buildContext.target).setLabel(buildContext.expression.getText());
+        Modifier modifier = null;
+        ParseTree decl = buildContext.labelContext.getChild(0);
+
+        TerminalNode first = (TerminalNode)decl.getChild(0);
+        TerminalNode second = (TerminalNode)decl.getChild(1);
+
+        if (decl instanceof GameMLParser.FlowRateModifierContext) {
+            ValueModifier valueModifier = new ValueModifier();
+            IntegerExpression value;
+
+            if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
+                value = FixedInteger.parse(second.getText());
+                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                    valueModifier.setSign(-1);
+            }
+            else
+                value = FixedInteger.parse(first.getText());
+
+            valueModifier.setValue(value);
+            modifier = valueModifier;
+        }
+        else if (decl instanceof GameMLParser.IntervalModifierContext) {
+            IntervalModifier intervalModifier = new IntervalModifier();
+            IntegerExpression value;
+
+            if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
+                value = FixedInteger.parse(second.getText());
+                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                    intervalModifier.setSign(-1);
+            }
+            else
+                value = FixedInteger.parse(first.getText());
+
+            intervalModifier.setValue(value);
+            modifier = intervalModifier;
+        }
+        else if (decl instanceof GameMLParser.MultiplierModifierContext) {
+            MultiplierModifier multiplierModifier = new MultiplierModifier();
+            IntegerExpression value;
+
+            if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
+                value = FixedInteger.parse(second.getText());
+                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                    multiplierModifier.setSign(-1);
+            }
+            else
+                value = FixedInteger.parse(first.getText());
+
+            multiplierModifier.setValue(value);
+            modifier = multiplierModifier;
+        }
+        else {
+            ProbabilityModifier probabilityModifier = new ProbabilityModifier();
+            Percentage value;
+
+            if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
+                value = Percentage.parse(second.getText());
+                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                    probabilityModifier.setSign(-1);
+            }
+            else
+                value = Percentage.parse(first.getText());
+
+            probabilityModifier.setValue(value);
+            modifier = probabilityModifier;
+        }
+
+        modifier
+                .setOwner(buildContext.owner)
+                .setTarget(buildContext.target);
+
         buildContext.owner.getModifiers().add(modifier);
 
         context.buildContext.putIfAbsent(modifier, buildContext);
@@ -878,7 +949,7 @@ public class MachinationsContextFactory {
         }
 
         if (decl instanceof GameMLParser.ProbabilityContext) {
-            flowRate.setProbability(parsePercentage(decl.getText()));
+            flowRate.setProbability(Percentage.parse(decl.getText()));
             next += 2;
             decl = flowRateContext.getChild(next);
         }
@@ -888,11 +959,6 @@ public class MachinationsContextFactory {
         }
 
         return flowRate;
-    }
-
-    private float parsePercentage(String value) {
-        int p = Integer.parseInt(value.substring(0, value.length() - 1));
-        return (p / 100.0f);
     }
 
     private void buildIntervalFlowRate(FlowRate flowRate, GameMLParser.IntervalFlowRateContext flowRateContext) {
@@ -940,7 +1006,7 @@ public class MachinationsContextFactory {
         switch (decl.getSymbol().getType()) {
             case GameMLParser.INTEGER:
             case GameMLParser.REAL:
-                return FixedInteger.of(Float.parseFloat(decl.getText()));
+                return FixedInteger.parse(decl.getText());
             default:
                 return RandomInteger.parse(decl.getText());
         }
@@ -1041,27 +1107,43 @@ public class MachinationsContextFactory {
     }
 
     private ModifierBuildContext getModifierBuildContext(BuildingContext context, String definition) throws Exception {
-        DiceParser parser = getParser(definition);
+        GameMLParser parser = getGameMLParser(definition);
         ModifierBuildContext buildContext = new ModifierBuildContext();
 
-        ParseTree decl = parser.modifierDefinition();
+        GameMLParser.ModifierContext modifierContext = parser.modifier();
         int next = 0;
-        ParseTree nextDecl = decl.getChild(next);
+        ParseTree decl = modifierContext.getChild(next);
 
-        if (nextDecl instanceof TerminalNode) {
-            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
-            if (buildContext.owner == null)
-                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
+            buildContext.owner = fromIdentifier(context, decl, AbstractNode.class);
             next += 2;
+            decl = modifierContext.getChild(next);
         }
 
-        nextDecl = decl.getChild(next);
-        buildContext.expression = (DiceParser.ArithmeticExpressionContext)nextDecl;
-        next += 2;
+        if (decl instanceof GameMLParser.ModifierLabelContext) {
+            buildContext.labelContext = (GameMLParser.ModifierLabelContext)decl;
+            next += 2;
+            decl = modifierContext.getChild(next);
+        }
 
-        nextDecl = decl.getChild(next);
-        buildContext.target = context.machinations.findById(nextDecl.getText());
+        buildContext.target = fromIdentifier(context, decl, AbstractElement.class);
+
+//        ParseTree nextDecl = decl.getChild(next);
+//
+//        if (nextDecl instanceof TerminalNode) {
+//            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//            if (buildContext.owner == null)
+//                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+//
+//            next += 2;
+//        }
+//
+//        nextDecl = decl.getChild(next);
+//        buildContext.expression = (DiceParser.ArithmeticExpressionContext)nextDecl;
+//        next += 2;
+//
+//        nextDecl = decl.getChild(next);
+//        buildContext.target = context.machinations.findById(nextDecl.getText());
 
         return buildContext;
     }

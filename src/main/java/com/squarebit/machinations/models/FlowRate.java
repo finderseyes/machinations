@@ -1,9 +1,6 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.BooleanValue;
-import com.squarebit.machinations.engine.FixedInteger;
-import com.squarebit.machinations.engine.IntegerExpression;
-import com.squarebit.machinations.engine.LogicalExpression;
+import com.squarebit.machinations.engine.*;
 
 /**
  * A flow rate.
@@ -13,13 +10,12 @@ public class FlowRate {
     private static final IntegerExpression DEFAULT_VALUE = FixedInteger.of(1.0f);
     private static final IntegerExpression DEFAULT_INTERVAL = FixedInteger.of(1.0f);
     private static final IntegerExpression DEFAULT_MULTIPLIER = FixedInteger.of(1.0f);
-    private static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
+    private static final Percentage DEFAULT_PROBABILITY = Percentage.of(100);
 
     private IntegerExpression value = DEFAULT_VALUE;
     private IntegerExpression interval = DEFAULT_INTERVAL;
     private IntegerExpression multiplier = DEFAULT_MULTIPLIER;
-    private float probability = 1.0f;
-    private LogicalExpression condition = DEFAULT_CONDITION;
+    private Percentage probability = DEFAULT_PROBABILITY;
 
 
     /**
@@ -87,7 +83,7 @@ public class FlowRate {
      *
      * @return the probability
      */
-    public float getProbability() {
+    public Percentage getProbability() {
         return probability;
     }
 
@@ -97,28 +93,8 @@ public class FlowRate {
      * @param probability the probability
      * @return the probability
      */
-    public FlowRate setProbability(float probability) {
+    public FlowRate setProbability(Percentage probability) {
         this.probability = probability;
-        return this;
-    }
-
-    /**
-     * Gets condition.
-     *
-     * @return the condition
-     */
-    public LogicalExpression getCondition() {
-        return condition;
-    }
-
-    /**
-     * Sets condition.
-     *
-     * @param condition the condition
-     * @return the condition
-     */
-    public FlowRate setCondition(LogicalExpression condition) {
-        this.condition = condition;
         return this;
     }
 

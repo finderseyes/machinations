@@ -135,7 +135,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
         }
 
         {
@@ -158,7 +158,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
         }
 
         {
@@ -177,7 +177,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
         }
 
         {
@@ -196,7 +196,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(0.5f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
         }
 
         {
@@ -215,7 +215,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(3);
 
-            assertThat(flowRate.getProbability()).isCloseTo(0.5f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(50);
         }
 
         {
@@ -234,7 +234,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -255,7 +255,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -276,7 +276,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
 
-            assertThat(flowRate.getProbability()).isCloseTo(0.3f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(30);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -296,7 +296,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isNullOrEmpty();
         }
@@ -316,7 +316,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -337,7 +337,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(5);
 
-            assertThat(flowRate.getProbability()).isCloseTo(0.3f, Offset.offset(0.0f));
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(30);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }

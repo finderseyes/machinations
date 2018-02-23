@@ -37,4 +37,14 @@ public class FixedInteger extends IntegerExpression {
         fixedFlowRate.value = value;
         return fixedFlowRate;
     }
+
+    /**
+     * Parse fixed integer.
+     *
+     * @param text the text
+     * @return the fixed integer
+     */
+    public static FixedInteger parse(String text) {
+        return FixedInteger.of(Float.parseFloat(text));
+    }
 }

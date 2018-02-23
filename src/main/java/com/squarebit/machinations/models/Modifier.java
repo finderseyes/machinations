@@ -1,10 +1,12 @@
 package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.ArithmeticExpression;
+import com.squarebit.machinations.engine.IntegerExpression;
 
 public class Modifier {
     private AbstractNode owner;
     private AbstractElement target;
+
     private String label;
     private ArithmeticExpression rateExpression;
 
