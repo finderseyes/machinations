@@ -105,7 +105,7 @@ public class Gate extends AbstractNode {
                 currentDraw = drawExpression.eval();
                 this.getOutgoingConnections().forEach(c -> {
                     LogicalExpression expression = (LogicalExpression)c.getFlowRateExpression();
-                    if (expression.evaluate()) {
+                    if (expression.eval()) {
                         outgoingConnections.add(c);
                         c.getTo().receive(resources);
                     }
@@ -132,7 +132,7 @@ public class Gate extends AbstractNode {
 
                     this.getOutgoingConnections().forEach(c -> {
                         LogicalExpression expression = (LogicalExpression)c.getFlowRateExpression();
-                        if (expression.evaluate()) {
+                        if (expression.eval()) {
                             outgoingConnections.add(c);
                             c.getTo().receive(extracted);
                         }
@@ -160,7 +160,7 @@ public class Gate extends AbstractNode {
             currentDraw = drawExpression.eval();
             this.getTriggers().forEach(t -> {
                 LogicalExpression expression = (LogicalExpression)t.getLabelExpression();
-                if (expression.evaluate()) {
+                if (expression.eval()) {
                     triggers.add(t);
                 }
             });

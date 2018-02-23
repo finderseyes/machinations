@@ -45,6 +45,6 @@ public class Activator {
     }
 
     public boolean evaluate() {
-        return this.conditionExpression.evaluate();
+        return this.conditionExpression.eval();
     }
 }

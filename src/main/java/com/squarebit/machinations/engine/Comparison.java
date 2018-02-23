@@ -36,7 +36,7 @@ public class Comparison extends RelationOperator {
      * @return the boolean
      */
     @Override
-    public boolean evaluate() {
+    public boolean eval() {
         if (this.operator != null) {
             if (this.operator.equals(GT))
                 return this.lhs.eval() > this.rhs.eval();

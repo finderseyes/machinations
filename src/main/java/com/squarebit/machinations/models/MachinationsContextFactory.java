@@ -248,7 +248,7 @@ public class MachinationsContextFactory {
                         context.currentObject = modifier;
 
                         if (buildContext.expression != null) {
-                            modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
+                            // modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
                         }
                     });
 
@@ -268,7 +268,7 @@ public class MachinationsContextFactory {
                         context.currentObject = activator;
 
                         if (buildContext.condition != null) {
-                            activator.setConditionExpression(buildBoolean(context, buildContext.condition));
+                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
                         }
                     });
                 });
@@ -283,72 +283,72 @@ public class MachinationsContextFactory {
         ParseTree decl = expressionContext.getChild(0);
 
         if (decl instanceof DiceParser.ArithmeticExpressionContext)
-            return buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)decl);
+            return buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)decl);
         else if (decl instanceof DiceParser.LogicalExpressionContext)
-            return buildBoolean(context, (DiceParser.LogicalExpressionContext)decl);
+            return buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl);
 
         return null;
     }
 
     public LogicalExpression buildBoolean(BuildingContext context,
-                                          DiceParser.LogicalExpressionContext expressionContext)
+                                          GameMLParser.LogicalExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
 
         if (decl instanceof DiceParser.UnaryLogicalExpressionContext) {
-            return buildUnaryBoolean(context, (DiceParser.UnaryLogicalExpressionContext)decl);
+            return buildUnaryBoolean(context, (GameMLParser.UnaryLogicalExpressionContext)decl);
         }
         else if (decl instanceof DiceParser.LogicalAndExpressionContext) {
-            return buildAnd(context, (DiceParser.LogicalAndExpressionContext)decl);
+            return buildAnd(context, (GameMLParser.LogicalAndExpressionContext)decl);
         }
         else if (decl instanceof DiceParser.LogicalOrExpressionContext) {
-            return buildOr(context, (DiceParser.LogicalOrExpressionContext)decl);
+            return buildOr(context, (GameMLParser.LogicalOrExpressionContext)decl);
         }
 
         return null;
     }
 
     private LogicalExpression buildAnd(BuildingContext context,
-                                       DiceParser.LogicalAndExpressionContext expressionContext)
+                                       GameMLParser.LogicalAndExpressionContext expressionContext)
     {
         LogicalExpression lhs = buildUnaryBoolean(context,
-                (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
+                (GameMLParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
         LogicalExpression rhs = buildBoolean(context,
-                (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
+                (GameMLParser.LogicalExpressionContext)expressionContext.getChild(2));
         return And.of(lhs, rhs);
     }
 
     private LogicalExpression buildOr(BuildingContext context,
-                                      DiceParser.LogicalOrExpressionContext expressionContext)
+                                      GameMLParser.LogicalOrExpressionContext expressionContext)
     {
         LogicalExpression lhs = buildUnaryBoolean(context,
-                (DiceParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
+                (GameMLParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
         LogicalExpression rhs = buildBoolean(context,
-                (DiceParser.LogicalExpressionContext)expressionContext.getChild(2));
+                (GameMLParser.LogicalExpressionContext)expressionContext.getChild(2));
         return Or.of(lhs, rhs);
     }
 
     private LogicalExpression buildUnaryBoolean(BuildingContext context,
-                                                DiceParser.UnaryLogicalExpressionContext expressionContext)
+                                                GameMLParser.UnaryLogicalExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
 
-        if (decl instanceof DiceParser.RelationalExpressionContext) {
-            return buildRelation(context, (DiceParser.RelationalExpressionContext)decl);
+        if (decl instanceof GameMLParser.RelationalExpressionContext) {
+            return buildRelation(context, (GameMLParser.RelationalExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.LeftImplicitRelationalExpressionContext) {
-            return buildLeftImplicitRelation(context, (DiceParser.LeftImplicitRelationalExpressionContext)decl);
+        else if (decl instanceof GameMLParser.LeftImplicitRelationalExpressionContext) {
+            return buildLeftImplicitRelation(context, (GameMLParser.LeftImplicitRelationalExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.RightImplicitRelationalExpressionContext) {
-            return buildRightImplicitRelation(context, (DiceParser.RightImplicitRelationalExpressionContext)decl);
+        else if (decl instanceof GameMLParser.RightImplicitRelationalExpressionContext) {
+            return buildRightImplicitRelation(context, (GameMLParser.RightImplicitRelationalExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.GroupLogicalExpressionContext) {
-            return buildBoolean(context, (DiceParser.LogicalExpressionContext)decl.getChild(1));
+        else if (decl instanceof GameMLParser.GroupLogicalExpressionContext) {
+            return buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl.getChild(1));
         }
         else if (decl instanceof TerminalNode) {
             Token opToken = ((TerminalNode)decl).getSymbol();
             LogicalExpression child =
-                    buildBoolean(context, (DiceParser.LogicalExpressionContext)expressionContext.getChild(1));
+                    buildBoolean(context, (GameMLParser.LogicalExpressionContext)expressionContext.getChild(1));
 
             if (opToken.getType() == DiceParser.NOT) {
                 return Not.of(child);
@@ -359,7 +359,7 @@ public class MachinationsContextFactory {
     }
 
     private LogicalExpression buildLeftImplicitRelation(BuildingContext context,
-                                                        DiceParser.LeftImplicitRelationalExpressionContext expressionContext)
+                                                        GameMLParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
         AbstractNodeRef lhs = null;
         ArithmeticExpression rhs = null;
@@ -377,7 +377,7 @@ public class MachinationsContextFactory {
             lhs = AbstractNodeRef.of(trigger.getOwner());
         }
 
-        rhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
+        rhs = buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(1));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(0)).getSymbol();
 
@@ -390,7 +390,7 @@ public class MachinationsContextFactory {
     }
 
     private LogicalExpression buildRightImplicitRelation(BuildingContext context,
-                                                         DiceParser.RightImplicitRelationalExpressionContext expressionContext)
+                                                         GameMLParser.RightImplicitRelationalExpressionContext expressionContext)
     {
         ArithmeticExpression lhs = null;
         AbstractNodeRef rhs = null;
@@ -408,7 +408,7 @@ public class MachinationsContextFactory {
             rhs = AbstractNodeRef.of(trigger.getOwner());
         }
 
-        lhs = buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
+        lhs = buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(0));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
@@ -421,12 +421,12 @@ public class MachinationsContextFactory {
     }
 
     private LogicalExpression buildRelation(BuildingContext context,
-                                            DiceParser.RelationalExpressionContext expressionContext)
+                                            GameMLParser.RelationalExpressionContext expressionContext)
     {
         ArithmeticExpression lhs =
-                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(0));
+                buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(0));
         ArithmeticExpression rhs =
-                buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+                buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
@@ -449,48 +449,47 @@ public class MachinationsContextFactory {
     }
 
     public ArithmeticExpression buildArithmetic(BuildingContext context,
-                                                DiceParser.ArithmeticExpressionContext expressionContext)
+                                                GameMLParser.ArithmeticExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
 
-        if (decl instanceof DiceParser.UnaryArithmeticExpressionContext) {
-            return buildUnaryArithmetic(context, (DiceParser.UnaryArithmeticExpressionContext)decl);
+        if (decl instanceof GameMLParser.UnaryArithmeticExpressionContext) {
+            return buildUnaryArithmetic(context, (GameMLParser.UnaryArithmeticExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.AdditiveExpressionContext) {
-            return buildAdditiveExpressionContext(context, (DiceParser.AdditiveExpressionContext)decl);
+        else if (decl instanceof GameMLParser.AdditiveExpressionContext) {
+            return buildAdditiveExpressionContext(context, (GameMLParser.AdditiveExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.MultiplicativeExpressionContext) {
-            return buildMultiplicativeExpressionContext(context, (DiceParser.MultiplicativeExpressionContext)decl);
+        else if (decl instanceof GameMLParser.MultiplicativeExpressionContext) {
+            return buildMultiplicativeExpressionContext(context, (GameMLParser.MultiplicativeExpressionContext)decl);
         }
 
         return null;
     }
 
     private ArithmeticExpression buildUnaryArithmetic(BuildingContext context,
-                                                      DiceParser.UnaryArithmeticExpressionContext expressionContext) {
+                                                      GameMLParser.UnaryArithmeticExpressionContext expressionContext) {
 
         ParseTree decl = expressionContext.getChild(0);
 
-        if (decl instanceof DiceParser.NumberContext) {
-            return buildNumber((DiceParser.NumberContext)decl);
-        }
-        else if (decl instanceof DiceParser.RandomNumberContext) {
-            return buildRandomNumber((DiceParser.RandomNumberContext)decl);
-        }
-        else if (decl instanceof DiceParser.ProbableNumberContext) {
-            return buildProbableNumber((DiceParser.ProbableNumberContext)decl);
-        }
-        else if (decl instanceof DiceParser.GroupArithmeticExpressionContext) {
-            return buildArithmetic(context, (DiceParser.ArithmeticExpressionContext)decl.getChild(1));
-        }
-        else if (decl instanceof TerminalNode) {
+        if (decl instanceof TerminalNode) {
             Token token = ((TerminalNode)decl).getSymbol();
-            ArithmeticExpression child = buildArithmetic(
-                    context, (DiceParser.ArithmeticExpressionContext)expressionContext.getChild(1));
-            if (token.getType() == DiceParser.MINUS)
-                return Negation.of(child);
-            else
-                return child;
+
+            if (token.getType() == GameMLParser.PLUS || token.getType() == GameMLParser.MINUS) {
+                ArithmeticExpression child = buildArithmetic(
+                        context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(1)
+                );
+
+                if (token.getType() == DiceParser.MINUS)
+                    return Negation.of(child);
+                else
+                    return child;
+            }
+            else if (token.getType() == GameMLParser.INTEGER || token.getType() == GameMLParser.REAL) {
+                return IntNumber.of(Integer.parseInt(token.getText()));
+            }
+            else if (token.getType() == GameMLParser.IDENTIFIER) {
+                return null;
+            }
         }
 
         return null;
@@ -529,11 +528,11 @@ public class MachinationsContextFactory {
     }
 
     private ArithmeticExpression buildAdditiveExpressionContext(BuildingContext context,
-                                                                DiceParser.AdditiveExpressionContext expressionContext) {
+                                                                GameMLParser.AdditiveExpressionContext expressionContext) {
         ArithmeticExpression lhs = buildUnaryArithmetic(
-                context, (DiceParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
+                context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
         ArithmeticExpression rhs = buildArithmetic(
-                context,(DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+                context,(GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         Token token = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
@@ -544,11 +543,11 @@ public class MachinationsContextFactory {
     }
 
     private ArithmeticExpression buildMultiplicativeExpressionContext(BuildingContext context,
-                                                                      DiceParser.MultiplicativeExpressionContext expressionContext) {
+                                                                      GameMLParser.MultiplicativeExpressionContext expressionContext) {
         ArithmeticExpression lhs = buildUnaryArithmetic(
-                context, (DiceParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
+                context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
         ArithmeticExpression rhs = buildArithmetic(
-                context,(DiceParser.ArithmeticExpressionContext)expressionContext.getChild(2));
+                context,(GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         return Multiplication.of(lhs, rhs);
     }
@@ -576,7 +575,7 @@ public class MachinationsContextFactory {
                 Gate gate = new Gate();
 
                 if (gateSpec.getDraw() != null) {
-                    DiceParser parser = getParser(gateSpec.getDraw());
+                    GameMLParser parser = getGameMLParser(gateSpec.getDraw());
                     gate.setDrawExpression(buildArithmetic(context, parser.arithmeticExpression()));
                 }
 
@@ -840,6 +839,7 @@ public class MachinationsContextFactory {
             ParseTree decl = labelContext.getChild(next);
 
             if (decl instanceof GameMLParser.LogicalExpressionContext) {
+                connection.setCondition(buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl));
                 next += 2;
                 decl = labelContext.getChild(next);
             }

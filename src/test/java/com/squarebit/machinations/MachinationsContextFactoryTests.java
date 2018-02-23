@@ -7,6 +7,8 @@ import com.squarebit.machinations.engine.RandomInteger;
 import com.squarebit.machinations.models.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
+import com.squarebit.machinations.parsers.GameMLLexer;
+import com.squarebit.machinations.parsers.GameMLParser;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -362,25 +364,25 @@ public class MachinationsContextFactoryTests {
         MachinationsContext context = factory.fromSpec(spec);
     }
 
-    private DiceParser getParser(String decl) {
+    private GameMLParser getParser(String decl) {
         CharStream stream = new ANTLRInputStream(decl);
-        TokenStream tokens = new CommonTokenStream(new DiceLexer(stream));
-        DiceParser parser = new DiceParser(tokens);
+        TokenStream tokens = new CommonTokenStream(new GameMLLexer(stream));
+        GameMLParser parser = new GameMLParser(tokens);
         return parser;
     }
 
-    private <T> T parse(String decl, Function<DiceParser, T> consumer) {
+    private <T> T parse(String decl, Function<GameMLParser, T> consumer) {
         return consumer.apply(getParser(decl));
     }
 
     private ArithmeticExpression arithmetic(String decl) {
         MachinationsContextFactory factory = new MachinationsContextFactory();
-        return factory.buildArithmetic(null, parse(decl, DiceParser::arithmeticExpression));
+        return factory.buildArithmetic(null, parse(decl, GameMLParser::arithmeticExpression));
     }
 
     private LogicalExpression bool(String decl) {
         MachinationsContextFactory factory = new MachinationsContextFactory();
-        return factory.buildBoolean(null, parse(decl, DiceParser::logicalExpression));
+        return factory.buildBoolean(null, parse(decl, GameMLParser::logicalExpression));
     }
 
     @Test
@@ -402,19 +404,19 @@ public class MachinationsContextFactoryTests {
 
     @Test
     public void should_construct_boolean_expressions() throws Exception {
-        assertThat(bool("2 > 1").evaluate()).isTrue();
-        assertThat(bool("2 >= 2").evaluate()).isTrue();
-        assertThat(bool("2 < 3").evaluate()).isTrue();
-        assertThat(bool("2 <= 2").evaluate()).isTrue();
-        assertThat(bool("2 == 2").evaluate()).isTrue();
-        assertThat(bool("2 != 3").evaluate()).isTrue();
+        assertThat(bool("2 > 1").eval()).isTrue();
+        assertThat(bool("2 >= 2").eval()).isTrue();
+        assertThat(bool("2 < 3").eval()).isTrue();
+        assertThat(bool("2 <= 2").eval()).isTrue();
+        assertThat(bool("2 == 2").eval()).isTrue();
+        assertThat(bool("2 != 3").eval()).isTrue();
 
-        assertThat(bool("2 != 3 && 1 == 1").evaluate()).isTrue();
-        assertThat(bool("2 != 3 && 1 != 1").evaluate()).isFalse();
+        assertThat(bool("2 != 3 && 1 == 1").eval()).isTrue();
+        assertThat(bool("2 != 3 && 1 != 1").eval()).isFalse();
 
-        assertThat(bool("(((2 != 3)) && 1 == 1)").evaluate()).isTrue();
+        assertThat(bool("(((2 != 3)) && 1 == 1)").eval()).isTrue();
 
-        assertThat(bool("(((2 != 3)) && 1 * 2 == 1)").evaluate()).isFalse();
-        assertThat(bool("(((2 != 3)) || 1 * 2 == 1)").evaluate()).isTrue();
+        assertThat(bool("(((2 != 3)) && 1 * 2 == 1)").eval()).isFalse();
+        assertThat(bool("(((2 != 3)) || 1 * 2 == 1)").eval()).isTrue();
     }
 }

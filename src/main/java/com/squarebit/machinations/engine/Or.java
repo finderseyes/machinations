@@ -7,8 +7,8 @@ public class Or extends BinaryLogicalOperator {
      * @return the boolean
      */
     @Override
-    public boolean evaluate() {
-        return this.lhs.evaluate() || this.rhs.evaluate();
+    public boolean eval() {
+        return this.lhs.eval() || this.rhs.eval();
     }
 
     public static Or of(LogicalExpression lhs, LogicalExpression rhs) {

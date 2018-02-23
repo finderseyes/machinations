@@ -1,14 +1,14 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.ArithmeticExpression;
-import com.squarebit.machinations.engine.Expression;
-import com.squarebit.machinations.engine.IntNumber;
-import com.squarebit.machinations.engine.IntegerExpression;
+import com.squarebit.machinations.engine.*;
 
 public class ResourceConnection extends AbstractConnection {
+    private static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
+
     private AbstractNode from;
     private AbstractNode to;
 
+    private LogicalExpression condition;
     private FlowRate flowRate = new FlowRate();
     private String resourceName = null; // if null, any resource.
 
@@ -52,6 +52,26 @@ public class ResourceConnection extends AbstractConnection {
      */
     public ResourceConnection setTo(AbstractNode to) {
         this.to = to;
+        return this;
+    }
+
+    /**
+     * Gets condition.
+     *
+     * @return the condition
+     */
+    public LogicalExpression getCondition() {
+        return condition;
+    }
+
+    /**
+     * Sets condition.
+     *
+     * @param condition the condition
+     * @return the condition
+     */
+    public ResourceConnection setCondition(LogicalExpression condition) {
+        this.condition = condition;
         return this;
     }
 

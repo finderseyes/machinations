@@ -29,8 +29,8 @@ public class Not extends LogicalExpression {
      * @return the boolean
      */
     @Override
-    public boolean evaluate() {
-        return !expression.evaluate();
+    public boolean eval() {
+        return !expression.eval();
     }
 
     public static Not of(LogicalExpression expression) {

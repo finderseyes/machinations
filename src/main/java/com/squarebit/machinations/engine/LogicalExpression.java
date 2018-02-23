@@ -6,5 +6,5 @@ public abstract class LogicalExpression extends Expression {
      *
      * @return the boolean
      */
-    public abstract boolean evaluate();
+    public abstract boolean eval();
 }
