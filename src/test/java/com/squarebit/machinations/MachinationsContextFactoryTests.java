@@ -2,6 +2,8 @@ package com.squarebit.machinations;
 
 import com.squarebit.machinations.engine.ArithmeticExpression;
 import com.squarebit.machinations.engine.LogicalExpression;
+import com.squarebit.machinations.engine.MaxInteger;
+import com.squarebit.machinations.engine.RandomInteger;
 import com.squarebit.machinations.models.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
@@ -10,6 +12,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
+import org.assertj.core.data.Offset;
 import org.junit.Test;
 
 import java.util.function.Function;
@@ -42,7 +45,7 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getResourceCapacity("mana")).isEqualTo(200);
             assertThat(pool.getResourceCapacity("gold")).isEqualTo(-1);
 
-            assertThat(pool.getOutgoingConnections().size()).isEqualTo(3);
+            assertThat(pool.getOutgoingConnections().size()).isEqualTo(12);
 
             assertThat(pool.getModifiers().size()).isEqualTo(1);
             Modifier modifier = pool.getModifiers().stream().findFirst().get();
@@ -81,7 +84,7 @@ public class MachinationsContextFactoryTests {
             assertThat(pool.getTotalResourceCount()).isEqualTo(100);
 
             assertThat(pool.getOutgoingConnections().size()).isEqualTo(2);
-            assertThat(pool.getIncomingConnections().size()).isEqualTo(1);
+            assertThat(pool.getIncomingConnections().size()).isEqualTo(10);
         }
 
         {
@@ -118,28 +121,235 @@ public class MachinationsContextFactoryTests {
             ResourceConnection connection = (ResourceConnection)context.findById("p0_p1");
             assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
             assertThat(connection.getTo()).isEqualTo(context.findById("p1"));
-            assertThat(connection.getLabel()).isEqualTo("");
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
         }
 
         {
-            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2");
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_0");
             assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
             assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
-            assertThat(connection.getLabel()).isEqualTo("2D10");
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isTrue();
+            {
+                RandomInteger dice = (RandomInteger) flowRate.getValue();
+                assertThat(dice.getTimes()).isEqualTo(2);
+                assertThat(dice.getFaces()).isEqualTo(10);
+            }
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_1");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(4);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_2");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(0.5f, Offset.offset(0.0f));
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_3");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(3);
+
+            assertThat(flowRate.getProbability()).isCloseTo(0.5f, Offset.offset(0.0f));
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_4");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(10);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isEqualTo("gold");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_5");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(10);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isEqualTo("gold");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_6");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
+
+            assertThat(flowRate.getProbability()).isCloseTo(0.3f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isEqualTo("gold");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_7");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue()).isEqualTo(MaxInteger.instance());
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isNullOrEmpty();
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_8");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue()).isEqualTo(MaxInteger.instance());
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
+
+            assertThat(flowRate.getProbability()).isCloseTo(1.0f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isEqualTo("gold");
+        }
+
+        {
+            ResourceConnection connection = (ResourceConnection)context.findById("p0_p2_9");
+            assertThat(connection.getFrom()).isEqualTo(context.findById("p0"));
+            assertThat(connection.getTo()).isEqualTo(context.findById("p2"));
+
+            FlowRate flowRate = connection.getFlowRate();
+
+            assertThat(flowRate.getValue().isRandom()).isFalse();
+            assertThat(flowRate.getValue().eval()).isEqualTo(10);
+
+            assertThat(flowRate.getInterval().isRandom()).isFalse();
+            assertThat(flowRate.getInterval().eval()).isEqualTo(5);
+
+            assertThat(flowRate.getMultiplier().isRandom()).isFalse();
+            assertThat(flowRate.getMultiplier().eval()).isEqualTo(5);
+
+            assertThat(flowRate.getProbability()).isCloseTo(0.3f, Offset.offset(0.0f));
+
+            assertThat(connection.getResourceName()).isEqualTo("gold");
         }
 
         {
             ResourceConnection connection = (ResourceConnection)context.findById("p2_p3");
             assertThat(connection.getFrom()).isEqualTo(context.findById("p2"));
             assertThat(connection.getTo()).isEqualTo(context.findById("p3"));
-            assertThat(connection.getLabel()).isEqualTo("");
         }
 
         {
             ResourceConnection connection = (ResourceConnection)context.findById("p2_p4");
             assertThat(connection.getFrom()).isEqualTo(context.findById("p2"));
             assertThat(connection.getTo()).isEqualTo(context.findById("p4"));
-            assertThat(connection.getLabel()).isEqualTo("5D+10");
         }
     }
 

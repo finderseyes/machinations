@@ -9,7 +9,7 @@ public class Converter extends Pool {
         incomingFlows.forEach((c, a) -> c.getFrom().extract(a));
 
         this.getOutgoingConnections().forEach(c -> {
-            int rate = c.getFlowRate();
+            int rate = c.getFlowRateValue();
             c.getTo().receive(ResourceSet.of(c.getResourceName(), rate));
         });
 

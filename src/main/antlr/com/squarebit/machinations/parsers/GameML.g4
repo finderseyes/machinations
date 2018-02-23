@@ -11,64 +11,42 @@ resourceConnectionId
     ;
 
 resourceConnectionLabel
-    : namedFlowRate
-    | probability
-    | logicalExpression
-    | probability ',' namedFlowRate
-    | logicalExpression ',' probability
-    | logicalExpression ',' namedFlowRate
-    | logicalExpression ',' probability ',' namedFlowRate
+    : multipliedProbableFlowRate resourceName?
+    | logicalExpression (',' multipliedProbableFlowRate)? resourceName?
+    ;
+
+multipliedProbableFlowRate
+    : (INTEGER TIMES)? intervalFlowRate
+    | (INTEGER TIMES)? probability (',' intervalFlowRate)?
     ;
 
 probability
-    : unaryProbability
-    | multipliedProbability;
-
-unaryProbability
     : PERCENTAGE;
 
-multipliedProbability
-    : INTEGER TIMES PERCENTAGE;
+resourceName
+    : LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS;
 
-namedFlowRate
-    : flowRate
-    | resourceName
-    | flowRate resourceName;
+intervalFlowRate
+    : integerExpression ('/' integerExpression)?
+    | ALL ('/' integerExpression)?;
 
-resourceName: LEFT_PARENTHESIS IDENTIFIER RIGHT_PARENTHESIS;
+integerExpression
+    : unaryIntegerExpression
+    | groupIntegerExpression
+    | binaryIntegerExpression;
 
-flowRate
-    : unaryFlowRate
-    | multipliedFlowRate
-    | allFlowRate
-    ;
-
-unaryFlowRate
-    : numberExpression ('/' numberExpression)?;
-
-multipliedFlowRate
-    : INTEGER TIMES unaryFlowRate;
-
-allFlowRate
-    : ALL ('/' numberExpression)?;
-
-numberExpression
-    : unaryNumberExpression
-    | groupNumberExpression
-    | compoundNumberExpression;
-
-unaryNumberExpression
+unaryIntegerExpression
     : INTEGER
     | REAL
     | DICE
     | DRAW
     ;
 
-groupNumberExpression
-    : LEFT_PARENTHESIS numberExpression RIGHT_PARENTHESIS;
+groupIntegerExpression
+    : LEFT_PARENTHESIS integerExpression RIGHT_PARENTHESIS;
 
-compoundNumberExpression
-    : unaryNumberExpression (PLUS|MINUS) numberExpression;
+binaryIntegerExpression
+    : unaryIntegerExpression (PLUS|MINUS) integerExpression;
 
 // Modifiers
 

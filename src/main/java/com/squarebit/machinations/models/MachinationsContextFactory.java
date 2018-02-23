@@ -3,6 +3,8 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.*;
 import com.squarebit.machinations.parsers.DiceLexer;
 import com.squarebit.machinations.parsers.DiceParser;
+import com.squarebit.machinations.parsers.GameMLLexer;
+import com.squarebit.machinations.parsers.GameMLParser;
 import com.squarebit.machinations.specs.yaml.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -33,8 +35,11 @@ public class MachinationsContextFactory {
     private class ConnectionBuildContext {
         private AbstractNode from;
         private AbstractNode to;
-        private DiceParser.ExpressionContext labelExpression;
         private String id;
+        private GameMLParser.ResourceConnectionLabelContext labelContext;
+
+        private DiceParser.ExpressionContext labelExpression;
+
         private String resourceName;
 
         public AbstractNode getFrom() {
@@ -825,11 +830,33 @@ public class MachinationsContextFactory {
 
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)
-                .setResourceName(connectionBuildContext.resourceName)
                 .setId(getOrCreateId(connectionBuildContext.id));
 
-        if (connectionBuildContext.labelExpression != null)
-            connection.setLabel(connectionBuildContext.labelExpression.getText());
+        if (connectionBuildContext.labelContext != null)
+        {
+            GameMLParser.ResourceConnectionLabelContext labelContext = connectionBuildContext.labelContext;
+
+            int next = 0;
+            ParseTree decl = labelContext.getChild(next);
+
+            if (decl instanceof GameMLParser.LogicalExpressionContext) {
+                next += 2;
+                decl = labelContext.getChild(next);
+            }
+
+            if (decl instanceof GameMLParser.MultipliedProbableFlowRateContext) {
+                connection.setFlowRate(buildFlowRate(context, (GameMLParser.MultipliedProbableFlowRateContext)decl));
+                next += 1;
+                decl = labelContext.getChild(next);
+            }
+
+            if (decl instanceof GameMLParser.ResourceNameContext) {
+                connection.setResourceName(decl.getChild(1).getText());
+            }
+        }
+
+//        if (connectionBuildContext.labelExpression != null)
+//            connection.setLabel(connectionBuildContext.labelExpression.getText());
 
         context.machinations.addElement(connection);
         context.buildContext.put(connection, connectionBuildContext);
@@ -838,50 +865,179 @@ public class MachinationsContextFactory {
         connectionBuildContext.to.getIncomingConnections().add(connection);
     }
 
-    private ConnectionBuildContext getConnectionBuildContext(BuildingContext context, String definition) throws Exception {
-        DiceParser parser = getParser(definition);
-        ConnectionBuildContext buildContext = new ConnectionBuildContext();
+    private FlowRate buildFlowRate(BuildingContext context, GameMLParser.MultipliedProbableFlowRateContext flowRateContext) {
+        FlowRate flowRate = new FlowRate();
 
-        ParseTree decl = parser.connectionDefinition().children.get(0);
         int next = 0;
-        ParseTree nextDecl = decl.getChild(next);
+        ParseTree decl = flowRateContext.getChild(next);
 
-        if (decl instanceof DiceParser.ExplicitConnectionDefinitionContext) {
-            buildContext.from = (AbstractNode)context.machinations.findById(nextDecl.getText());
-            if (buildContext.from == null)
-                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.INTEGER) {
+            flowRate.setMultiplier(FixedInteger.of(Integer.parseInt(decl.getText())));
             next += 2;
+            decl = flowRateContext.getChild(next);
         }
 
-        nextDecl = decl.getChild(next);
-        if (nextDecl instanceof DiceParser.ExpressionContext) {
-            buildContext.labelExpression = (DiceParser.ExpressionContext)nextDecl;
-            next += 1;
+        if (decl instanceof GameMLParser.ProbabilityContext) {
+            flowRate.setProbability(parsePercentage(decl.getText()));
+            next += 2;
+            decl = flowRateContext.getChild(next);
         }
 
-        nextDecl = decl.getChild(next);
-        if (nextDecl instanceof DiceParser.ResourceNameContext) {
-            buildContext.resourceName = nextDecl.getChild(1).getText();
-            next += 1;
+        if (decl instanceof GameMLParser.IntervalFlowRateContext) {
+            buildIntervalFlowRate(flowRate, (GameMLParser.IntervalFlowRateContext)decl);
         }
 
-        nextDecl = decl.getChild(next);
-        if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
-            next += 1;
+        return flowRate;
+    }
 
-        nextDecl = decl.getChild(next);
-        buildContext.to = (AbstractNode)context.machinations.findById(nextDecl.getText());
-        if (buildContext.to == null)
-            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+    private float parsePercentage(String value) {
+        int p = Integer.parseInt(value.substring(0, value.length() - 1));
+        return (p / 100.0f);
+    }
+
+    private void buildIntervalFlowRate(FlowRate flowRate, GameMLParser.IntervalFlowRateContext flowRateContext) {
+        int next = 0;
+        ParseTree decl = flowRateContext.getChild(next);
+
+        if (decl instanceof GameMLParser.IntegerExpressionContext) {
+            flowRate.setValue(buildInteger((GameMLParser.IntegerExpressionContext)decl));
+        }
+        else if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.ALL) {
+            flowRate.setValue(MaxInteger.instance());
+        }
 
         next += 2;
-        nextDecl = decl.getChild(next);
-        if (nextDecl != null) {
-            buildContext.id =  nextDecl.getText();
+        decl = flowRateContext.getChild(next);
+        if (decl != null) {
+            flowRate.setInterval(buildInteger((GameMLParser.IntegerExpressionContext)decl));
+        }
+    }
+
+    private IntegerExpression buildInteger(GameMLParser.IntegerExpressionContext expressionContext) {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof GameMLParser.UnaryIntegerExpressionContext)
+            return buildUnaryInteger((GameMLParser.UnaryIntegerExpressionContext)decl);
+        else if (decl instanceof GameMLParser.GroupIntegerExpressionContext)
+            return buildInteger((GameMLParser.IntegerExpressionContext)decl.getChild(1));
+        else if (decl instanceof GameMLParser.BinaryIntegerExpressionContext) {
+            IntegerExpression lhs = buildUnaryInteger((GameMLParser.UnaryIntegerExpressionContext)decl.getChild(0));
+            IntegerExpression rhs = buildInteger((GameMLParser.IntegerExpressionContext)decl.getChild(2));
+            TerminalNode opToken = (TerminalNode)decl.getChild(1);
+
+            if (opToken.getSymbol().getType() == GameMLParser.PLUS)
+                return AdditiveIntegerExpression.of(lhs, rhs);
+            else
+                return SubtractiveIntegerExpression.of(lhs, rhs);
+        }
+
+        throw new RuntimeException("Shall not reach here");
+    }
+
+    private IntegerExpression buildUnaryInteger(GameMLParser.UnaryIntegerExpressionContext expressionContext) {
+        TerminalNode decl = (TerminalNode)expressionContext.getChild(0);
+
+        switch (decl.getSymbol().getType()) {
+            case GameMLParser.INTEGER:
+            case GameMLParser.REAL:
+                return FixedInteger.of(Float.parseFloat(decl.getText()));
+            default:
+                return RandomInteger.parse(decl.getText());
+        }
+    }
+
+    private <T extends AbstractElement> T fromIdentifier(BuildingContext context, ParseTree decl, Class clazz)
+            throws Exception
+    {
+        AbstractElement instance = context.machinations.findById(decl.getText());
+
+        if (instance == null || !clazz.isInstance(instance))
+            throw new Exception(String.format("Unknown identifier %s", decl.getText()));
+
+        return (T)instance;
+    }
+
+    private ConnectionBuildContext getConnectionBuildContext(BuildingContext context, String definition) throws Exception {
+        ConnectionBuildContext buildContext = new ConnectionBuildContext();
+
+        GameMLParser parser = getGameMLParser(definition);
+        GameMLParser.ResourceConnectionContext resourceConnectionContext = parser.resourceConnection();
+
+        int next = 0;
+        ParseTree decl = resourceConnectionContext.getChild(next);
+
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
+            buildContext.from = fromIdentifier(context, decl, AbstractNode.class);
+            next += 2;
+            decl = resourceConnectionContext.getChild(next);
+        }
+
+        if (decl instanceof GameMLParser.ResourceConnectionLabelContext) {
+            buildContext.labelContext = (GameMLParser.ResourceConnectionLabelContext)decl;
+            next += 2;
+            decl = resourceConnectionContext.getChild(next);
+        }
+
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.TO) {
+            next += 1;
+            decl = resourceConnectionContext.getChild(next);
+        }
+
+        {
+            buildContext.to = fromIdentifier(context, decl, AbstractNode.class);
+            next += 1;
+            decl = resourceConnectionContext.getChild(next);
+        }
+
+        if (decl instanceof GameMLParser.ResourceConnectionIdContext) {
+            buildContext.id = decl.getChild(1).getText();
         }
 
         return buildContext;
+
+//        DiceParser parser = getParser(definition);
+//        ConnectionBuildContext buildContext = new ConnectionBuildContext();
+//
+//        ParseTree decl = parser.connectionDefinition().children.get(0);
+//        int next = 0;
+//        ParseTree nextDecl = decl.getChild(next);
+//
+//        if (decl instanceof DiceParser.ExplicitConnectionDefinitionContext) {
+//            buildContext.from = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//            if (buildContext.from == null)
+//                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+//
+//            next += 2;
+//        }
+//
+//        nextDecl = decl.getChild(next);
+//        if (nextDecl instanceof DiceParser.ExpressionContext) {
+//            buildContext.labelExpression = (DiceParser.ExpressionContext)nextDecl;
+//            next += 1;
+//        }
+//
+//        nextDecl = decl.getChild(next);
+//        if (nextDecl instanceof DiceParser.ResourceNameContext) {
+//            buildContext.resourceName = nextDecl.getChild(1).getText();
+//            next += 1;
+//        }
+//
+//        nextDecl = decl.getChild(next);
+//        if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
+//            next += 1;
+//
+//        nextDecl = decl.getChild(next);
+//        buildContext.to = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//        if (buildContext.to == null)
+//            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+//
+//        next += 2;
+//        nextDecl = decl.getChild(next);
+//        if (nextDecl != null) {
+//            buildContext.id =  nextDecl.getText();
+//        }
+//
+//        return buildContext;
     }
 
     private ModifierBuildContext getModifierBuildContext(BuildingContext context, String definition) throws Exception {
@@ -996,6 +1152,13 @@ public class MachinationsContextFactory {
         TokenStream tokens = new CommonTokenStream(new DiceLexer(stream));
 
         DiceParser parser = new DiceParser(tokens);
+        return parser;
+    }
+
+    private GameMLParser getGameMLParser(String expression) {
+        CharStream stream = new ANTLRInputStream(expression);
+        TokenStream tokens = new CommonTokenStream(new GameMLLexer(stream));
+        GameMLParser parser = new GameMLParser(tokens);
         return parser;
     }
 

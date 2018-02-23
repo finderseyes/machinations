@@ -12,8 +12,17 @@ nodes:
     resources: 125 mana, 30 gold
     capacity: 200 mana
     connections:
-      - --> p1 (p0_p1)
-      - 2D10 --> p2 (p0_p2)
+      - "--> p1 : p0_p1"
+      - "2D10 --> p2 : p0_p2_0"
+      - "1/4 --> p2 : p0_p2_1"
+      - "50% --> p2 : p0_p2_2"
+      - "3*50% --> p2 : p0_p2_3"
+      - "10 (gold) --> p2 : p0_p2_4"
+      - "2*10 (gold) --> p2 : p0_p2_5"
+      - "2*30% (gold) --> p2 : p0_p2_6"
+      - "all --> p2 : p0_p2_7"
+      - "all (gold) --> p2 : p0_p2_8"
+      - "5*30%, 10/5 (gold) --> p2 : p0_p2_9"
       - --> p3
     modifiers:
       - +2 --> p1
@@ -66,8 +75,9 @@ nodes:
     id: p6
 
 connections:
-  - p2 --> p3 (p2_p3)
-  - p2 --> 5D+10 --> p4 (p2_p4)
+  - "p2 --> p3 : p2_p3"
+  - "p2 --> 5D+10 --> p4 :p2_p4"
+
 
 modifiers:
   - p3 --> +3 --> p4

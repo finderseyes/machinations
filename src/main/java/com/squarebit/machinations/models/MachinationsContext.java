@@ -122,7 +122,7 @@ public class MachinationsContext {
                 .collect(Collectors.toSet());
 
 //        Map<ResourceConnection, Integer> requiredFlows = new HashMap<>();
-//        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRate()));
+//        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRateValue()));
 
         Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
         requiredConnections.forEach(c -> requiredResources.put(c, c.activate()));
@@ -268,7 +268,7 @@ public class MachinationsContext {
     }
 
     private void activateConnection(ResourceConnection connection) {
-        int rate = connection.getFlowRate();
+        int rate = connection.getFlowRateValue();
         ResourceSet resource = connection.getFrom().getResources().remove(rate);
         connection.getTo().receive(resource);
     }

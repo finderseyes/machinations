@@ -3,15 +3,17 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.ArithmeticExpression;
 import com.squarebit.machinations.engine.Expression;
 import com.squarebit.machinations.engine.IntNumber;
+import com.squarebit.machinations.engine.IntegerExpression;
 
 public class ResourceConnection extends AbstractConnection {
-    public static final IntNumber DEFAULT_FLOW_RATE = IntNumber.of(1);
-
     private AbstractNode from;
     private AbstractNode to;
-    private String label = "";
-    private Expression flowRateExpression = DEFAULT_FLOW_RATE;
+
+    private FlowRate flowRate = new FlowRate();
     private String resourceName = null; // if null, any resource.
+
+    public static final IntNumber DEFAULT_FLOW_RATE = IntNumber.of(1);
+    private Expression flowRateExpression = DEFAULT_FLOW_RATE;
 
     /**
      * Gets from.
@@ -54,22 +56,42 @@ public class ResourceConnection extends AbstractConnection {
     }
 
     /**
-     * Gets label.
+     * Gets flow rate.
      *
-     * @return the label
+     * @return the flow rate
      */
-    public String getLabel() {
-        return label;
+    public FlowRate getFlowRate() {
+        return flowRate;
     }
 
     /**
-     * Sets label.
+     * Sets flow rate.
      *
-     * @param label the label
-     * @return the label
+     * @param flowRate the flow rate
+     * @return the flow rate
      */
-    public AbstractConnection setLabel(String label) {
-        this.label = label;
+    public ResourceConnection setFlowRate(FlowRate flowRate) {
+        this.flowRate = flowRate;
+        return this;
+    }
+
+    /**
+     * Gets resource name.
+     *
+     * @return the resource name
+     */
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    /**
+     * Sets resource name.
+     *
+     * @param resourceName the resource name
+     * @return the resource name
+     */
+    public ResourceConnection setResourceName(String resourceName) {
+        this.resourceName = resourceName;
         return this;
     }
 
@@ -93,7 +115,7 @@ public class ResourceConnection extends AbstractConnection {
         return this;
     }
 
-    public int getFlowRate() {
+    public int getFlowRateValue() {
         if (flowRateExpression instanceof ArithmeticExpression) {
             return ((ArithmeticExpression)flowRateExpression).eval();
         }
@@ -112,25 +134,5 @@ public class ResourceConnection extends AbstractConnection {
         }
         else
             return ResourceSet.empty();
-    }
-
-    /**
-     * Gets resource name.
-     *
-     * @return the resource name
-     */
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    /**
-     * Sets resource name.
-     *
-     * @param resourceName the resource name
-     * @return the resource name
-     */
-    public ResourceConnection setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-        return this;
     }
 }
