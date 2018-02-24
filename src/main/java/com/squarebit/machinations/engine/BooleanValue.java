@@ -10,7 +10,7 @@ public class BooleanValue extends LogicalExpression {
      */
     @Override
     public boolean eval() {
-        return false;
+        return value;
     }
 
     /**

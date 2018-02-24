@@ -2,49 +2,72 @@ package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.LogicalExpression;
 
-public class Activator {
+public class Activator extends Element {
     private Node owner;
     private Node target;
-    private String label;
-    private LogicalExpression conditionExpression;
+    private LogicalExpression condition;
 
+    /**
+     * Gets owner.
+     *
+     * @return the owner
+     */
     public Node getOwner() {
         return owner;
     }
 
+    /**
+     * Sets owner.
+     *
+     * @param owner the owner
+     * @return the owner
+     */
     public Activator setOwner(Node owner) {
         this.owner = owner;
         return this;
     }
 
+    /**
+     * Gets target.
+     *
+     * @return the target
+     */
     public Node getTarget() {
         return target;
     }
 
+    /**
+     * Sets target.
+     *
+     * @param target the target
+     * @return the target
+     */
     public Activator setTarget(Node target) {
         this.target = target;
         return this;
     }
 
-    public String getLabel() {
-        return label;
+    /**
+     * Gets condition.
+     *
+     * @return the condition
+     */
+    public LogicalExpression getCondition() {
+        return condition;
     }
 
-    public Activator setLabel(String label) {
-        this.label = label;
-        return this;
-    }
-
-    public LogicalExpression getConditionExpression() {
-        return conditionExpression;
-    }
-
-    public Activator setConditionExpression(LogicalExpression conditionExpression) {
-        this.conditionExpression = conditionExpression;
+    /**
+     * Sets condition.
+     *
+     * @param condition the condition
+     * @return the condition
+     */
+    public Activator setCondition(LogicalExpression condition) {
+        this.condition = condition;
         return this;
     }
 
     public boolean evaluate() {
-        return this.conditionExpression.eval();
+        return this.condition.eval();
     }
 }

@@ -39,6 +39,8 @@ nodes:
       - --> p0_p1
     activators:
       - ">= 5 --> p1"
+      - ">= 5 --> p1 : a_p0_0"
+      - ">= 5 && < 10--> p1 : a_p0_1"
 
   - type: pool
     id: p1

@@ -137,7 +137,7 @@ public class MachinationsContextFactory {
 //                        context.currentObject = activator;
 //
 ////                        if (buildContext.condition != null) {
-////                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
+////                            // activator.setCondition(buildBoolean(context, buildContext.condition));
 ////                        }
 //                    });
 //                });
@@ -502,9 +502,24 @@ public class MachinationsContextFactory {
             throw lastError.get();
     }
 
-    private void createActivator(BuildingContext context, ActivatorBuildContext buildContext) {
-        Activator activator = new Activator().setOwner(buildContext.owner).setTarget(buildContext.target);
+    private void createActivator(BuildingContext context, ActivatorBuildContext buildContext) throws Exception {
+        Activator activator = new Activator();
+        activator
+                .setOwner(buildContext.owner)
+                .setTarget(buildContext.target)
+                .setId(getOrCreateId(buildContext.id));
+
+        if (buildContext.labelContext != null) {
+            activator.setCondition(
+                    buildBoolean(
+                            context,
+                            (GameMLParser.LogicalExpressionContext) buildContext.labelContext.getChild(0)
+                    )
+            );
+        }
+
         buildContext.owner.getActivators().add(activator);
+        context.machinations.addElement(activator);
         context.buildContext.put(activator, buildContext);
     }
 

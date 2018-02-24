@@ -88,14 +88,9 @@ public class MachinationsContextFactoryTests {
                 assertThat(modifier.getSign()).isEqualTo(-1);
             }
 
-            {
-                Trigger trigger = (Trigger)context.findById("t_p0_0");
-                assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
-            }
-
             // assertThat(pool.getTriggers().size()).isEqualTo(4);
 
-            assertThat(pool.getActivators().size()).isEqualTo(1);
+//            assertThat(pool.getActivators().size()).isEqualTo(1);
         }
 
         {
@@ -389,6 +384,81 @@ public class MachinationsContextFactoryTests {
             ResourceConnection connection = (ResourceConnection)context.findById("p2_p4");
             assertThat(connection.getFrom()).isEqualTo(context.findById("p2"));
             assertThat(connection.getTo()).isEqualTo(context.findById("p4"));
+        }
+    }
+
+    @Test
+    public void should_load_triggers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+
+        MachinationsContext context = factory.fromSpec(spec);
+        assertThat(context).isNotNull();
+
+        {
+            Trigger trigger = (Trigger)context.findById("t_p0_0");
+            assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(trigger.getCondition().eval()).isTrue();
+
+            assertThat(trigger.isUsingProbability()).isFalse();
+            assertThat(trigger.getDistribution().eval()).isEqualTo(1);
+        }
+
+        {
+            Trigger trigger = (Trigger)context.findById("t_p0_1");
+            assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(trigger.getCondition().eval()).isTrue();
+
+            assertThat(trigger.isUsingProbability()).isFalse();
+            assertThat(trigger.getDistribution().eval()).isEqualTo(1);
+        }
+
+        {
+            Trigger trigger = (Trigger)context.findById("t_p0_2");
+            assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(trigger.getCondition().eval()).isTrue();
+
+            assertThat(trigger.isUsingProbability()).isTrue();
+            assertThat(trigger.getProbability().getValue()).isEqualTo(50);
+        }
+
+        {
+            Trigger trigger = (Trigger)context.findById("t_p0_3");
+            assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(trigger.getCondition().eval()).isTrue();
+
+            assertThat(trigger.isUsingProbability()).isFalse();
+            assertThat(trigger.getDistribution().eval()).isEqualTo(1);
+        }
+
+        {
+            Trigger trigger = (Trigger)context.findById("t_p0_4");
+            assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            assertThat(trigger.getCondition().eval()).isFalse();
+
+            assertThat(trigger.isUsingProbability()).isTrue();
+            assertThat(trigger.getProbability().getValue()).isEqualTo(50);
+        }
+    }
+
+    @Test
+    public void should_load_activators() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsContextFactory factory = new MachinationsContextFactory();
+
+        MachinationsContext context = factory.fromSpec(spec);
+        assertThat(context).isNotNull();
+
+        {
+            Activator activator = (Activator)context.findById("a_p0_0");
+            assertThat(activator.getCondition().eval()).isTrue();
+        }
+
+        {
+            Activator activator = (Activator)context.findById("a_p0_1");
+            assertThat(activator.getCondition().eval()).isFalse();
         }
     }
 
