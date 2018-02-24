@@ -1,8 +1,6 @@
 package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
-import com.squarebit.machinations.parsers.DiceLexer;
-import com.squarebit.machinations.parsers.DiceParser;
 import com.squarebit.machinations.parsers.GameMLLexer;
 import com.squarebit.machinations.parsers.GameMLParser;
 import com.squarebit.machinations.specs.yaml.*;
@@ -93,69 +91,69 @@ public class MachinationsContextFactory {
         this.createImplicitActivators(context);
         this.createExplicitActivators(context, spec);
 
-        // --> Third pass.
-
-        // Build connection flow expression.
-        context.machinations.getElements().stream()
-                .filter(e -> e instanceof ResourceConnection).map(e -> (ResourceConnection)e)
-                .forEach(connection -> {
-                    ConnectionBuildContext buildContext =
-                            (ConnectionBuildContext)context.buildContext.get(connection);
-                    context.currentObject = connection;
-                });
-
-        // Now commit the initial resources.
-        context.machinations.getElements().stream()
-                .filter(e -> e instanceof Node).map(e -> (Node)e)
-                .forEach(n -> n.resources.commit());
-
-        // Modifiers, triggers and activators.
-        context.machinations.getElements().stream()
-                .filter(e -> e instanceof Node).map(e -> (Node)e)
-                .forEach(node -> {
-                    node.getModifiers().forEach(modifier -> {
-                        ModifierBuildContext buildContext =
-                                (ModifierBuildContext)context.buildContext.get(modifier);
-                        context.currentObject = modifier;
-
-//                        if (buildContext.expression != null) {
-//                            // modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
-//                        }
-                    });
-
-                    node.getTriggers().forEach(trigger -> {
-                        TriggerBuildContext buildContext =
-                                (TriggerBuildContext)context.buildContext.get(trigger);
-                        context.currentObject = trigger;
-
-//                        if (buildContext.expression != null) {
-//                            trigger.setLabelExpression(buildExpression(context, buildContext.expression));
-//                        }
-                    });
-
-                    node.getActivators().forEach(activator -> {
-                        ActivatorBuildContext buildContext =
-                                (ActivatorBuildContext)context.buildContext.get(activator);
-                        context.currentObject = activator;
-
-//                        if (buildContext.condition != null) {
-//                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
-//                        }
-                    });
-                });
+//        // --> Third pass.
+//
+//        // Build connection flow expression.
+//        context.machinations.getElements().stream()
+//                .filter(e -> e instanceof ResourceConnection).map(e -> (ResourceConnection)e)
+//                .forEach(connection -> {
+//                    ConnectionBuildContext buildContext =
+//                            (ConnectionBuildContext)context.buildContext.get(connection);
+//                    context.currentObject = connection;
+//                });
+//
+//        // Now commit the initial resources.
+//        context.machinations.getElements().stream()
+//                .filter(e -> e instanceof Node).map(e -> (Node)e)
+//                .forEach(n -> n.resources.commit());
+//
+//        // Modifiers, triggers and activators.
+//        context.machinations.getElements().stream()
+//                .filter(e -> e instanceof Node).map(e -> (Node)e)
+//                .forEach(node -> {
+//                    node.getModifiers().forEach(modifier -> {
+//                        ModifierBuildContext buildContext =
+//                                (ModifierBuildContext)context.buildContext.get(modifier);
+//                        context.currentObject = modifier;
+//
+////                        if (buildContext.expression != null) {
+////                            // modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
+////                        }
+//                    });
+//
+//                    node.getTriggers().forEach(trigger -> {
+//                        TriggerBuildContext buildContext =
+//                                (TriggerBuildContext)context.buildContext.get(trigger);
+//                        context.currentObject = trigger;
+//
+////                        if (buildContext.expression != null) {
+////                            trigger.setLabelExpression(buildExpression(context, buildContext.expression));
+////                        }
+//                    });
+//
+//                    node.getActivators().forEach(activator -> {
+//                        ActivatorBuildContext buildContext =
+//                                (ActivatorBuildContext)context.buildContext.get(activator);
+//                        context.currentObject = activator;
+//
+////                        if (buildContext.condition != null) {
+////                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
+////                        }
+//                    });
+//                });
 
         context.machinations.initializeIfNeeded();
         return context.machinations;
     }
 
     public Expression buildExpression(BuildingContext context,
-                                      DiceParser.ExpressionContext expressionContext)
+                                      GameMLParser.ExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
 
-        if (decl instanceof DiceParser.ArithmeticExpressionContext)
+        if (decl instanceof GameMLParser.ArithmeticExpressionContext)
             return buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)decl);
-        else if (decl instanceof DiceParser.LogicalExpressionContext)
+        else if (decl instanceof GameMLParser.LogicalExpressionContext)
             return buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl);
 
         return null;
@@ -166,13 +164,13 @@ public class MachinationsContextFactory {
     {
         ParseTree decl = expressionContext.getChild(0);
 
-        if (decl instanceof DiceParser.UnaryLogicalExpressionContext) {
+        if (decl instanceof GameMLParser.UnaryLogicalExpressionContext) {
             return buildUnaryBoolean(context, (GameMLParser.UnaryLogicalExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.LogicalAndExpressionContext) {
+        else if (decl instanceof GameMLParser.LogicalAndExpressionContext) {
             return buildAnd(context, (GameMLParser.LogicalAndExpressionContext)decl);
         }
-        else if (decl instanceof DiceParser.LogicalOrExpressionContext) {
+        else if (decl instanceof GameMLParser.LogicalOrExpressionContext) {
             return buildOr(context, (GameMLParser.LogicalOrExpressionContext)decl);
         }
 
@@ -221,7 +219,7 @@ public class MachinationsContextFactory {
             LogicalExpression child =
                     buildBoolean(context, (GameMLParser.LogicalExpressionContext)expressionContext.getChild(1));
 
-            if (opToken.getType() == DiceParser.NOT) {
+            if (opToken.getType() == GameMLParser.NOT) {
                 return Not.of(child);
             }
         }
@@ -308,12 +306,12 @@ public class MachinationsContextFactory {
         String op = "";
 
         switch (token.getType()) {
-            case DiceParser.GT: op = Comparison.GT; break;
-            case DiceParser.GTE: op = Comparison.GTE; break;
-            case DiceParser.LT: op = Comparison.LT; break;
-            case DiceParser.LTE: op = Comparison.LTE; break;
-            case DiceParser.EQ: op = Comparison.EQ; break;
-            case DiceParser.NEQ: op = Comparison.NEQ; break;
+            case GameMLParser.GT: op = Comparison.GT; break;
+            case GameMLParser.GTE: op = Comparison.GTE; break;
+            case GameMLParser.LT: op = Comparison.LT; break;
+            case GameMLParser.LTE: op = Comparison.LTE; break;
+            case GameMLParser.EQ: op = Comparison.EQ; break;
+            case GameMLParser.NEQ: op = Comparison.NEQ; break;
         }
 
         return op;
@@ -350,7 +348,7 @@ public class MachinationsContextFactory {
                         context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(1)
                 );
 
-                if (token.getType() == DiceParser.MINUS)
+                if (token.getType() == GameMLParser.MINUS)
                     return Negation.of(child);
                 else
                     return child;
@@ -366,38 +364,6 @@ public class MachinationsContextFactory {
         return null;
     }
 
-    private ArithmeticExpression buildNumber(DiceParser.NumberContext numberContext) {
-        Token token = ((TerminalNode)numberContext.getChild(0)).getSymbol();
-
-        if (token.getType() == DiceParser.INT)
-            return IntNumber.of(Integer.parseInt(token.getText()));
-
-        return IntNumber.of(1);
-    }
-
-    private ArithmeticExpression buildRandomNumber(DiceParser.RandomNumberContext context) {
-        Token token = ((TerminalNode)context.getChild(0)).getSymbol();
-        String text = token.getText();
-
-        if (text.equals("D"))
-            return DiceNumber.of(1, 6);
-        else if (text.charAt(0) == 'D')
-            return DiceNumber.of(1, Integer.parseInt(text.substring(1)));
-        else if (text.charAt(text.length() - 1) == 'D')
-            return DiceNumber.of(Integer.parseInt(text.substring(0, text.length() - 1)), 6);
-        else {
-            String[] parts = token.getText().split("D");
-            return DiceNumber.of(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-        }
-    }
-
-    private ArithmeticExpression buildProbableNumber(DiceParser.ProbableNumberContext context) {
-        Token token = ((TerminalNode)context.getChild(0)).getSymbol();
-        String text = token.getText();
-        int percentage = Integer.parseInt(text.substring(0, text.length() - 1));
-        return ProbableNumber.of(percentage * 1e-2f);
-    }
-
     private ArithmeticExpression buildAdditiveExpressionContext(BuildingContext context,
                                                                 GameMLParser.AdditiveExpressionContext expressionContext) {
         ArithmeticExpression lhs = buildUnaryArithmetic(
@@ -407,7 +373,7 @@ public class MachinationsContextFactory {
 
         Token token = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
 
-        if (token.getType() == DiceParser.PLUS)
+        if (token.getType() == GameMLParser.PLUS)
             return Addition.of(lhs, rhs);
         else
             return Subtraction.of(lhs, rhs);
@@ -438,7 +404,7 @@ public class MachinationsContextFactory {
                 PoolSpec poolSpec = (PoolSpec)nodeSpec;
                 Pool pool = new Pool();
                 buildResourcesDecl(pool, poolSpec.getResources());
-                buildCapacityDecl(pool, poolSpec.getCapacity());
+//                buildCapacityDecl(pool, poolSpec.getCapacity());
                 node = pool;
             }
             else if (nodeSpec instanceof GateSpec) {
@@ -592,10 +558,39 @@ public class MachinationsContextFactory {
                 .setTarget(buildContext.target)
                 .setId(getOrCreateId(buildContext.id));
 
+        if (buildContext.labelContext != null) {
+            buildTriggerLabel(context, trigger, buildContext.labelContext);
+        }
+
         buildContext.owner.getTriggers().add(trigger);
 
         context.machinations.addElement(trigger);
         context.buildContext.put(trigger, buildContext);
+    }
+
+    private void buildTriggerLabel(BuildingContext context, Trigger trigger, GameMLParser.TriggerLabelContext labelContext) {
+        int next = 0;
+        ParseTree decl = labelContext.getChild(next);
+
+        context.currentObject = trigger;
+
+        if (decl instanceof GameMLParser.LogicalExpressionContext) {
+            trigger.setCondition(buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl));
+            next += 2;
+            decl = labelContext.getChild(next);
+        }
+
+        if (decl instanceof GameMLParser.TriggerProbabilityContext) {
+            Token token = ((TerminalNode)decl.getChild(0)).getSymbol();
+            if (token.getType() == GameMLParser.INTEGER || token.getType() == GameMLParser.REAL) {
+                trigger.setDistribution(FixedInteger.parse(token.getText()));
+                trigger.setUsingProbability(false);
+            }
+            else {
+                trigger.setProbability(Percentage.parse(token.getText()));
+                trigger.setUsingProbability(true);
+            }
+        }
     }
 
     private void createExplicitModifiers(BuildingContext context, YamlSpec spec) throws Exception {
@@ -1099,14 +1094,6 @@ public class MachinationsContextFactory {
         return buildContext;
     }
 
-    private DiceParser getParser(String expression) {
-        CharStream stream = new ANTLRInputStream(expression);
-        TokenStream tokens = new CommonTokenStream(new DiceLexer(stream));
-
-        DiceParser parser = new DiceParser(tokens);
-        return parser;
-    }
-
     private GameMLParser getGameMLParser(String expression) {
         CharStream stream = new ANTLRInputStream(expression);
         TokenStream tokens = new CommonTokenStream(new GameMLLexer(stream));
@@ -1121,46 +1108,43 @@ public class MachinationsContextFactory {
         if (resourceExpression == null || resourceExpression.trim().equals(""))
             return;
 
-        DiceParser parser = getParser(resourceExpression);
-        DiceParser.ResourceExpressionContext context = parser.resourceExpression();
+        GameMLParser parser = getGameMLParser(resourceExpression);
+        GameMLParser.ResourceExpressionContext context = parser.resourceExpression();
         context.children.forEach(c -> {
-            if (c instanceof DiceParser.SingleResourceExpressionContext) {
-                DiceParser.SingleResourceExpressionContext decl = (DiceParser.SingleResourceExpressionContext)c;
+            if (c instanceof GameMLParser.SingleResourceExpressionContext) {
+                GameMLParser.SingleResourceExpressionContext decl = (GameMLParser.SingleResourceExpressionContext)c;
 
-                int count = Integer.parseInt(decl.INT().getText());
+                int count = Integer.parseInt(decl.INTEGER().getText());
                 String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
                         MachinationsContext.DEFAULT_RESOURCE_NAME;
 
                 node.resources.add(name, count);
-
-//                if (nodeResources.putIfAbsent(name, count) != null)
-//                    nodeResources.compute(name, (n, c0) -> (c0 + count));
             }
         });
     }
 
-    private void buildCapacityDecl(Node node, String resourceExpression) {
-        Map<String, Integer> capacity = node.getCapacity();
-        capacity.clear();
-
-        if (resourceExpression == null || resourceExpression.trim().equals(""))
-            return;
-
-        DiceParser parser = getParser(resourceExpression);
-        DiceParser.ResourceExpressionContext context = parser.resourceExpression();
-        context.children.forEach(c -> {
-            if (c instanceof DiceParser.SingleResourceExpressionContext) {
-                DiceParser.SingleResourceExpressionContext decl = (DiceParser.SingleResourceExpressionContext)c;
-
-                int count = Integer.parseInt(decl.INT().getText());
-                String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
-                            MachinationsContext.DEFAULT_RESOURCE_NAME;
-
-                if (capacity.putIfAbsent(name, count) != null)
-                    capacity.compute(name, (n, c0) -> (c0 + count));
-            }
-        });
-    }
+//    private void buildCapacityDecl(Node node, String resourceExpression) {
+//        Map<String, Integer> capacity = node.getCapacity();
+//        capacity.clear();
+//
+//        if (resourceExpression == null || resourceExpression.trim().equals(""))
+//            return;
+//
+//        GameMLParser parser = getGameMLParser(resourceExpression);
+//        GameMLParser.Resour context = parser.resourceExpression();
+//        context.children.forEach(c -> {
+//            if (c instanceof DiceParser.SingleResourceExpressionContext) {
+//                DiceParser.SingleResourceExpressionContext decl = (DiceParser.SingleResourceExpressionContext)c;
+//
+//                int count = Integer.parseInt(decl.INT().getText());
+//                String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
+//                            MachinationsContext.DEFAULT_RESOURCE_NAME;
+//
+//                if (capacity.putIfAbsent(name, count) != null)
+//                    capacity.compute(name, (n, c0) -> (c0 + count));
+//            }
+//        });
+//    }
 
     private String getOrCreateId(String id) {
         if (id != null && !id.equals(""))

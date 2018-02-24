@@ -1,5 +1,8 @@
 grammar GameML;
 
+resourceExpression: singleResourceExpression (',' singleResourceExpression)*;
+singleResourceExpression: INTEGER IDENTIFIER?;
+
 // Resource connection.
 resourceConnection
     : resourceConnectionLabel? TO IDENTIFIER elementId?
