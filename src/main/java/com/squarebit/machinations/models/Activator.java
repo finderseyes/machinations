@@ -3,25 +3,25 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.LogicalExpression;
 
 public class Activator {
-    private AbstractNode owner;
-    private AbstractNode target;
+    private Node owner;
+    private Node target;
     private String label;
     private LogicalExpression conditionExpression;
 
-    public AbstractNode getOwner() {
+    public Node getOwner() {
         return owner;
     }
 
-    public Activator setOwner(AbstractNode owner) {
+    public Activator setOwner(Node owner) {
         this.owner = owner;
         return this;
     }
 
-    public AbstractNode getTarget() {
+    public Node getTarget() {
         return target;
     }
 
-    public Activator setTarget(AbstractNode target) {
+    public Activator setTarget(Node target) {
         this.target = target;
         return this;
     }

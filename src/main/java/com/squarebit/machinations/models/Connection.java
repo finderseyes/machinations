@@ -1,24 +1,24 @@
 package com.squarebit.machinations.models;
 
-public abstract class AbstractConnection extends AbstractElement {
-//    private AbstractNode from;
-//    private AbstractNode to;
+public abstract class Connection extends GraphElement {
+//    private Node from;
+//    private Node to;
 //    private String label = "";
 //
-//    public AbstractNode getFrom() {
+//    public Node getFrom() {
 //        return from;
 //    }
 //
-//    public AbstractConnection setFrom(AbstractNode from) {
+//    public Connection setFrom(Node from) {
 //        this.from = from;
 //        return this;
 //    }
 //
-//    public AbstractNode getTo() {
+//    public Node getTo() {
 //        return to;
 //    }
 //
-//    public AbstractConnection setTo(AbstractNode to) {
+//    public Connection setTo(Node to) {
 //        this.to = to;
 //        return this;
 //    }
@@ -27,7 +27,7 @@ public abstract class AbstractConnection extends AbstractElement {
 //        return label;
 //    }
 //
-//    public AbstractConnection setLabel(String label) {
+//    public Connection setLabel(String label) {
 //        this.label = label;
 //        return this;
 //    }

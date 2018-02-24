@@ -1,10 +1,10 @@
 package com.squarebit.machinations.engine;
 
-import com.squarebit.machinations.models.AbstractNode;
+import com.squarebit.machinations.models.Node;
 import com.squarebit.machinations.models.NodeEvaluationContext;
 
 public class AbstractNodeRef extends ArithmeticExpression {
-    private AbstractNode node;
+    private Node node;
     private NodeEvaluationContext context;
 
     /**
@@ -12,7 +12,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      *
      * @return the node
      */
-    public AbstractNode getNode() {
+    public Node getNode() {
         return node;
     }
 
@@ -22,7 +22,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      * @param node the node
      * @return the node
      */
-    public AbstractNodeRef setNode(AbstractNode node) {
+    public AbstractNodeRef setNode(Node node) {
         this.node = node;
         return this;
     }
@@ -58,7 +58,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
         return node.evaluate(context);
     }
 
-    public static AbstractNodeRef of(AbstractNode node) {
+    public static AbstractNodeRef of(Node node) {
         return new AbstractNodeRef().setNode(node);
     }
 }

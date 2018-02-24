@@ -5,8 +5,6 @@ import com.squarebit.machinations.engine.LogicalExpression;
 import com.squarebit.machinations.engine.MaxInteger;
 import com.squarebit.machinations.engine.RandomInteger;
 import com.squarebit.machinations.models.*;
-import com.squarebit.machinations.parsers.DiceLexer;
-import com.squarebit.machinations.parsers.DiceParser;
 import com.squarebit.machinations.parsers.GameMLLexer;
 import com.squarebit.machinations.parsers.GameMLParser;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
@@ -14,7 +12,6 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
-import org.assertj.core.data.Offset;
 import org.junit.Test;
 
 import java.util.function.Function;
@@ -32,7 +29,7 @@ public class MachinationsContextFactoryTests {
         assertThat(context).isNotNull();
 
         {
-            AbstractElement element = context.findById("p0");
+            Element element = context.findById("p0");
             assertThat(element).isNotNull();
             assertThat(element instanceof Pool).isTrue();
 
@@ -49,11 +46,47 @@ public class MachinationsContextFactoryTests {
 
             assertThat(pool.getOutgoingConnections().size()).isEqualTo(12);
 
-            assertThat(pool.getModifiers().size()).isEqualTo(1);
-            Modifier modifier = pool.getModifiers().stream().findFirst().get();
-            assertThat(modifier.getLabel()).isEqualTo("+2");
-            assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
-            assertThat(modifier.getRateExpression().eval()).isEqualTo(2);
+            // assertThat(pool.getModifiers().size()).isEqualTo(1);
+
+            {
+                ValueModifier modifier = (ValueModifier)context.findById("m_p0_p1_0");
+
+                assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
+                assertThat(modifier.getValue().eval()).isEqualTo(2);
+                assertThat(modifier.getSign()).isEqualTo(1);
+            }
+
+            {
+                ValueModifier modifier = (ValueModifier)context.findById("m_p0_p1_1");
+
+                assertThat(modifier.getTarget()).isEqualTo(context.findById("p1"));
+                assertThat(modifier.getValue().eval()).isEqualTo(2);
+                assertThat(modifier.getSign()).isEqualTo(-1);
+            }
+
+            {
+                IntervalModifier modifier = (IntervalModifier)context.findById("m_p0_p1_2");
+
+                assertThat(modifier.getTarget()).isEqualTo(context.findById("p0_p2_1"));
+                assertThat(modifier.getValue().eval()).isEqualTo(1);
+                assertThat(modifier.getSign()).isEqualTo(1);
+            }
+
+            {
+                ProbabilityModifier modifier = (ProbabilityModifier)context.findById("m_p0_p1_3");
+
+                assertThat(modifier.getTarget()).isEqualTo(context.findById("p0_p2_2"));
+                assertThat(modifier.getValue().getValue()).isEqualTo(5);
+                assertThat(modifier.getSign()).isEqualTo(1);
+            }
+
+            {
+                MultiplierModifier modifier = (MultiplierModifier) context.findById("m_p0_p1_4");
+
+                assertThat(modifier.getTarget()).isEqualTo(context.findById("p0_p2_5"));
+                assertThat(modifier.getValue().eval()).isEqualTo(3);
+                assertThat(modifier.getSign()).isEqualTo(-1);
+            }
 
             assertThat(pool.getTriggers().size()).isEqualTo(4);
 
@@ -61,7 +94,7 @@ public class MachinationsContextFactoryTests {
         }
 
         {
-            AbstractElement element = context.findById("p1");
+            Element element = context.findById("p1");
             assertThat(element).isNotNull();
             assertThat(element instanceof Pool).isTrue();
 
@@ -75,7 +108,7 @@ public class MachinationsContextFactoryTests {
         }
 
         {
-            AbstractElement element = context.findById("p2");
+            Element element = context.findById("p2");
             assertThat(element).isNotNull();
             assertThat(element instanceof Pool).isTrue();
 
@@ -90,7 +123,7 @@ public class MachinationsContextFactoryTests {
         }
 
         {
-            AbstractElement element = context.findById("p3");
+            Element element = context.findById("p3");
             assertThat(element).isNotNull();
             assertThat(element instanceof Pool).isTrue();
 
@@ -104,12 +137,11 @@ public class MachinationsContextFactoryTests {
 
             assertThat(pool.getModifiers().size()).isEqualTo(1);
             Modifier modifier = pool.getModifiers().stream().findFirst().get();
-            assertThat(modifier.getLabel()).isEqualTo("+3");
             assertThat(modifier.getTarget()).isEqualTo(context.findById("p4"));
         }
 
         {
-            AbstractElement element = context.findById("p4");
+            Element element = context.findById("p4");
             assertThat(element).isNotNull();
             assertThat(element instanceof Pool).isTrue();
 
@@ -196,7 +228,7 @@ public class MachinationsContextFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().getValue()).isEqualTo(50);
         }
 
         {

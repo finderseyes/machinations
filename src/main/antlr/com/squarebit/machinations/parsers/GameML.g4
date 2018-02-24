@@ -2,11 +2,11 @@ grammar GameML;
 
 // Resource connection.
 resourceConnection
-    : resourceConnectionLabel? TO IDENTIFIER resourceConnectionId?
-    | IDENTIFIER TO (resourceConnectionLabel TO)? IDENTIFIER resourceConnectionId?
+    : resourceConnectionLabel? TO IDENTIFIER elementId?
+    | IDENTIFIER TO (resourceConnectionLabel TO)? IDENTIFIER elementId?
     ;
 
-resourceConnectionId
+elementId
     : ':' IDENTIFIER
     ;
 
@@ -51,8 +51,7 @@ binaryIntegerExpression
 // Modifiers
 
 modifier
-    : modifierLabel? TO IDENTIFIER
-    | IDENTIFIER TO (modifierLabel TO)? IDENTIFIER
+    : (IDENTIFIER TO)? modifierLabel TO IDENTIFIER elementId?
     ;
 
 modifierLabel

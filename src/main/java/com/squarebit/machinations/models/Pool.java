@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-public class Pool extends AbstractNode {
+public class Pool extends Node {
     @Override
     public ActivationRequirement getActivationRequirement() {
         if (isPulling()) {

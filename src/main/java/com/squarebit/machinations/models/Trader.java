@@ -1,4 +1,4 @@
 package com.squarebit.machinations.models;
 
-public class Trader extends AbstractNode {
+public class Trader extends Node {
 }

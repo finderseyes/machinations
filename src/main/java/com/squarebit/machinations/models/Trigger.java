@@ -3,8 +3,8 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.Expression;
 
 public class Trigger {
-    private AbstractNode owner;
-    private AbstractElement target;
+    private Node owner;
+    private Element target;
     private Expression labelExpression;
 
     /**
@@ -12,7 +12,7 @@ public class Trigger {
      *
      * @return the owner
      */
-    public AbstractNode getOwner() {
+    public Node getOwner() {
         return owner;
     }
 
@@ -22,7 +22,7 @@ public class Trigger {
      * @param owner the owner
      * @return the owner
      */
-    public Trigger setOwner(AbstractNode owner) {
+    public Trigger setOwner(Node owner) {
         this.owner = owner;
         return this;
     }
@@ -32,7 +32,7 @@ public class Trigger {
      *
      * @return the target
      */
-    public AbstractElement getTarget() {
+    public Element getTarget() {
         return target;
     }
 
@@ -42,7 +42,7 @@ public class Trigger {
      * @param target the target
      * @return the target
      */
-    public Trigger setTarget(AbstractElement target) {
+    public Trigger setTarget(Element target) {
         this.target = target;
         return this;
     }

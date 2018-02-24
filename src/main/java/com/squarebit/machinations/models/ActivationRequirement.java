@@ -3,7 +3,7 @@ package com.squarebit.machinations.models;
 import java.util.Set;
 
 public class ActivationRequirement {
-    private AbstractNode target;
+    private Node target;
     private Set<ResourceConnection> connections;
     private boolean requiringAll = false;
 
@@ -16,11 +16,11 @@ public class ActivationRequirement {
      *
      * @return the target
      */
-    public AbstractNode getTarget() {
+    public Node getTarget() {
         return target;
     }
 
-    private ActivationRequirement setTarget(AbstractNode target) {
+    private ActivationRequirement setTarget(Node target) {
         this.target = target;
         return this;
     }
@@ -59,7 +59,7 @@ public class ActivationRequirement {
      * @param connections the connections
      * @return the activation requirement
      */
-    public static ActivationRequirement all(AbstractNode target, Set<ResourceConnection> connections) {
+    public static ActivationRequirement all(Node target, Set<ResourceConnection> connections) {
         return new ActivationRequirement()
                 .setRequiringAll(true).setConnections(connections).setTarget(target);
     }
@@ -70,7 +70,7 @@ public class ActivationRequirement {
      * @param connections the connections
      * @return the activation requirement
      */
-    public static ActivationRequirement any(AbstractNode target, Set<ResourceConnection> connections) {
+    public static ActivationRequirement any(Node target, Set<ResourceConnection> connections) {
         return new ActivationRequirement()
                 .setRequiringAll(false).setConnections(connections).setTarget(target);
     }

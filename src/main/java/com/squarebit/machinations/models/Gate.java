@@ -7,7 +7,7 @@ import org.apache.commons.math3.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Gate extends AbstractNode {
+public class Gate extends Node {
     private static final ResourceConnection NULL_CONNECTION = new ResourceConnection();
     private static final Trigger NULL_TRIGGER = new Trigger();
     private static final DiceNumber DEFAULT_DRAW = new DiceNumber();

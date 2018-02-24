@@ -2,11 +2,11 @@ package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
 
-public class ResourceConnection extends AbstractConnection {
+public class ResourceConnection extends Connection {
     private static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
 
-    private AbstractNode from;
-    private AbstractNode to;
+    private Node from;
+    private Node to;
 
     private LogicalExpression condition;
     private FlowRate flowRate = new FlowRate();
@@ -20,7 +20,7 @@ public class ResourceConnection extends AbstractConnection {
      *
      * @return the from
      */
-    public AbstractNode getFrom() {
+    public Node getFrom() {
         return from;
     }
 
@@ -30,7 +30,7 @@ public class ResourceConnection extends AbstractConnection {
      * @param from the from
      * @return the from
      */
-    public ResourceConnection setFrom(AbstractNode from) {
+    public ResourceConnection setFrom(Node from) {
         this.from = from;
         return this;
     }
@@ -40,7 +40,7 @@ public class ResourceConnection extends AbstractConnection {
      *
      * @return the to
      */
-    public AbstractNode getTo() {
+    public Node getTo() {
         return to;
     }
 
@@ -50,7 +50,7 @@ public class ResourceConnection extends AbstractConnection {
      * @param to the to
      * @return the to
      */
-    public ResourceConnection setTo(AbstractNode to) {
+    public ResourceConnection setTo(Node to) {
         this.to = to;
         return this;
     }

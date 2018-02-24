@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractNode extends AbstractElement {
+public abstract class Node extends GraphElement {
     private String name;
     private ActivationMode activationMode;
 
@@ -36,7 +36,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param name the name
      * @return the name
      */
-    public AbstractNode setName(String name) {
+    public Node setName(String name) {
         this.name = name;
         return this;
     }
@@ -56,7 +56,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param activationMode the activation mode
      * @return the activation mode
      */
-    public AbstractNode setActivationMode(ActivationMode activationMode) {
+    public Node setActivationMode(ActivationMode activationMode) {
         this.activationMode = activationMode;
         return this;
     }
@@ -76,7 +76,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param enabled the enabled
      * @return the enabled
      */
-    public AbstractNode setEnabled(boolean enabled) {
+    public Node setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
     }
@@ -112,7 +112,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param flowMode the flow mode
      * @return the flow mode
      */
-    public AbstractNode setFlowMode(FlowMode flowMode) {
+    public Node setFlowMode(FlowMode flowMode) {
         this.flowMode = flowMode;
         return this;
     }
@@ -212,11 +212,6 @@ public abstract class AbstractNode extends AbstractElement {
      */
     public Set<Activator> getActivators() {
         return activators;
-    }
-
-    @Override
-    protected void doActivate(int time) {
-        super.doActivate(time);
     }
 
     /**

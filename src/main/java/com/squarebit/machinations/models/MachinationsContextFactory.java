@@ -24,7 +24,7 @@ public class MachinationsContextFactory {
     private class BuildingContext {
         private MachinationsContext machinations;
         private YamlSpec spec;
-        private Map<AbstractElement, ElementSpec> elementSpec = new HashMap<>();
+        private Map<Element, ElementSpec> elementSpec = new HashMap<>();
         private Map<Object, Object> buildContext = new HashMap<>();
         private Object currentObject;
     }
@@ -33,8 +33,8 @@ public class MachinationsContextFactory {
      *
      */
     private class ConnectionBuildContext {
-        private AbstractNode from;
-        private AbstractNode to;
+        private Node from;
+        private Node to;
         private String id;
         private GameMLParser.ResourceConnectionLabelContext labelContext;
 
@@ -42,20 +42,20 @@ public class MachinationsContextFactory {
 
         private String resourceName;
 
-        public AbstractNode getFrom() {
+        public Node getFrom() {
             return from;
         }
 
-        public ConnectionBuildContext setFrom(AbstractNode from) {
+        public ConnectionBuildContext setFrom(Node from) {
             this.from = from;
             return this;
         }
 
-        public AbstractNode getTo() {
+        public Node getTo() {
             return to;
         }
 
-        public ConnectionBuildContext setTo(AbstractNode to) {
+        public ConnectionBuildContext setTo(Node to) {
             this.to = to;
             return this;
         }
@@ -89,50 +89,22 @@ public class MachinationsContextFactory {
     }
 
     private class ModifierBuildContext {
-        private AbstractNode owner;
-        private AbstractElement target;
+        private Node owner;
+        private GraphElement target;
+        private String id;
         private GameMLParser.ModifierLabelContext labelContext;
-
-        private DiceParser.ArithmeticExpressionContext expression;
-
-        public AbstractNode getOwner() {
-            return owner;
-        }
-
-        public ModifierBuildContext setOwner(AbstractNode owner) {
-            this.owner = owner;
-            return this;
-        }
-
-        public AbstractElement getTarget() {
-            return target;
-        }
-
-        public ModifierBuildContext setTarget(AbstractElement target) {
-            this.target = target;
-            return this;
-        }
-
-        public DiceParser.ArithmeticExpressionContext getExpression() {
-            return expression;
-        }
-
-        public ModifierBuildContext setExpression(DiceParser.ArithmeticExpressionContext expression) {
-            this.expression = expression;
-            return this;
-        }
     }
 
     private class TriggerBuildContext {
-        private AbstractNode owner;
+        private Node owner;
         private DiceParser.ExpressionContext expression;
-        private AbstractElement target;
+        private Element target;
 
-        public AbstractNode getOwner() {
+        public Node getOwner() {
             return owner;
         }
 
-        public TriggerBuildContext setOwner(AbstractNode owner) {
+        public TriggerBuildContext setOwner(Node owner) {
             this.owner = owner;
             return this;
         }
@@ -146,35 +118,35 @@ public class MachinationsContextFactory {
             return this;
         }
 
-        public AbstractElement getTarget() {
+        public Element getTarget() {
             return target;
         }
 
-        public TriggerBuildContext setTarget(AbstractElement target) {
+        public TriggerBuildContext setTarget(Element target) {
             this.target = target;
             return this;
         }
     }
 
     private class ActivatorBuildContext {
-        private AbstractNode owner;
-        private AbstractNode target;
+        private Node owner;
+        private Node target;
         private DiceParser.LogicalExpressionContext condition;
 
-        public AbstractNode getOwner() {
+        public Node getOwner() {
             return owner;
         }
 
-        public ActivatorBuildContext setOwner(AbstractNode owner) {
+        public ActivatorBuildContext setOwner(Node owner) {
             this.owner = owner;
             return this;
         }
 
-        public AbstractNode getTarget() {
+        public Node getTarget() {
             return target;
         }
 
-        public ActivatorBuildContext setTarget(AbstractNode target) {
+        public ActivatorBuildContext setTarget(Node target) {
             this.target = target;
             return this;
         }
@@ -237,21 +209,21 @@ public class MachinationsContextFactory {
 
         // Now commit the initial resources.
         context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+                .filter(e -> e instanceof Node).map(e -> (Node)e)
                 .forEach(n -> n.resources.commit());
 
         // Modifiers, triggers and activators.
         context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+                .filter(e -> e instanceof Node).map(e -> (Node)e)
                 .forEach(node -> {
                     node.getModifiers().forEach(modifier -> {
                         ModifierBuildContext buildContext =
                                 (ModifierBuildContext)context.buildContext.get(modifier);
                         context.currentObject = modifier;
 
-                        if (buildContext.expression != null) {
-                            // modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
-                        }
+//                        if (buildContext.expression != null) {
+//                            // modifier.setRateExpression(buildArithmetic(context, buildContext.expression));
+//                        }
                     });
 
                     node.getTriggers().forEach(trigger -> {
@@ -563,7 +535,7 @@ public class MachinationsContextFactory {
                 return;
 
             String id = getOrCreateId(nodeSpec.getId());
-            AbstractNode node = null;
+            Node node = null;
 
             if (nodeSpec instanceof PoolSpec) {
                 PoolSpec poolSpec = (PoolSpec)nodeSpec;
@@ -646,8 +618,8 @@ public class MachinationsContextFactory {
     private void createImplicitActivators(BuildingContext context) throws Exception {
         AtomicReference<Exception> lastError = new AtomicReference<>();
 
-        List<AbstractNode> nodes = context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+        List<Node> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e).collect(Collectors.toList());
 
         nodes.forEach(node -> {
             NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
@@ -696,8 +668,8 @@ public class MachinationsContextFactory {
     private void createImplicitTrigger(BuildingContext context) throws Exception {
         AtomicReference<Exception> lastError = new AtomicReference<>();
 
-        List<AbstractNode> nodes = context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+        List<Node> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e).collect(Collectors.toList());
 
         nodes.forEach(node -> {
             NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
@@ -748,8 +720,8 @@ public class MachinationsContextFactory {
     private void createImplicitModifiers(BuildingContext context) throws Exception {
         AtomicReference<Exception> lastError = new AtomicReference<>();
 
-        List<AbstractNode> nodes = context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+        List<Node> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e).collect(Collectors.toList());
 
         nodes.forEach(node -> {
             NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
@@ -796,12 +768,12 @@ public class MachinationsContextFactory {
             IntegerExpression value;
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
-                value = FixedInteger.parse(second.getText());
+                value = FixedInteger.of(parseIntSkipSuffix(second.getText()));
                 if (first.getSymbol().getType() == GameMLParser.MINUS)
                     intervalModifier.setSign(-1);
             }
             else
-                value = FixedInteger.parse(first.getText());
+                value = FixedInteger.of(parseIntSkipSuffix(first.getText()));
 
             intervalModifier.setValue(value);
             modifier = intervalModifier;
@@ -811,12 +783,12 @@ public class MachinationsContextFactory {
             IntegerExpression value;
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
-                value = FixedInteger.parse(second.getText());
+                value = FixedInteger.of(parseIntSkipSuffix(second.getText()));
                 if (first.getSymbol().getType() == GameMLParser.MINUS)
                     multiplierModifier.setSign(-1);
             }
             else
-                value = FixedInteger.parse(first.getText());
+                value = FixedInteger.of(parseIntSkipSuffix(first.getText()));
 
             multiplierModifier.setValue(value);
             modifier = multiplierModifier;
@@ -839,11 +811,18 @@ public class MachinationsContextFactory {
 
         modifier
                 .setOwner(buildContext.owner)
-                .setTarget(buildContext.target);
+                .setTarget(buildContext.target)
+                .setId(getOrCreateId(buildContext.id));
 
         buildContext.owner.getModifiers().add(modifier);
+        buildContext.target.getModifiedBy().add(modifier);
 
+        context.machinations.addElement(modifier);
         context.buildContext.putIfAbsent(modifier, buildContext);
+    }
+
+    private int parseIntSkipSuffix(String text) {
+        return Integer.parseInt(text.substring(0, text.length() - 1));
     }
 
     private void createExplicitConnections(BuildingContext context, YamlSpec spec) throws Exception {
@@ -869,8 +848,8 @@ public class MachinationsContextFactory {
     private void createImplicitConnections(BuildingContext context) throws Exception {
         AtomicReference<Exception> lastError = new AtomicReference<>();
 
-        List<AbstractNode> nodes = context.machinations.getElements().stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e).collect(Collectors.toList());
+        List<Node> nodes = context.machinations.getElements().stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e).collect(Collectors.toList());
 
         nodes.forEach(node -> {
             NodeSpec spec = (NodeSpec)context.elementSpec.get(node);
@@ -1012,10 +991,10 @@ public class MachinationsContextFactory {
         }
     }
 
-    private <T extends AbstractElement> T fromIdentifier(BuildingContext context, ParseTree decl, Class clazz)
+    private <T extends Element> T fromIdentifier(BuildingContext context, ParseTree decl, Class clazz)
             throws Exception
     {
-        AbstractElement instance = context.machinations.findById(decl.getText());
+        Element instance = context.machinations.findById(decl.getText());
 
         if (instance == null || !clazz.isInstance(instance))
             throw new Exception(String.format("Unknown identifier %s", decl.getText()));
@@ -1033,7 +1012,7 @@ public class MachinationsContextFactory {
         ParseTree decl = resourceConnectionContext.getChild(next);
 
         if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
-            buildContext.from = fromIdentifier(context, decl, AbstractNode.class);
+            buildContext.from = fromIdentifier(context, decl, Node.class);
             next += 2;
             decl = resourceConnectionContext.getChild(next);
         }
@@ -1050,12 +1029,12 @@ public class MachinationsContextFactory {
         }
 
         {
-            buildContext.to = fromIdentifier(context, decl, AbstractNode.class);
+            buildContext.to = fromIdentifier(context, decl, Node.class);
             next += 1;
             decl = resourceConnectionContext.getChild(next);
         }
 
-        if (decl instanceof GameMLParser.ResourceConnectionIdContext) {
+        if (decl instanceof GameMLParser.ElementIdContext) {
             buildContext.id = decl.getChild(1).getText();
         }
 
@@ -1069,7 +1048,7 @@ public class MachinationsContextFactory {
 //        ParseTree nextDecl = decl.getChild(next);
 //
 //        if (decl instanceof DiceParser.ExplicitConnectionDefinitionContext) {
-//            buildContext.from = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//            buildContext.from = (Node)context.machinations.findById(nextDecl.getText());
 //            if (buildContext.from == null)
 //                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 //
@@ -1093,7 +1072,7 @@ public class MachinationsContextFactory {
 //            next += 1;
 //
 //        nextDecl = decl.getChild(next);
-//        buildContext.to = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//        buildContext.to = (Node)context.machinations.findById(nextDecl.getText());
 //        if (buildContext.to == null)
 //            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 //
@@ -1115,35 +1094,28 @@ public class MachinationsContextFactory {
         ParseTree decl = modifierContext.getChild(next);
 
         if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
-            buildContext.owner = fromIdentifier(context, decl, AbstractNode.class);
+            buildContext.owner = fromIdentifier(context, decl, Node.class);
             next += 2;
             decl = modifierContext.getChild(next);
         }
 
-        if (decl instanceof GameMLParser.ModifierLabelContext) {
+        // Label
+        {
             buildContext.labelContext = (GameMLParser.ModifierLabelContext)decl;
             next += 2;
             decl = modifierContext.getChild(next);
         }
 
-        buildContext.target = fromIdentifier(context, decl, AbstractElement.class);
+        // Target
+        {
+            buildContext.target = fromIdentifier(context, decl, Element.class);
+            next += 1;
+            decl = modifierContext.getChild(next);
+        }
 
-//        ParseTree nextDecl = decl.getChild(next);
-//
-//        if (nextDecl instanceof TerminalNode) {
-//            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
-//            if (buildContext.owner == null)
-//                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-//
-//            next += 2;
-//        }
-//
-//        nextDecl = decl.getChild(next);
-//        buildContext.expression = (DiceParser.ArithmeticExpressionContext)nextDecl;
-//        next += 2;
-//
-//        nextDecl = decl.getChild(next);
-//        buildContext.target = context.machinations.findById(nextDecl.getText());
+        if (decl instanceof GameMLParser.ElementIdContext) {
+            buildContext.id = decl.getChild(1).getText();
+        }
 
         return buildContext;
     }
@@ -1157,7 +1129,7 @@ public class MachinationsContextFactory {
         ParseTree nextDecl = decl.getChild(next);
 
         if (decl instanceof DiceParser.ExplicitTriggerDefinitionContext) {
-            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
             if (buildContext.owner == null)
                 throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
@@ -1184,7 +1156,7 @@ public class MachinationsContextFactory {
 //        }
 //
 //        if (decl.getChildCount() == 3) {
-//            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+//            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
 //            if (buildContext.owner == null)
 //                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 //
@@ -1210,7 +1182,7 @@ public class MachinationsContextFactory {
         ParseTree nextDecl = decl.getChild(next);
 
         if (nextDecl instanceof TerminalNode) {
-            buildContext.owner = (AbstractNode)context.machinations.findById(nextDecl.getText());
+            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
             if (buildContext.owner == null)
                 throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
@@ -1222,7 +1194,7 @@ public class MachinationsContextFactory {
         next += 2;
 
         nextDecl = decl.getChild(next);
-        buildContext.target = (AbstractNode)context.machinations.findById(nextDecl.getText());
+        buildContext.target = (Node)context.machinations.findById(nextDecl.getText());
         if (buildContext.target == null)
             throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
 
@@ -1244,7 +1216,7 @@ public class MachinationsContextFactory {
         return parser;
     }
 
-    private void buildResourcesDecl(AbstractNode node, String resourceExpression) {
+    private void buildResourcesDecl(Node node, String resourceExpression) {
 //        Map<String, Integer> nodeResources = node.getResources();
 //        nodeResources.clear();
 
@@ -1269,7 +1241,7 @@ public class MachinationsContextFactory {
         });
     }
 
-    private void buildCapacityDecl(AbstractNode node, String resourceExpression) {
+    private void buildCapacityDecl(Node node, String resourceExpression) {
         Map<String, Integer> capacity = node.getCapacity();
         capacity.clear();
 

@@ -7,14 +7,14 @@ public class MachinationsContext {
     public static final String DEFAULT_RESOURCE_NAME = "";
 
     private Configs configs = new Configs();
-    private Set<AbstractElement> elements;
-    private Map<String, AbstractElement> elementById;
+    private Set<Element> elements;
+    private Map<String, Element> elementById;
 
     private int previousSimulatedTime = -1;
     private int time = -1;  // The time index now, negative means no simulation step has been executed.
     private int remainedActionPoints = -1;
-    private Set<AbstractNode> activeNodes = new HashSet<>();
-    private Set<AbstractNode> automaticOrInteractiveNodes;
+    private Set<Node> activeNodes = new HashSet<>();
+    private Set<Node> automaticOrInteractiveNodes;
     private boolean terminated = false;
 
     public MachinationsContext() {
@@ -55,7 +55,7 @@ public class MachinationsContext {
      * @param id the id
      * @return the abstract element
      */
-    public AbstractElement findById(String id) {
+    public Element findById(String id) {
         return this.elementById.get(id);
     }
 
@@ -64,7 +64,7 @@ public class MachinationsContext {
      *
      * @return the elements
      */
-    public Set<AbstractElement> getElements() {
+    public Set<Element> getElements() {
         return elements;
     }
 
@@ -74,10 +74,11 @@ public class MachinationsContext {
      * @param element the element
      * @throws Exception the exception
      */
-    protected void addElement(AbstractElement element) throws Exception {
+    protected void addElement(Element element) throws Exception {
         if (!this.elementById.containsKey(element.getId())) {
             this.elements.add(element);
             this.elementById.put(element.getId(), element);
+            element.machinations = this;
         }
         else {
             throw new Exception(String.format("An element with id %s is already existed.", element.getId()));
@@ -113,8 +114,8 @@ public class MachinationsContext {
 
         // --> STEP 1: try to resolve activation requirements
         Set<ActivationRequirement> activationRequirements = this.activeNodes.stream()
-                .filter(AbstractNode::isEnabled)
-                .map(AbstractNode::getActivationRequirement)
+                .filter(Node::isEnabled)
+                .map(Node::getActivationRequirement)
                 .collect(Collectors.toSet());
 
         Set<ResourceConnection> requiredConnections = activationRequirements.stream()
@@ -128,14 +129,14 @@ public class MachinationsContext {
         requiredConnections.forEach(c -> requiredResources.put(c, c.activate()));
 
         // Active connections, grouped by providing node.
-        Map<AbstractNode, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
+        Map<Node, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
                 .collect(Collectors.groupingBy(ResourceConnection::getFrom));
 
         // The set of actual flow.
         Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
 
         // Get resource snapshot for each provider node.
-        Map<AbstractNode, ResourceSet> resourceSnapShots = new HashMap<>();
+        Map<Node, ResourceSet> resourceSnapShots = new HashMap<>();
         requiredConnectionsByProvider.forEach((n, c) -> resourceSnapShots.put(n, n.getResources().copy()));
 
         // Calculate the actual flow.
@@ -196,11 +197,11 @@ public class MachinationsContext {
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
         // --> STEP 2: triggers.
-        Map<AbstractNode, List<ResourceConnection>> firedConnectionByTarget =
+        Map<Node, List<ResourceConnection>> firedConnectionByTarget =
                 firedOutgoingConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
 
         // Trigger owners are those having all input connections satisfied.
-        Set<AbstractNode> triggerOwners = firedConnectionByTarget.entrySet().stream()
+        Set<Node> triggerOwners = firedConnectionByTarget.entrySet().stream()
                 .filter(e -> e.getKey().getIncomingConnections().containsAll(e.getValue()))
                 .map(Map.Entry::getKey).collect(Collectors.toSet());
 
@@ -213,7 +214,7 @@ public class MachinationsContext {
         );
 
         // Elements will be triggered.
-        Set<AbstractElement> triggeredElements = triggerOwners.stream()
+        Set<Element> triggeredElements = triggerOwners.stream()
                 .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
 
@@ -230,8 +231,8 @@ public class MachinationsContext {
     }
 
     private void updateNodeEnablingStates() {
-        Map<AbstractNode, List<Activator>> activatorsByTarget = elements.stream()
-                .filter(e -> e instanceof AbstractNode).map(e -> (AbstractNode)e)
+        Map<Node, List<Activator>> activatorsByTarget = elements.stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e)
                 .flatMap(n -> n.getActivators().stream())
                 .collect(Collectors.groupingBy(Activator::getTarget));
 
@@ -244,7 +245,7 @@ public class MachinationsContext {
         });
     }
 
-    private void doTrigger(Set<AbstractElement> triggeredElements) {
+    private void doTrigger(Set<Element> triggeredElements) {
         if (triggeredElements.size() == 0)
             return;
 
@@ -255,8 +256,8 @@ public class MachinationsContext {
                 ResourceConnection connection = (ResourceConnection)e;
                 activateConnection(connection);
             }
-            else if (e instanceof AbstractNode) {
-                AbstractNode node = (AbstractNode)e;
+            else if (e instanceof Node) {
+                Node node = (Node)e;
                 activateNode(node);
 
                 if (node.getIncomingConnections().size() == 0)
@@ -273,14 +274,14 @@ public class MachinationsContext {
         connection.getTo().receive(resource);
     }
 
-    private void activateNode(AbstractNode node) {
+    private void activateNode(Node node) {
         if (node instanceof End)
             this.terminated = true;
 
         ActivationRequirement requirement = node.getActivationRequirement();
 
         // Active connections, grouped by providing node.
-        Set<AbstractNode> providers =
+        Set<Node> providers =
                 requirement.getConnections().stream()
                 .map(ResourceConnection::getFrom)
                 .collect(Collectors.toSet());
@@ -292,7 +293,7 @@ public class MachinationsContext {
         Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
 
         // Get resource snapshot for each provider node.
-        Map<AbstractNode, ResourceSet> resourceSnapShots = new HashMap<>();
+        Map<Node, ResourceSet> resourceSnapShots = new HashMap<>();
         providers.forEach(n -> resourceSnapShots.put(n, n.getResources().copy()));
 
         requirement.getConnections().forEach(c -> {
@@ -322,7 +323,7 @@ public class MachinationsContext {
         }
     }
 
-    private Set<ResourceConnection> getActiveConnection(AbstractNode node) {
+    private Set<ResourceConnection> getActiveConnection(Node node) {
         FlowMode mode = node.getFlowMode();
         if (mode == FlowMode.AUTOMATIC) {
             if (node.getIncomingConnections().size() == 0)
@@ -345,15 +346,15 @@ public class MachinationsContext {
             return;
 
         this.automaticOrInteractiveNodes = elements.stream()
-                .filter(e -> e instanceof AbstractNode &&
-                        (((AbstractNode)e).getActivationMode() == ActivationMode.AUTOMATIC ||
-                                ((AbstractNode)e).getActivationMode() == ActivationMode.INTERACTIVE)
-                ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
+                .filter(e -> e instanceof Node &&
+                        (((Node)e).getActivationMode() == ActivationMode.AUTOMATIC ||
+                                ((Node)e).getActivationMode() == ActivationMode.INTERACTIVE)
+                ).map(e -> (Node)e).collect(Collectors.toSet());
 
-        Set<AbstractNode> startingNodes = elements.stream()
-                .filter(e -> e instanceof AbstractNode &&
-                        ((AbstractNode)e).getActivationMode() == ActivationMode.STARTING_ACTION
-                ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
+        Set<Node> startingNodes = elements.stream()
+                .filter(e -> e instanceof Node &&
+                        ((Node)e).getActivationMode() == ActivationMode.STARTING_ACTION
+                ).map(e -> (Node)e).collect(Collectors.toSet());
 
         this.activeNodes.clear();
         this.activeNodes.addAll(this.automaticOrInteractiveNodes);
@@ -372,42 +373,42 @@ public class MachinationsContext {
         int time = 0;
         boolean isStopped = false;
 
-        Set<AbstractNode> automaticNodes = elements.stream()
-                .filter(e -> e instanceof AbstractNode &&
-                        ((AbstractNode)e).getActivationMode() == ActivationMode.AUTOMATIC
-                ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
+        Set<Node> automaticNodes = elements.stream()
+                .filter(e -> e instanceof Node &&
+                        ((Node)e).getActivationMode() == ActivationMode.AUTOMATIC
+                ).map(e -> (Node)e).collect(Collectors.toSet());
 
-        Set<AbstractNode> startingNodes = elements.stream()
-                .filter(e -> e instanceof AbstractNode &&
-                        ((AbstractNode)e).getActivationMode() == ActivationMode.STARTING_ACTION
-                ).map(e -> (AbstractNode)e).collect(Collectors.toSet());
+        Set<Node> startingNodes = elements.stream()
+                .filter(e -> e instanceof Node &&
+                        ((Node)e).getActivationMode() == ActivationMode.STARTING_ACTION
+                ).map(e -> (Node)e).collect(Collectors.toSet());
 
-        Set<AbstractNode> activeNodes = new HashSet<>();
+        Set<Node> activeNodes = new HashSet<>();
         activeNodes.addAll(automaticNodes);
         activeNodes.addAll(startingNodes);
 
-        Set<AbstractNode> nextActiveNodes = new HashSet<>();
+        Set<Node> nextActiveNodes = new HashSet<>();
 
         while ((maxTime < 0 || time < maxTime) && !isStopped) {
             final int currentTime = time;
 
             // Activate each node.
-            activeNodes.forEach(node -> node.activate(currentTime));
+            // activeNodes.forEach(node -> node.activate(currentTime));
 
             // Clear "next" set.
             nextActiveNodes.clear();
 
-            // Find next activate-able elements by triggers.
-            Set<AbstractElement> elements = activeNodes.stream().map(node -> {
-                boolean connectionsActivated =
-                        node.getIncomingConnections().stream()
-                                .allMatch(c -> c.getLastActivatedTime() == currentTime);
-
-                if (connectionsActivated)
-                    return node.getTriggers();
-                else
-                    return Collections.<Trigger>emptySet();
-            }).flatMap(Set::stream).map(Trigger::getTarget).collect(Collectors.toSet());
+//            // Find next activate-able elements by triggers.
+//            Set<Element> elements = activeNodes.stream().map(node -> {
+//                boolean connectionsActivated =
+//                        node.getIncomingConnections().stream()
+//                                .allMatch(c -> c.getLastActivatedTime() == currentTime);
+//
+//                if (connectionsActivated)
+//                    return node.getTriggers();
+//                else
+//                    return Collections.<Trigger>emptySet();
+//            }).flatMap(Set::stream).map(Trigger::getTarget).collect(Collectors.toSet());
 
             // Advance the time.
             time++;
