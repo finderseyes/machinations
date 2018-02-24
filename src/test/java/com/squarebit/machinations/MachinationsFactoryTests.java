@@ -18,14 +18,14 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MachinationsContextFactoryTests {
+public class MachinationsFactoryTests {
     @Test
     public void should_load_elements_from_yaml_spec() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
 
-        MachinationsContext context = factory.fromSpec(spec);
+        Machinations context = factory.fromSpec(spec);
         assertThat(context).isNotNull();
 
         {
@@ -391,9 +391,9 @@ public class MachinationsContextFactoryTests {
     public void should_load_triggers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
 
-        MachinationsContext context = factory.fromSpec(spec);
+        Machinations context = factory.fromSpec(spec);
         assertThat(context).isNotNull();
 
         {
@@ -446,9 +446,9 @@ public class MachinationsContextFactoryTests {
     public void should_load_activators() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/generic-elements.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
 
-        MachinationsContext context = factory.fromSpec(spec);
+        Machinations context = factory.fromSpec(spec);
         assertThat(context).isNotNull();
 
         {
@@ -466,9 +466,9 @@ public class MachinationsContextFactoryTests {
     public void should_not_load_elements_with_same_id_from_yaml_spec() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/duplicated-node-id.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
 
-        MachinationsContext context = factory.fromSpec(spec);
+        Machinations context = factory.fromSpec(spec);
     }
 
     private GameMLParser getParser(String decl) {
@@ -483,12 +483,12 @@ public class MachinationsContextFactoryTests {
     }
 
     private ArithmeticExpression arithmetic(String decl) {
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
         return factory.buildArithmetic(null, parse(decl, GameMLParser::arithmeticExpression));
     }
 
     private LogicalExpression bool(String decl) {
-        MachinationsContextFactory factory = new MachinationsContextFactory();
+        MachinationsFactory factory = new MachinationsFactory();
         return factory.buildBoolean(null, parse(decl, GameMLParser::logicalExpression));
     }
 

@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public class MachinationsContextFactory {
+public class MachinationsFactory {
     /**
      *
      */
     private class BuildingContext {
-        private MachinationsContext machinations;
+        private Machinations machinations;
         private YamlSpec spec;
         private Map<Element, ElementSpec> elementSpec = new HashMap<>();
         private Map<Object, Object> buildContext = new HashMap<>();
@@ -66,9 +66,9 @@ public class MachinationsContextFactory {
      * @return the machinations context
      * @throws Exception the exception
      */
-    public MachinationsContext fromSpec(YamlSpec spec) throws Exception {
+    public Machinations fromSpec(YamlSpec spec) throws Exception {
         BuildingContext context = new BuildingContext();
-        context.machinations = new MachinationsContext();
+        context.machinations = new Machinations();
         context.spec = spec;
 
         context.machinations.getConfigs().setTimeMode(TimeMode.from(spec.getConfigs().getTimeMode()));
@@ -1131,7 +1131,7 @@ public class MachinationsContextFactory {
 
                 int count = Integer.parseInt(decl.INTEGER().getText());
                 String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
-                        MachinationsContext.DEFAULT_RESOURCE_NAME;
+                        Machinations.DEFAULT_RESOURCE_NAME;
 
                 node.resources.add(name, count);
             }
@@ -1153,7 +1153,7 @@ public class MachinationsContextFactory {
 //
 //                int count = Integer.parseInt(decl.INT().getText());
 //                String name = decl.IDENTIFIER() != null ? decl.IDENTIFIER().getText().trim() :
-//                            MachinationsContext.DEFAULT_RESOURCE_NAME;
+//                            Machinations.DEFAULT_RESOURCE_NAME;
 //
 //                if (capacity.putIfAbsent(name, count) != null)
 //                    capacity.compute(name, (n, c0) -> (c0 + count));

@@ -4,7 +4,7 @@ package com.squarebit.machinations.models;
  * The type Abstract element.
  */
 public abstract class Element {
-    protected MachinationsContext machinations;
+    protected Machinations machinations;
     private String id;
 
     /**
@@ -32,7 +32,7 @@ public abstract class Element {
      *
      * @return the machinations
      */
-    public MachinationsContext getMachinations() {
+    public Machinations getMachinations() {
         return machinations;
     }
 }

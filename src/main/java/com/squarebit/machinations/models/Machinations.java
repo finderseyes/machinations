@@ -3,7 +3,7 @@ package com.squarebit.machinations.models;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MachinationsContext {
+public class Machinations {
     public static final String DEFAULT_RESOURCE_NAME = "";
 
     private Configs configs = new Configs();
@@ -17,7 +17,7 @@ public class MachinationsContext {
     private Set<Node> automaticOrInteractiveNodes;
     private boolean terminated = false;
 
-    public MachinationsContext() {
+    public Machinations() {
         this.elements = new HashSet<>();
         this.elementById = new HashMap<>();
     }

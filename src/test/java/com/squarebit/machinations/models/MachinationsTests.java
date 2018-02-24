@@ -7,13 +7,13 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MachinationsContextTests {
+public class MachinationsTests {
     @Test
     public void flow_01() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-01.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         {
             machinations.simulateOneTimeStep();
@@ -113,8 +113,8 @@ public class MachinationsContextTests {
     public void should_support_synchronous_time() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/fig-5-10.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool A = (Pool) machinations.findById("a");
         Pool B = (Pool) machinations.findById("b");
@@ -153,8 +153,8 @@ public class MachinationsContextTests {
     public void should_support_triggers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-02.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
@@ -179,8 +179,8 @@ public class MachinationsContextTests {
     public void should_support_activators() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-03.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
@@ -263,8 +263,8 @@ public class MachinationsContextTests {
     public void should_support_deterministic_gates_with_integers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-04.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Gate p1 = (Gate) machinations.findById("p1");
@@ -287,8 +287,8 @@ public class MachinationsContextTests {
     public void should_support_deterministic_gates_with_probable() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-05.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Gate p1 = (Gate) machinations.findById("p1");
@@ -311,8 +311,8 @@ public class MachinationsContextTests {
     public void should_support_deterministic_gates_with_condition() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-06.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Gate p1 = (Gate) machinations.findById("p1");
@@ -333,8 +333,8 @@ public class MachinationsContextTests {
     public void should_support_random_gates_with_condition() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-07.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Gate p1 = (Gate) machinations.findById("p1");
@@ -356,8 +356,8 @@ public class MachinationsContextTests {
     public void should_support_random_gates_with_probable() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-08.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Gate p1 = (Gate) machinations.findById("p1");
@@ -379,8 +379,8 @@ public class MachinationsContextTests {
     public void should_support_gates_with_triggers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-09.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
@@ -401,8 +401,8 @@ public class MachinationsContextTests {
     public void should_support_gates_with_conditional_triggers() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-10.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Pool p0 = (Pool) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
@@ -423,8 +423,8 @@ public class MachinationsContextTests {
     public void should_support_source_and_drain() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-11.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Source p0 = (Source) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
@@ -441,8 +441,8 @@ public class MachinationsContextTests {
     public void should_support_converter() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-12.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Source p0 = (Source) machinations.findById("p0");
         Converter p1 = (Converter) machinations.findById("p1");
@@ -458,8 +458,8 @@ public class MachinationsContextTests {
     public void should_support_flow_of_named_resources() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-13.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Source p0 = (Source) machinations.findById("p0");
         Converter p1 = (Converter) machinations.findById("p1");
@@ -484,8 +484,8 @@ public class MachinationsContextTests {
     public void should_support_end() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-14.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
-        MachinationsContextFactory factory = new MachinationsContextFactory();
-        MachinationsContext machinations = factory.fromSpec(spec);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
 
         Source p0 = (Source) machinations.findById("p0");
         Pool p1 = (Pool) machinations.findById("p1");
