@@ -150,21 +150,21 @@ public class Gate extends Node {
     public Set<Trigger> activateTriggers() {
         Set<Trigger> triggers = new HashSet<>();
 
-        if (this.useProbableTriggers) {
-            Trigger trigger = this.triggerProbabilities.sample();
-            if (trigger != NULL_TRIGGER) {
-                triggers.add(trigger);
-            }
-        }
-        else {
-            currentDraw = drawExpression.eval();
-            this.getTriggers().forEach(t -> {
-                LogicalExpression expression = (LogicalExpression)t.getLabelExpression();
-                if (expression.eval()) {
-                    triggers.add(t);
-                }
-            });
-        }
+//        if (this.useProbableTriggers) {
+//            Trigger trigger = this.triggerProbabilities.sample();
+//            if (trigger != NULL_TRIGGER) {
+//                triggers.add(trigger);
+//            }
+//        }
+//        else {
+//            currentDraw = drawExpression.eval();
+//            this.getTriggers().forEach(t -> {
+//                LogicalExpression expression = (LogicalExpression)t.getLabelExpression();
+//                if (expression.eval()) {
+//                    triggers.add(t);
+//                }
+//            });
+//        }
 
         return triggers;
     }
@@ -213,34 +213,34 @@ public class Gate extends Node {
 
         {
             Set<Trigger> triggers = this.getTriggers();
-            boolean allArithmetic = triggers.stream()
-                    .allMatch(c -> c.getLabelExpression() instanceof ArithmeticExpression);
-
-            boolean allConditional = triggers.stream()
-                    .allMatch(c -> c.getLabelExpression() instanceof LogicalExpression);
-
-            if (!allArithmetic && !allConditional)
-                throw new RuntimeException("Gate triggers must agree on their expression types.");
-
-            this.useProbableTriggers = allArithmetic;
-
-            if (this.useProbableTriggers) {
-                Map<Trigger, Float> probabilities = new HashMap<>();
-//                getTriggers().forEach(t ->
-//                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).nonZeroProbability())
+//            boolean allArithmetic = triggers.stream()
+//                    .allMatch(c -> c.getLabelExpression() instanceof ArithmeticExpression);
+//
+//            boolean allConditional = triggers.stream()
+//                    .allMatch(c -> c.getLabelExpression() instanceof LogicalExpression);
+//
+//            if (!allArithmetic && !allConditional)
+//                throw new RuntimeException("Gate triggers must agree on their expression types.");
+//
+//            this.useProbableTriggers = allArithmetic;
+//
+//            if (this.useProbableTriggers) {
+//                Map<Trigger, Float> probabilities = new HashMap<>();
+////                getTriggers().forEach(t ->
+////                        probabilities.put(t, ((ArithmeticExpression)t.getLabelExpression()).nonZeroProbability())
+////                );
+//
+//                float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
+//                if (sumProb < 1.0f) {
+//                    probabilities.put(NULL_TRIGGER, 1.0f - sumProb);
+//                }
+//
+//                this.triggerProbabilities = new EnumeratedDistribution<>(
+//                        probabilities.entrySet().stream()
+//                                .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
+//                                .collect(Collectors.toList())
 //                );
-
-                float sumProb = (float)probabilities.values().stream().mapToDouble(v -> v).sum();
-                if (sumProb < 1.0f) {
-                    probabilities.put(NULL_TRIGGER, 1.0f - sumProb);
-                }
-
-                this.triggerProbabilities = new EnumeratedDistribution<>(
-                        probabilities.entrySet().stream()
-                                .map(e -> new Pair<>(e.getKey(), (double)e.getValue()))
-                                .collect(Collectors.toList())
-                );
-            }
+//            }
         }
     }
 }

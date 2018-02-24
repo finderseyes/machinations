@@ -37,55 +37,7 @@ public class MachinationsContextFactory {
         private Node to;
         private String id;
         private GameMLParser.ResourceConnectionLabelContext labelContext;
-
-        private DiceParser.ExpressionContext labelExpression;
-
         private String resourceName;
-
-        public Node getFrom() {
-            return from;
-        }
-
-        public ConnectionBuildContext setFrom(Node from) {
-            this.from = from;
-            return this;
-        }
-
-        public Node getTo() {
-            return to;
-        }
-
-        public ConnectionBuildContext setTo(Node to) {
-            this.to = to;
-            return this;
-        }
-
-        public DiceParser.ExpressionContext getLabelExpression() {
-            return labelExpression;
-        }
-
-        public ConnectionBuildContext setLabelExpression(DiceParser.ExpressionContext labelExpression) {
-            this.labelExpression = labelExpression;
-            return this;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public ConnectionBuildContext setId(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public String getResourceName() {
-            return resourceName;
-        }
-
-        public ConnectionBuildContext setResourceName(String resourceName) {
-            this.resourceName = resourceName;
-            return this;
-        }
     }
 
     private class ModifierBuildContext {
@@ -97,68 +49,16 @@ public class MachinationsContextFactory {
 
     private class TriggerBuildContext {
         private Node owner;
-        private DiceParser.ExpressionContext expression;
-        private Element target;
-
-        public Node getOwner() {
-            return owner;
-        }
-
-        public TriggerBuildContext setOwner(Node owner) {
-            this.owner = owner;
-            return this;
-        }
-
-        public DiceParser.ExpressionContext getExpression() {
-            return expression;
-        }
-
-        public TriggerBuildContext setExpression(DiceParser.ExpressionContext expression) {
-            this.expression = expression;
-            return this;
-        }
-
-        public Element getTarget() {
-            return target;
-        }
-
-        public TriggerBuildContext setTarget(Element target) {
-            this.target = target;
-            return this;
-        }
+        private GraphElement target;
+        private String id;
+        private GameMLParser.TriggerLabelContext labelContext;
     }
 
     private class ActivatorBuildContext {
         private Node owner;
         private Node target;
-        private DiceParser.LogicalExpressionContext condition;
-
-        public Node getOwner() {
-            return owner;
-        }
-
-        public ActivatorBuildContext setOwner(Node owner) {
-            this.owner = owner;
-            return this;
-        }
-
-        public Node getTarget() {
-            return target;
-        }
-
-        public ActivatorBuildContext setTarget(Node target) {
-            this.target = target;
-            return this;
-        }
-
-        public DiceParser.LogicalExpressionContext getCondition() {
-            return condition;
-        }
-
-        public ActivatorBuildContext setCondition(DiceParser.LogicalExpressionContext condition) {
-            this.condition = condition;
-            return this;
-        }
+        private String id;
+        private GameMLParser.ActivatorLabelContext labelContext;
     }
 
     /**
@@ -202,9 +102,6 @@ public class MachinationsContextFactory {
                     ConnectionBuildContext buildContext =
                             (ConnectionBuildContext)context.buildContext.get(connection);
                     context.currentObject = connection;
-                    if (buildContext.labelExpression != null) {
-                        connection.setFlowRateExpression(buildExpression(context, buildContext.labelExpression));
-                    }
                 });
 
         // Now commit the initial resources.
@@ -231,9 +128,9 @@ public class MachinationsContextFactory {
                                 (TriggerBuildContext)context.buildContext.get(trigger);
                         context.currentObject = trigger;
 
-                        if (buildContext.expression != null) {
-                            trigger.setLabelExpression(buildExpression(context, buildContext.expression));
-                        }
+//                        if (buildContext.expression != null) {
+//                            trigger.setLabelExpression(buildExpression(context, buildContext.expression));
+//                        }
                     });
 
                     node.getActivators().forEach(activator -> {
@@ -241,9 +138,9 @@ public class MachinationsContextFactory {
                                 (ActivatorBuildContext)context.buildContext.get(activator);
                         context.currentObject = activator;
 
-                        if (buildContext.condition != null) {
-                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
-                        }
+//                        if (buildContext.condition != null) {
+//                            // activator.setConditionExpression(buildBoolean(context, buildContext.condition));
+//                        }
                     });
                 });
 
@@ -640,8 +537,7 @@ public class MachinationsContextFactory {
     }
 
     private void createActivator(BuildingContext context, ActivatorBuildContext buildContext) {
-        Activator activator = new Activator().setOwner(buildContext.owner).setTarget(buildContext.target)
-                .setLabel(buildContext.condition.getText());
+        Activator activator = new Activator().setOwner(buildContext.owner).setTarget(buildContext.target);
         buildContext.owner.getActivators().add(activator);
         context.buildContext.put(activator, buildContext);
     }
@@ -689,11 +585,16 @@ public class MachinationsContextFactory {
             throw lastError.get();
     }
 
-    private void createTrigger(BuildingContext context, TriggerBuildContext buildContext) {
-        Trigger trigger = new Trigger()
+    private void createTrigger(BuildingContext context, TriggerBuildContext buildContext) throws Exception {
+        Trigger trigger = new Trigger();
+        trigger
                 .setOwner(buildContext.owner)
-                .setTarget(buildContext.target);
+                .setTarget(buildContext.target)
+                .setId(getOrCreateId(buildContext.id));
+
         buildContext.owner.getTriggers().add(trigger);
+
+        context.machinations.addElement(trigger);
         context.buildContext.put(trigger, buildContext);
     }
 
@@ -1121,82 +1022,79 @@ public class MachinationsContextFactory {
     }
 
     private TriggerBuildContext getTriggerBuildContext(BuildingContext context, String definition) throws Exception {
-        DiceParser parser = getParser(definition);
+        GameMLParser parser = getGameMLParser(definition);
         TriggerBuildContext buildContext = new TriggerBuildContext();
 
-        ParseTree decl = parser.triggerDefinition().children.get(0);
+        GameMLParser.TriggerContext triggerContext = parser.trigger();
         int next = 0;
-        ParseTree nextDecl = decl.getChild(next);
+        ParseTree decl = triggerContext.getChild(next);
 
-        if (decl instanceof DiceParser.ExplicitTriggerDefinitionContext) {
-            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
-            if (buildContext.owner == null)
-                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
+            buildContext.owner = fromIdentifier(context, decl, Node.class);
             next += 2;
+            decl = triggerContext.getChild(next);
         }
 
-        nextDecl = decl.getChild(next);
-        if (nextDecl instanceof DiceParser.ExpressionContext) {
-            buildContext.expression = (DiceParser.ExpressionContext)nextDecl;
+        // Label
+        if (decl instanceof GameMLParser.TriggerLabelContext)
+        {
+            buildContext.labelContext = (GameMLParser.TriggerLabelContext)decl;
             next += 2;
+            decl = triggerContext.getChild(next);
         }
-        else if (((TerminalNode)nextDecl).getSymbol().getType() == DiceParser.TO)
+
+        // -->
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.TO) {
             next += 1;
+            decl = triggerContext.getChild(next);
+        }
 
-        nextDecl = decl.getChild(next);
-        buildContext.target = context.machinations.findById(nextDecl.getText());
-        if (buildContext.target == null)
-            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+        // Target
+        {
+            buildContext.target = fromIdentifier(context, decl, Element.class);
+            next += 1;
+            decl = triggerContext.getChild(next);
+        }
 
-//        next += 2;
-//        nextDecl = decl.getChild(next);
-//        if (nextDecl != null) {
-//            buildContext.id =  nextDecl.getText();
-//        }
-//
-//        if (decl.getChildCount() == 3) {
-//            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
-//            if (buildContext.owner == null)
-//                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-//
-//            next = 2;
-//        }
-//        else
-//            next = 1;
-//
-//        nextDecl = decl.getChild(next);
-//        buildContext.target = context.machinations.findById(nextDecl.getText());
-//        if (buildContext.target == null)
-//            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+        if (decl instanceof GameMLParser.ElementIdContext) {
+            buildContext.id = decl.getChild(1).getText();
+        }
 
         return buildContext;
     }
 
     private ActivatorBuildContext getActivatorBuildContext(BuildingContext context, String definition) throws Exception {
-        DiceParser parser = getParser(definition);
+        GameMLParser parser = getGameMLParser(definition);
         ActivatorBuildContext buildContext = new ActivatorBuildContext();
 
-        ParseTree decl = parser.activatorDefinition();
+        GameMLParser.ActivatorContext activatorContext = parser.activator();
         int next = 0;
-        ParseTree nextDecl = decl.getChild(next);
+        ParseTree decl = activatorContext.getChild(next);
 
-        if (nextDecl instanceof TerminalNode) {
-            buildContext.owner = (Node)context.machinations.findById(nextDecl.getText());
-            if (buildContext.owner == null)
-                throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
-
-            next = 2;
+        if (decl instanceof TerminalNode && ((TerminalNode)decl).getSymbol().getType() == GameMLParser.IDENTIFIER) {
+            buildContext.owner = fromIdentifier(context, decl, Node.class);
+            next += 2;
+            decl = activatorContext.getChild(next);
         }
 
-        nextDecl = decl.getChild(next);
-        buildContext.condition = (DiceParser.LogicalExpressionContext)nextDecl;
-        next += 2;
+        // Label
+        if (decl instanceof GameMLParser.ActivatorLabelContext)
+        {
+            buildContext.labelContext = (GameMLParser.ActivatorLabelContext)decl;
+            next += 2;
+            decl = activatorContext.getChild(next);
+        }
 
-        nextDecl = decl.getChild(next);
-        buildContext.target = (Node)context.machinations.findById(nextDecl.getText());
-        if (buildContext.target == null)
-            throw new Exception(String.format("Unknown identifier %s", nextDecl.getText()));
+        // Target
+        {
+            buildContext.target = fromIdentifier(context, decl, Node.class);
+            next += 1;
+            decl = activatorContext.getChild(next);
+        }
+
+        if (decl instanceof GameMLParser.ElementIdContext) {
+            buildContext.id = decl.getChild(1).getText();
+        }
 
         return buildContext;
     }

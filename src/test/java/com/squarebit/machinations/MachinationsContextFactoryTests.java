@@ -88,7 +88,12 @@ public class MachinationsContextFactoryTests {
                 assertThat(modifier.getSign()).isEqualTo(-1);
             }
 
-            assertThat(pool.getTriggers().size()).isEqualTo(4);
+            {
+                Trigger trigger = (Trigger)context.findById("t_p0_0");
+                assertThat(trigger.getTarget()).isEqualTo(context.findById("p1"));
+            }
+
+            // assertThat(pool.getTriggers().size()).isEqualTo(4);
 
             assertThat(pool.getActivators().size()).isEqualTo(1);
         }

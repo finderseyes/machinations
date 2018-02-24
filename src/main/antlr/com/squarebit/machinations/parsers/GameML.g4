@@ -76,9 +76,16 @@ probabilityModifier
 
 // Triggers
 trigger
-    : triggerProbability? TO IDENTIFIER
+    : triggerLabel? TO IDENTIFIER elementId?
+    | IDENTIFIER TO (triggerLabel TO)? IDENTIFIER elementId?
     ;
 
+triggerLabel
+    : triggerProbability
+    | logicalExpression (',' triggerProbability)?
+    ;
+
+// trigger probability or distribution.
 triggerProbability
     : PERCENTAGE
     | INTEGER
@@ -87,9 +94,12 @@ triggerProbability
 
 // Activators
 activator
-    : logicalExpression TO IDENTIFIER
+    : (IDENTIFIER TO)? activatorLabel TO IDENTIFIER elementId?
     ;
 
+activatorLabel
+    : logicalExpression
+    ;
 
 // Logical expression
 groupArithmeticExpression: LEFT_PARENTHESIS arithmeticExpression RIGHT_PARENTHESIS;
