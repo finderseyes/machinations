@@ -1,6 +1,7 @@
 package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
+import org.apache.commons.lang3.RandomUtils;
 
 /**
  * A flow rate.
@@ -16,6 +17,9 @@ public class FlowRate {
     private IntegerExpression interval = DEFAULT_INTERVAL;
     private IntegerExpression multiplier = DEFAULT_MULTIPLIER;
     private Percentage probability = DEFAULT_PROBABILITY;
+
+    private int currentInterval = 1;
+    private int times = 1;
 
 
     /**
@@ -55,6 +59,7 @@ public class FlowRate {
      */
     public FlowRate setInterval(IntegerExpression interval) {
         this.interval = interval;
+        this.currentInterval = interval.eval();
         return this;
     }
 
@@ -104,7 +109,24 @@ public class FlowRate {
      * @return the flow rate value
      */
     public int get() {
-        return 0;
+        int result = 0;
+        float prob = probability.getValue() / 100.0f;
+
+        for (int i = 0; i < multiplier.eval(); i++) {
+            boolean take = RandomUtils.nextFloat(0.0f, 1.0f) <= prob;
+            if (times % currentInterval == 0) {
+                if (take)
+                    result += value.eval();
+
+                if (interval.isRandom())
+                    currentInterval = interval.eval();
+                times = 1;
+            }
+            else
+                times++;
+        }
+
+        return result;
     }
 
     /**
