@@ -23,7 +23,7 @@ public class Pool extends Node {
     }
 
     @Override
-    public Set<ResourceConnection> fire(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> fire(Map<ResourceConnection, ResourceSet> incomingFlows) {
         if (isPulling()) {
             incomingFlows.forEach((c, a) -> {
                 c.getFrom().extract(a);
@@ -34,9 +34,9 @@ public class Pool extends Node {
         }
         else {
             this.getOutgoingConnections().forEach(c -> {
-                int rate = c.getFlowRateValue();
-                ResourceSet extracted = this.extract(ResourceSet.of(rate));
-                c.getTo().receive(extracted);
+//                int rate = c.getFlowRateValue();
+//                ResourceSet extracted = this.extract(ResourceSet.of(rate));
+//                c.getTo().receive(extracted);
             });
 
             return this.getOutgoingConnections();

@@ -279,7 +279,7 @@ public abstract class Node extends GraphElement {
      *
      * @return the set
      */
-    public Set<Trigger> __activateTriggers() {
+    public Set<Trigger> activateTriggers() {
         return this.triggers;
 //        return this.triggers.stream()
 //                .filter(t -> {

@@ -115,26 +115,44 @@ public class Machinations {
         // 4. repeat until no more active elements in this time step.
         Set<Node> activeNodes = getActiveNodes();
 
-        Set<Node> firedNodes = activeNodes.stream()
+        Set<Node> nodes = activeNodes.stream()
                 .filter(Node::activate)
                 .filter(Node::isEnabled)
                 .collect(Collectors.toSet());
 
-        Set<FireRequirement> fireRequirements = firedNodes.stream()
-                .map(Node::getFireRequirement)
-                .collect(Collectors.toSet());
+        Set<GraphElement> nextElements = this.fireNodes(nodes);
+        while (!nextElements.isEmpty()) {
+            // Fire the next connections
+            Set<ResourceConnection> connections = nextElements.stream()
+                    .filter(e -> e instanceof ResourceConnection).map(e -> (ResourceConnection)e)
+                    .collect(Collectors.toSet());
+            fireResourceConnections(connections);
 
-        Set<ResourceConnection> firedConnections = fireRequirements.stream()
-                .flatMap(r -> r.getConnections().stream())
-                .collect(Collectors.toSet());
+            // Fire the next nodes
+            nodes = nextElements.stream()
+                    .filter(e -> e instanceof Node).map(e -> (Node)e)
+                    .collect(Collectors.toSet());
+            nextElements = fireNodes(nodes);
+        }
+    }
+
+    private void fireResourceConnections(Set<ResourceConnection> connections) {
+        connections.forEach(c -> {
+            ResourceSet requiredResource = c.fire();
+            ResourceSet extracted = c.getFrom().extract(requiredResource);
+
+            if (extracted.size() > 0) {
+                c.getTo().receive(extracted);
+            }
+        });
     }
 
     /**
-     * Fires a set of nodes and return the
-     * @param nodes
-     * @return
+     * Fires a set of nodes and return the set of graph elements to be fired next.
+     * @param nodes the node to be fired
+     * @return the graph elements to be fired next
      */
-    private Set<ResourceConnection> fireNodes(Set<Node> nodes) {
+    private Set<GraphElement> fireNodes(Set<Node> nodes) {
         Set<FireRequirement> fireRequirements = nodes.stream()
                 .map(Node::getFireRequirement)
                 .collect(Collectors.toSet());
@@ -167,7 +185,8 @@ public class Machinations {
             return r.getTarget().fire(incomingFlows);
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
-        // --> STEP 2: triggers.
+        ///////////////////////
+        // --> Triggers.
         Map<Node, List<ResourceConnection>> firedConnectionByTarget =
                 firedOutgoingConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
 
@@ -184,14 +203,28 @@ public class Machinations {
                         .collect(Collectors.toSet())
         );
 
-        // Elements will be triggered.
-        Set<Element> triggeredElements = triggerOwners.stream()
-                .flatMap(o -> o.__activateTriggers().stream()).map(Trigger::getTarget)
+        // Elements will be fired are target of triggers.
+        Set<GraphElement> firedNextElements = triggerOwners.stream()
+                .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
 
-        doTrigger(triggeredElements);
+        /////////////////
+        // --> Activators
+        Map<Node, List<Activator>> activatorsByTarget = elements.stream()
+                .filter(e -> e instanceof Node).map(e -> (Node)e)
+                .flatMap(n -> n.getActivators().stream())
+                .collect(Collectors.groupingBy(Activator::getTarget));
 
-        return firedOutgoingConnections;
+        activatorsByTarget.forEach((target, activators) -> {
+            boolean shouldActivate = activators.stream()
+                    .map(Activator::evaluate).reduce(true, (a, b) -> a && b);
+
+            if (shouldActivate && target.isEnabled() && target.activate()) {
+                firedNextElements.add(target);
+            }
+        });
+
+        return firedNextElements;
     }
 
     /**
@@ -379,7 +412,7 @@ public class Machinations {
 
         // Elements will be triggered.
         Set<Element> triggeredElements = triggerOwners.stream()
-                .flatMap(o -> o.__activateTriggers().stream()).map(Trigger::getTarget)
+                .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
 
         doTrigger(triggeredElements);
