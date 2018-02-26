@@ -8,12 +8,9 @@ public class ResourceConnection extends Connection {
     private Node from;
     private Node to;
 
-    private LogicalExpression condition;
+    private LogicalExpression condition = DEFAULT_CONDITION;
     private FlowRate flowRate = new FlowRate();
     private String resourceName = null; // if null, any resource.
-
-    public static final IntNumber DEFAULT_FLOW_RATE = IntNumber.of(1);
-    private Expression flowRateExpression = DEFAULT_FLOW_RATE;
 
     /**
      * Gets from.
@@ -116,40 +113,13 @@ public class ResourceConnection extends Connection {
     }
 
     /**
-     * Gets flow rate expression.
-     *
-     * @return the flow rate expression
-     */
-    public Expression getFlowRateExpression() {
-        return flowRateExpression;
-    }
-
-    /**
-     * Sets flow rate expression.
-     *
-     * @param flowRateExpression the flow rate expression
-     * @return the flow rate expression
-     */
-    public ResourceConnection setFlowRateExpression(Expression flowRateExpression) {
-        this.flowRateExpression = flowRateExpression;
-        return this;
-    }
-
-    public int getFlowRateValue() {
-        if (flowRateExpression instanceof ArithmeticExpression) {
-            return ((ArithmeticExpression)flowRateExpression).eval();
-        }
-        else
-            return 0;
-    }
-
-    /**
      * Activates the resource connection and gets the required resource set should be passed on it.
+     *
      * @return the required resource set
      */
-    public ResourceSet activate() {
-        if (flowRateExpression instanceof ArithmeticExpression) {
-            int amount = ((ArithmeticExpression)flowRateExpression).eval();
+    public ResourceSet fire() {
+        if (condition.eval()) {
+            int amount = flowRate.get();
             return ResourceSet.of(this.resourceName, amount);
         }
         else

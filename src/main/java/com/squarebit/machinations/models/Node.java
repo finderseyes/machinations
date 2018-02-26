@@ -267,11 +267,10 @@ public abstract class Node extends GraphElement {
 
     /**
      * Activates a node, giving incoming resource flow.
-     * @param time
      * @param incomingFlows
      */
-    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
-        // By default, does not __activate any output resource connections.
+    public Set<ResourceConnection> fire(Map<ResourceConnection, ResourceSet> incomingFlows) {
+        // By default, does not fire any output resource connections.
         return Collections.emptySet();
     }
 

@@ -109,7 +109,7 @@ public class Machinations {
     }
 
     private void doSimulateOneTimeStep() {
-        // 1. activate the active elements, and find out which ones needs to be fired.
+        // 1. fire the active elements, and find out which ones needs to be fired.
         // 2. try to satisfy fire requests.
         // 3. fire those satisfied.
         // 4. repeat until no more active elements in this time step.
@@ -127,6 +127,133 @@ public class Machinations {
         Set<ResourceConnection> firedConnections = fireRequirements.stream()
                 .flatMap(r -> r.getConnections().stream())
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Fires a set of nodes and return the
+     * @param nodes
+     * @return
+     */
+    private Set<ResourceConnection> fireNodes(Set<Node> nodes) {
+        Set<FireRequirement> fireRequirements = nodes.stream()
+                .map(Node::getFireRequirement)
+                .collect(Collectors.toSet());
+
+        // Try to resolve requirements.
+        Map<ResourceConnection, ResourceSet> actualFlows = resolveFireRequirements(fireRequirements);
+
+        // Filter those requirements actually satisfied
+        Set<FireRequirement> satisfiedRequirements = fireRequirements.stream()
+                .filter(r -> {
+                    Set<ResourceConnection> connections = r.getConnections();
+
+                    return (connections.isEmpty() ||
+                            (r.isRequiringAll() && actualFlows.keySet().containsAll(connections)) ||
+                            (!r.isRequiringAll() && connections.stream().anyMatch(actualFlows::containsKey)));
+                }).collect(Collectors.toSet());
+
+        // Fire the nodes.
+        Set<ResourceConnection> firedOutgoingConnections = satisfiedRequirements.stream().map(r -> {
+            Set<ResourceConnection> connections = r.getConnections();
+
+            Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
+            actualFlows.entrySet().stream()
+                    .filter(e -> connections.contains(e.getKey()))
+                    .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+
+            if (r.getTarget() instanceof End)
+                this.terminated = true;
+
+            return r.getTarget().fire(incomingFlows);
+        }).flatMap(Set::stream).collect(Collectors.toSet());
+
+        // --> STEP 2: triggers.
+        Map<Node, List<ResourceConnection>> firedConnectionByTarget =
+                firedOutgoingConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
+
+        // Trigger owners are those having all input connections satisfied.
+        Set<Node> triggerOwners = firedConnectionByTarget.entrySet().stream()
+                .filter(e -> e.getKey().getIncomingConnections().containsAll(e.getValue()))
+                .map(Map.Entry::getKey).collect(Collectors.toSet());
+
+        // Add those nodes previously fired but do not have any input requirements.
+        triggerOwners.addAll(
+                satisfiedRequirements.stream()
+                        .filter(r -> r.getTarget().getIncomingConnections().size() == 0)
+                        .map(FireRequirement::getTarget)
+                        .collect(Collectors.toSet())
+        );
+
+        // Elements will be triggered.
+        Set<Element> triggeredElements = triggerOwners.stream()
+                .flatMap(o -> o.__activateTriggers().stream()).map(Trigger::getTarget)
+                .collect(Collectors.toSet());
+
+        doTrigger(triggeredElements);
+
+        return firedOutgoingConnections;
+    }
+
+    /**
+     * Tries to resolves give node fire requirements and return the actual flows.
+     *
+     * @param fireRequirements the requirement set
+     * @return the set of resources actually need to pass through the connections.
+     */
+    private Map<ResourceConnection, ResourceSet> resolveFireRequirements(Set<FireRequirement> fireRequirements) {
+        // The required connections to be fired.
+        Set<ResourceConnection> requiredConnections = fireRequirements.stream()
+                .flatMap(r -> r.getConnections().stream())
+                .collect(Collectors.toSet());
+
+        // Active connections, grouped by providing node.
+        Map<Node, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
+                .collect(Collectors.groupingBy(ResourceConnection::getFrom));
+
+        // The required resources for each node.
+        Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
+        requiredConnections.forEach(c -> requiredResources.put(c, c.fire()));
+
+        // The set of actual flow.
+        Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
+
+        // Get resource snapshot for each provider node.
+        Map<Node, ResourceSet> resourceSnapShots = new HashMap<>();
+        requiredConnectionsByProvider.forEach((n, c) -> resourceSnapShots.put(n, n.getResources().copy()));
+
+        // Calculate the actual flow.
+        fireRequirements.forEach(requirement ->
+                requirement.getConnections().forEach(c -> {
+                    ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
+                    ResourceSet requiredResource = requiredResources.get(c);
+                    ResourceSet extracted = snapshot.remove(requiredResource);
+
+                    if (extracted.size() > 0) {
+                        if (requirement.isRequiringAll() && !requiredResource.isSubSetOf(extracted))
+                            snapshot.add(extracted);
+                        else
+                            actualFlows.put(c, extracted);
+                    }
+                })
+        );
+
+        // Determines requirements actually satisfied.
+        if (configs.getTimeMode() == TimeMode.SYNCHRONOUS) {
+            // synchronous time mode require each provider node to provide all or none dependent connections.
+            Set<ResourceConnection> nonFlows = requiredConnectionsByProvider.entrySet().stream()
+                    .map(e -> {
+                        List<ResourceConnection> dependentConnections = e.getValue();
+                        if (!actualFlows.keySet().containsAll(dependentConnections))
+                            return dependentConnections;
+                        else
+                            return Collections.<ResourceConnection>emptyList();
+                    }).flatMap(List::stream).collect(Collectors.toSet());
+
+            // Remove those non-flow due to sync-time constraint.
+            nonFlows.forEach(actualFlows::remove);
+        }
+
+        return actualFlows;
     }
 
     /**
@@ -163,7 +290,7 @@ public class Machinations {
 //        requiredConnections.forEach(c -> requiredFlows.put(c, c.getFlowRateValue()));
 
         Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
-        requiredConnections.forEach(c -> requiredResources.put(c, c.activate()));
+        requiredConnections.forEach(c -> requiredResources.put(c, c.fire()));
 
         // Active connections, grouped by providing node.
         Map<Node, List<ResourceConnection>> requiredConnectionsByProvider = requiredConnections.stream()
@@ -230,7 +357,7 @@ public class Machinations {
             if (r.getTarget() instanceof End)
                 this.terminated = true;
 
-            return r.getTarget().__activate(this.time, incomingFlows);
+            return r.getTarget().fire(incomingFlows);
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
         // --> STEP 2: triggers.
@@ -306,9 +433,9 @@ public class Machinations {
     }
 
     private void activateConnection(ResourceConnection connection) {
-        int rate = connection.getFlowRateValue();
-        ResourceSet resource = connection.getFrom().getResources().remove(rate);
-        connection.getTo().receive(resource);
+        // int rate = connection.fire();
+        // ResourceSet resource = connection.getFrom().getResources().remove(rate);
+        // connection.getTo().receive(resource);
     }
 
     private void activateNode(Node node) {
@@ -324,7 +451,7 @@ public class Machinations {
                 .collect(Collectors.toSet());
 
         Map<ResourceConnection, ResourceSet> requiredResources = new HashMap<>();
-        requirement.getConnections().forEach(c -> requiredResources.put(c, c.activate()));
+        requirement.getConnections().forEach(c -> requiredResources.put(c, c.fire()));
 
         // The set of actual flow.
         Map<ResourceConnection, ResourceSet> actualFlows = new HashMap<>();
@@ -356,7 +483,7 @@ public class Machinations {
                     .filter(e -> connections.contains(e.getKey()))
                     .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
 
-            requirement.getTarget().__activate(this.time, incomingFlows);
+            requirement.getTarget().fire(incomingFlows);
         }
     }
 
@@ -428,12 +555,12 @@ public class Machinations {
             final int currentTime = time;
 
             // Activate each node.
-            // activeNodes.forEach(node -> node.__activate(currentTime));
+            // activeNodes.forEach(node -> node.fire(currentTime));
 
             // Clear "next" set.
             nextActiveNodes.clear();
 
-//            // Find next __activate-able elements by triggers.
+//            // Find next fire-able elements by triggers.
 //            Set<Element> elements = activeNodes.stream().map(node -> {
 //                boolean connectionsActivated =
 //                        node.getIncomingConnections().stream()

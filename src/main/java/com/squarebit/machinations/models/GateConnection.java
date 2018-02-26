@@ -5,7 +5,7 @@ package com.squarebit.machinations.models;
  */
 public class GateConnection extends ResourceConnection {
     @Override
-    public ResourceSet activate() {
+    public ResourceSet fire() {
         // A gate (resource) connection does not return anything upon activation.
         return ResourceSet.empty();
     }

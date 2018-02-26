@@ -99,6 +99,15 @@ public class FlowRate {
     }
 
     /**
+     * Gets the current flow rate.
+     *
+     * @return the flow rate value
+     */
+    public int get() {
+        return 0;
+    }
+
+    /**
      * Gets the flow rate with respect to "all" expression.
      *
      * @return the "all" flow rate.

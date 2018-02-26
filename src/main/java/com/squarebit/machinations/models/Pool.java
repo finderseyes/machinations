@@ -23,7 +23,7 @@ public class Pool extends Node {
     }
 
     @Override
-    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> fire(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
         if (isPulling()) {
             incomingFlows.forEach((c, a) -> {
                 c.getFrom().extract(a);
