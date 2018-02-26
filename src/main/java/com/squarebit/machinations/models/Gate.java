@@ -81,7 +81,7 @@ public class Gate extends Node {
     }
 
     @Override
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
         this.initializeIfNeeded();
 
         Set<ResourceConnection> outgoingConnections = new HashSet<>();
@@ -147,7 +147,7 @@ public class Gate extends Node {
     }
 
     @Override
-    public Set<Trigger> activateTriggers() {
+    public Set<Trigger> __activateTriggers() {
         Set<Trigger> triggers = new HashSet<>();
 
 //        if (this.useProbableTriggers) {

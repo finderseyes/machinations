@@ -215,18 +215,18 @@ public abstract class Node extends GraphElement {
     }
 
     /**
-     * Gets the activation requirement.
-     * @return the activation requirement
+     * Gets requirements for firing this node.
+     * @return the fire requirements
      */
-    public ActivationRequirement getActivationRequirement() {
+    public FireRequirement getFireRequirement() {
         if (isPulling()) {
             if (isAllOrNoneFlow())
-                return ActivationRequirement.all(this, this.getIncomingConnections());
+                return FireRequirement.all(this, this.getIncomingConnections());
             else
-                return ActivationRequirement.any(this, this.getIncomingConnections());
+                return FireRequirement.any(this, this.getIncomingConnections());
         }
         else
-            return ActivationRequirement.any(this, Collections.emptySet());
+            return FireRequirement.any(this, Collections.emptySet());
     }
 
     /**
@@ -257,12 +257,21 @@ public abstract class Node extends GraphElement {
     }
 
     /**
+     * Activates the node.
+     *
+     * @return true if the node needs to be fired after activation, false otherwise.
+     */
+    public boolean activate() {
+        return true;
+    }
+
+    /**
      * Activates a node, giving incoming resource flow.
      * @param time
      * @param incomingFlows
      */
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
-        // By default, does not activate any output resource connections.
+    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+        // By default, does not __activate any output resource connections.
         return Collections.emptySet();
     }
 
@@ -271,7 +280,7 @@ public abstract class Node extends GraphElement {
      *
      * @return the set
      */
-    public Set<Trigger> activateTriggers() {
+    public Set<Trigger> __activateTriggers() {
         return this.triggers;
 //        return this.triggers.stream()
 //                .filter(t -> {

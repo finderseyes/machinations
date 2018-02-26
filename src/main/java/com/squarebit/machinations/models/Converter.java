@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class Converter extends Pool {
     @Override
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
         incomingFlows.forEach((c, a) -> c.getFrom().extract(a));
 
         this.getOutgoingConnections().forEach(c -> {

@@ -6,15 +6,15 @@ import java.util.Set;
 
 public class Pool extends Node {
     @Override
-    public ActivationRequirement getActivationRequirement() {
+    public FireRequirement getFireRequirement() {
         if (isPulling()) {
             if (isAllOrNoneFlow())
-                return ActivationRequirement.all(this, this.getIncomingConnections());
+                return FireRequirement.all(this, this.getIncomingConnections());
             else
-                return ActivationRequirement.any(this, this.getIncomingConnections());
+                return FireRequirement.any(this, this.getIncomingConnections());
         }
         else
-            return ActivationRequirement.any(this, Collections.emptySet());
+            return FireRequirement.any(this, Collections.emptySet());
     }
 
     @Override
@@ -23,7 +23,7 @@ public class Pool extends Node {
     }
 
     @Override
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> __activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
         if (isPulling()) {
             incomingFlows.forEach((c, a) -> {
                 c.getFrom().extract(a);

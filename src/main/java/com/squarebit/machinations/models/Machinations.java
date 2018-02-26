@@ -14,7 +14,7 @@ public class Machinations {
     private int time = -1;  // The time index now, negative means no simulation step has been executed.
     private int remainedActionPoints = -1;
     private Set<Node> activeNodes = new HashSet<>();
-    private Set<Node> automaticOrInteractiveNodes;
+    private Set<Node> automaticNodes;
     private boolean terminated = false;
 
     public Machinations() {
@@ -108,17 +108,54 @@ public class Machinations {
         return (!this.terminated);
     }
 
-    private boolean doSimulateOneTimeStep() {
+    private void doSimulateOneTimeStep() {
+        // 1. activate the active elements, and find out which ones needs to be fired.
+        // 2. try to satisfy fire requests.
+        // 3. fire those satisfied.
+        // 4. repeat until no more active elements in this time step.
+        Set<Node> activeNodes = getActiveNodes();
+
+        Set<Node> firedNodes = activeNodes.stream()
+                .filter(Node::activate)
+                .filter(Node::isEnabled)
+                .collect(Collectors.toSet());
+
+        Set<FireRequirement> fireRequirements = firedNodes.stream()
+                .map(Node::getFireRequirement)
+                .collect(Collectors.toSet());
+
+        Set<ResourceConnection> firedConnections = fireRequirements.stream()
+                .flatMap(r -> r.getConnections().stream())
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Gets the set of nodes to be activated at current time step.
+     * @return the active node set
+     */
+    private Set<Node> getActiveNodes() {
+        Set<Node> nodes = new HashSet<>(this.automaticNodes);
+
+        if (time == 0)
+            nodes.addAll(elements.stream()
+                    .filter(e -> e instanceof Node &&
+                            ((Node)e).getActivationMode() == ActivationMode.STARTING_ACTION
+                    ).map(e -> (Node)e).collect(Collectors.toSet()));
+
+        return nodes;
+    }
+
+    private boolean doSimulateOneTimeStepOld() {
         if (this.terminated)
             return false;
 
         // --> STEP 1: try to resolve activation requirements
-        Set<ActivationRequirement> activationRequirements = this.activeNodes.stream()
+        Set<FireRequirement> fireRequirements = this.activeNodes.stream()
                 .filter(Node::isEnabled)
-                .map(Node::getActivationRequirement)
+                .map(Node::getFireRequirement)
                 .collect(Collectors.toSet());
 
-        Set<ResourceConnection> requiredConnections = activationRequirements.stream()
+        Set<ResourceConnection> requiredConnections = fireRequirements.stream()
                 .flatMap(r -> r.getConnections().stream())
                 .collect(Collectors.toSet());
 
@@ -140,7 +177,7 @@ public class Machinations {
         requiredConnectionsByProvider.forEach((n, c) -> resourceSnapShots.put(n, n.getResources().copy()));
 
         // Calculate the actual flow.
-        activationRequirements.forEach(requirement ->
+        fireRequirements.forEach(requirement ->
                 requirement.getConnections().forEach(c -> {
                     ResourceSet snapshot = resourceSnapShots.get(c.getFrom());
                     ResourceSet requiredResource = requiredResources.get(c);
@@ -172,7 +209,7 @@ public class Machinations {
         }
 
         // Triggers the target nodes meeting requirements.
-        Set<ActivationRequirement> satisfiedRequirements = activationRequirements.stream()
+        Set<FireRequirement> satisfiedRequirements = fireRequirements.stream()
             .filter(r -> {
                 Set<ResourceConnection> connections = r.getConnections();
 
@@ -193,7 +230,7 @@ public class Machinations {
             if (r.getTarget() instanceof End)
                 this.terminated = true;
 
-            return r.getTarget().activate(this.time, incomingFlows);
+            return r.getTarget().__activate(this.time, incomingFlows);
         }).flatMap(Set::stream).collect(Collectors.toSet());
 
         // --> STEP 2: triggers.
@@ -209,13 +246,13 @@ public class Machinations {
         triggerOwners.addAll(
                 satisfiedRequirements.stream()
                         .filter(r -> r.getTarget().getIncomingConnections().size() == 0)
-                        .map(ActivationRequirement::getTarget)
+                        .map(FireRequirement::getTarget)
                         .collect(Collectors.toSet())
         );
 
         // Elements will be triggered.
         Set<Element> triggeredElements = triggerOwners.stream()
-                .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
+                .flatMap(o -> o.__activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
 
         doTrigger(triggeredElements);
@@ -225,7 +262,7 @@ public class Machinations {
 
         // --> Clean up, update active node set
         this.activeNodes.clear();
-        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
+        this.activeNodes.addAll(this.automaticNodes);
 
         return true;
     }
@@ -278,7 +315,7 @@ public class Machinations {
         if (node instanceof End)
             this.terminated = true;
 
-        ActivationRequirement requirement = node.getActivationRequirement();
+        FireRequirement requirement = node.getFireRequirement();
 
         // Active connections, grouped by providing node.
         Set<Node> providers =
@@ -319,7 +356,7 @@ public class Machinations {
                     .filter(e -> connections.contains(e.getKey()))
                     .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
 
-            requirement.getTarget().activate(this.time, incomingFlows);
+            requirement.getTarget().__activate(this.time, incomingFlows);
         }
     }
 
@@ -345,10 +382,8 @@ public class Machinations {
         if (this.time >= 0)
             return;
 
-        this.automaticOrInteractiveNodes = elements.stream()
-                .filter(e -> e instanceof Node &&
-                        (((Node)e).getActivationMode() == ActivationMode.AUTOMATIC ||
-                                ((Node)e).getActivationMode() == ActivationMode.INTERACTIVE)
+        this.automaticNodes = elements.stream()
+                .filter(e -> e instanceof Node && (((Node)e).getActivationMode() == ActivationMode.AUTOMATIC)
                 ).map(e -> (Node)e).collect(Collectors.toSet());
 
         Set<Node> startingNodes = elements.stream()
@@ -357,7 +392,7 @@ public class Machinations {
                 ).map(e -> (Node)e).collect(Collectors.toSet());
 
         this.activeNodes.clear();
-        this.activeNodes.addAll(this.automaticOrInteractiveNodes);
+        this.activeNodes.addAll(this.automaticNodes);
         this.activeNodes.addAll(startingNodes);
 
 //        this.updateNodeEnablingStates();
@@ -393,12 +428,12 @@ public class Machinations {
             final int currentTime = time;
 
             // Activate each node.
-            // activeNodes.forEach(node -> node.activate(currentTime));
+            // activeNodes.forEach(node -> node.__activate(currentTime));
 
             // Clear "next" set.
             nextActiveNodes.clear();
 
-//            // Find next activate-able elements by triggers.
+//            // Find next __activate-able elements by triggers.
 //            Set<Element> elements = activeNodes.stream().map(node -> {
 //                boolean connectionsActivated =
 //                        node.getIncomingConnections().stream()
