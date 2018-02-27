@@ -81,7 +81,7 @@ public class Gate extends Node {
     }
 
     @Override
-    public Set<ResourceConnection> fire(Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> fire(ResourceSet incomingFlows) {
         this.initializeIfNeeded();
 
         Set<ResourceConnection> outgoingConnections = new HashSet<>();

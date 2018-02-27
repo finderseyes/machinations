@@ -509,6 +509,8 @@ public class MachinationsFactory {
                 .setTarget(buildContext.target)
                 .setId(getOrCreateId(buildContext.id));
 
+        context.currentObject = activator;
+
         if (buildContext.labelContext != null) {
             activator.setCondition(
                     buildBoolean(

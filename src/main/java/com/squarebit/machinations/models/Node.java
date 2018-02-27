@@ -261,15 +261,24 @@ public abstract class Node extends GraphElement {
      *
      * @return true if the node needs to be fired after activation, false otherwise.
      */
-    public boolean activate() {
+    public final boolean activate() {
+        return doActivate();
+    }
+
+    /**
+     * Do activate boolean.
+     *
+     * @return the boolean
+     */
+    protected boolean doActivate() {
         return true;
     }
 
     /**
      * Activates a node, giving incoming resource flow.
-     * @param incomingFlows
+     * @param incomingResources incoming resources
      */
-    public Set<ResourceConnection> fire(Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> fire(ResourceSet incomingResources) {
         // By default, does not fire any output resource connections.
         return Collections.emptySet();
     }
