@@ -238,7 +238,7 @@ public class MachinationsFactory {
             lhs = AbstractNodeRef.of(activator.getOwner());
         }
         else if (context.currentObject instanceof ResourceConnection) {
-            GateConnection connection = (GateConnection)context.currentObject;
+            ResourceConnection connection = (ResourceConnection)context.currentObject;
             lhs = AbstractNodeRef.of(connection.getFrom());
         }
         else if (context.currentObject instanceof  Trigger) {
@@ -783,12 +783,12 @@ public class MachinationsFactory {
     }
 
     private void createConnection(BuildingContext context, ConnectionBuildContext connectionBuildContext) throws Exception {
-        ResourceConnection connection;
+        ResourceConnection connection = new ResourceConnection();
 
-        if (connectionBuildContext.from instanceof Gate)
-            connection = new GateConnection();
-        else
-            connection = new ResourceConnection();
+//        if (connectionBuildContext.from instanceof Gate)
+//            connection = new GateConnection();
+//        else
+//            connection = new ResourceConnection();
 
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)
