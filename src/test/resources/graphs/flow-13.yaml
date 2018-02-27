@@ -10,7 +10,7 @@ nodes:
     activationMode: automatic
     id: p1
     connections:
-      - 2 [gold] --> p2
+      - 2 (gold) --> p2
 
   - type: pool
     id: p2
@@ -19,7 +19,7 @@ nodes:
     id: p3
     resources: 10 mana, 1 gold
     connections:
-      - "[gold] --> p4"
+      - "1 (gold)--> p4"
 
   - type: pool
     id: p4

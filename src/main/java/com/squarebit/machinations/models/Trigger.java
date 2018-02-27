@@ -3,9 +3,9 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.*;
 
 public class Trigger extends Element {
-    private static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
-    private static final Percentage DEFAULT_PROBABILITY = Percentage.of(100);
-    private static final IntegerExpression DEFAULT_DISTRIBUTION = FixedInteger.of(1.0f);
+    public static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
+    public static final Percentage DEFAULT_PROBABILITY = Percentage.of(100);
+    public static final IntegerExpression DEFAULT_DISTRIBUTION = FixedInteger.of(1.0f);
 
     private Node owner;
     private GraphElement target;

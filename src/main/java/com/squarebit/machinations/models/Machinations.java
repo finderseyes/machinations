@@ -115,6 +115,9 @@ public class Machinations {
         // 3. fire those satisfied.
         // 4. repeat until no more active elements in this time step.
 
+        if (this.terminated)
+            return;
+
         Set<Node> activeNodes = getActiveNodes();
         this.activatedByActivatorNodes.clear();
 
@@ -123,6 +126,12 @@ public class Machinations {
                 .filter(Node::isEnabled)
                 .filter(Node::activate)
                 .collect(Collectors.toSet());
+
+        // Stop if there is an end node.
+        if (nodes.stream().anyMatch(n -> n instanceof End)) {
+            this.terminated = true;
+            return;
+        }
 
         // Elements already fired in this time step.
         Set<GraphElement> firedElements = new HashSet<>(nodes);

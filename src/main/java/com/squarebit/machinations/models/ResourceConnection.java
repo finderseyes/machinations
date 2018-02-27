@@ -3,7 +3,7 @@ package com.squarebit.machinations.models;
 import com.squarebit.machinations.engine.*;
 
 public class ResourceConnection extends Connection {
-    private static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
+    public static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
 
     private Node from;
     private Node to;

@@ -7,11 +7,11 @@ import org.apache.commons.lang3.RandomUtils;
  * A flow rate.
  */
 public class FlowRate {
-    private static final FlowRate ALL = new FlowRate();
-    private static final IntegerExpression DEFAULT_VALUE = FixedInteger.of(1.0f);
-    private static final IntegerExpression DEFAULT_INTERVAL = FixedInteger.of(1.0f);
-    private static final IntegerExpression DEFAULT_MULTIPLIER = FixedInteger.of(1.0f);
-    private static final Percentage DEFAULT_PROBABILITY = Percentage.of(100);
+    public static final FlowRate ALL = new FlowRate();
+    public static final IntegerExpression DEFAULT_VALUE = FixedInteger.of(1.0f);
+    public static final IntegerExpression DEFAULT_INTERVAL = FixedInteger.of(1.0f);
+    public static final IntegerExpression DEFAULT_MULTIPLIER = FixedInteger.of(1.0f);
+    public static final Percentage DEFAULT_PROBABILITY = Percentage.of(100);
 
     private IntegerExpression value = DEFAULT_VALUE;
     private IntegerExpression interval = DEFAULT_INTERVAL;
@@ -59,7 +59,7 @@ public class FlowRate {
      */
     public FlowRate setInterval(IntegerExpression interval) {
         this.interval = interval;
-        this.currentInterval = interval.eval();
+        this.currentInterval = evaluateInterval();
         return this;
     }
 
@@ -110,16 +110,20 @@ public class FlowRate {
      */
     public int get() {
         int result = 0;
-        float prob = probability.getValue() / 100.0f;
+        float prob = evaluateProbability();
+        int mult = evaluateMultiplier();
 
-        for (int i = 0; i < multiplier.eval(); i++) {
+        for (int i = 0; i < mult; i++) {
             boolean take = RandomUtils.nextFloat(0.0f, 1.0f) <= prob;
             if (times % currentInterval == 0) {
                 if (take)
-                    result += value.eval();
+                    result += evaluateFlowValue();
 
-                if (interval.isRandom())
-                    currentInterval = interval.eval();
+                if (interval != null && interval.isRandom())
+                    currentInterval = evaluateInterval();
+                else
+                    currentInterval = 1;
+
                 times = 1;
             }
             else
@@ -127,6 +131,38 @@ public class FlowRate {
         }
 
         return result;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private float evaluateProbability() {
+        return (probability != null) ? probability.getValue() / 100.0f : 1.0f;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private int evaluateMultiplier() {
+        return (multiplier != null) ? multiplier.eval() : 1;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private int evaluateInterval() {
+        return (interval != null) ? interval.eval() : 1;
+    }
+
+    /**
+     *
+     * @return
+     */
+    private int evaluateFlowValue() {
+        return (value != null) ? value.eval() : 1;
     }
 
     /**

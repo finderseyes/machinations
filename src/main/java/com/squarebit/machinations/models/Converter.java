@@ -1,18 +1,26 @@
 package com.squarebit.machinations.models;
 
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Converter extends Pool {
-//    @Override
-//    public Set<ResourceConnection> fire(Map<ResourceConnection, ResourceSet> incomingFlows) {
-//        incomingFlows.forEach((c, a) -> c.getFrom().extract(a));
-//
-//        this.getOutgoingConnections().forEach(c -> {
-////            int rate = c.getFlowRateValue();
-////            c.getTo().receive(ResourceSet.of(c.getResourceName(), rate));
-//        });
-//
-//        return this.getOutgoingConnections();
-//    }
+    /**
+     * Activates a node, giving incoming resource flow.
+     *
+     * @param incomingResources incoming resources
+     */
+    @Override
+    public Set<ResourceConnection> fire(ResourceSet incomingResources) {
+        this.getOutgoingConnections().forEach(c -> {
+            ResourceSet requiredResources = c.fire();
+            c.getTo().receive(requiredResources);
+        });
+
+        return this.getOutgoingConnections();
+    }
+
+    @Override
+    public FireRequirement getFireRequirement() {
+        return FireRequirement.all(this, this.getIncomingConnections());
+    }
 }

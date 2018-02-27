@@ -5,7 +5,7 @@ nodes:
     id: p0
     resources: 100
     connections:
-      - --> p1 (e01)
+      - --> p1 :e01
 
   - type: pool
     id: p1

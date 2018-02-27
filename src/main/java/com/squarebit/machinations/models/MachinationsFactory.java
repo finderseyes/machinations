@@ -413,7 +413,7 @@ public class MachinationsFactory {
 
                 if (gateSpec.getDraw() != null) {
                     GameMLParser parser = getGameMLParser(gateSpec.getDraw());
-                    gate.setDrawExpression(buildArithmetic(context, parser.arithmeticExpression()));
+                    gate.setDrawExpression(buildInteger(parser.integerExpression()));
                 }
 
                 gate.setRandom(gateSpec.isRandom());
@@ -793,6 +793,8 @@ public class MachinationsFactory {
         connection.setFrom(connectionBuildContext.from)
                 .setTo(connectionBuildContext.to)
                 .setId(getOrCreateId(connectionBuildContext.id));
+
+        context.currentObject = connection;
 
         if (connectionBuildContext.labelContext != null)
         {

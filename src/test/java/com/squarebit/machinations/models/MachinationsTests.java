@@ -4,6 +4,7 @@ import com.squarebit.machinations.Utils;
 import com.squarebit.machinations.specs.yaml.YamlSpec;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -480,7 +481,7 @@ public class MachinationsTests {
         assertThat(p4.getResources().size()).isEqualTo(1);
     }
 
-    @Test
+    @Test(timeout = 2000)
     public void should_support_end() throws Exception {
         String path = Utils.absoluteResourcePath("graphs/flow-14.yaml");
         YamlSpec spec = YamlSpec.fromFile(path);
@@ -495,6 +496,6 @@ public class MachinationsTests {
                 break;
         }
 
-        assertThat(machinations.getTime()).isEqualTo(5);
+        assertThat(machinations.getTime()).isEqualTo(6);
     }
 }
