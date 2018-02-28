@@ -1,10 +1,10 @@
 package com.squarebit.machinations.engine;
 
 public abstract class BinaryOperator extends ArithmeticExpression {
-    protected ArithmeticExpression lhs, rhs;
+    protected IntegerExpression lhs, rhs;
 
     /**
-     * Instantiates a new Addition.
+     * Instantiates a new AdditionIntegerExpression.
      */
     public BinaryOperator() {
 
@@ -15,7 +15,7 @@ public abstract class BinaryOperator extends ArithmeticExpression {
      *
      * @return the lhs
      */
-    public ArithmeticExpression getLhs() {
+    public IntegerExpression getLhs() {
         return lhs;
     }
 
@@ -25,7 +25,7 @@ public abstract class BinaryOperator extends ArithmeticExpression {
      * @param lhs the lhs
      * @return the lhs
      */
-    public BinaryOperator setLhs(ArithmeticExpression lhs) {
+    public BinaryOperator setLhs(IntegerExpression lhs) {
         this.lhs = lhs;
         return this;
     }
@@ -35,7 +35,7 @@ public abstract class BinaryOperator extends ArithmeticExpression {
      *
      * @return the rhs
      */
-    public ArithmeticExpression getRhs() {
+    public IntegerExpression getRhs() {
         return rhs;
     }
 
@@ -45,7 +45,7 @@ public abstract class BinaryOperator extends ArithmeticExpression {
      * @param rhs the rhs
      * @return the rhs
      */
-    public BinaryOperator setRhs(ArithmeticExpression rhs) {
+    public BinaryOperator setRhs(IntegerExpression rhs) {
         this.rhs = rhs;
         return this;
     }

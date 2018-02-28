@@ -1,6 +1,5 @@
 package com.squarebit.machinations;
 
-import com.squarebit.machinations.engine.ArithmeticExpression;
 import com.squarebit.machinations.engine.LogicalExpression;
 import com.squarebit.machinations.engine.MaxInteger;
 import com.squarebit.machinations.engine.RandomInteger;
@@ -76,7 +75,7 @@ public class MachinationsFactoryTests {
                 ProbabilityModifier modifier = (ProbabilityModifier)context.findById("m_p0_p1_3");
 
                 assertThat(modifier.getTarget()).isEqualTo(context.findById("p0_p2_2"));
-                assertThat(modifier.getValue().getValue()).isEqualTo(5);
+                assertThat(modifier.getValue().eval()).isEqualTo(5);
                 assertThat(modifier.getSign()).isEqualTo(1);
             }
 
@@ -167,7 +166,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
         }
 
         {
@@ -190,7 +189,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
         }
 
         {
@@ -209,7 +208,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
         }
 
         {
@@ -228,7 +227,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(50);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(50);
         }
 
         {
@@ -247,7 +246,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(3);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(50);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(50);
         }
 
         {
@@ -266,7 +265,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -287,7 +286,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -308,7 +307,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(2);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(30);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(30);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -328,7 +327,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isNullOrEmpty();
         }
@@ -348,7 +347,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(1);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(100);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(100);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -369,7 +368,7 @@ public class MachinationsFactoryTests {
             assertThat(flowRate.getMultiplier().isRandom()).isFalse();
             assertThat(flowRate.getMultiplier().eval()).isEqualTo(5);
 
-            assertThat(flowRate.getProbability().getValue()).isEqualTo(30);
+            assertThat(flowRate.getProbability().eval()).isEqualTo(30);
 
             assertThat(connection.getResourceName()).isEqualTo("gold");
         }
@@ -420,7 +419,7 @@ public class MachinationsFactoryTests {
             assertThat(trigger.getCondition().eval()).isTrue();
 
             assertThat(trigger.isUsingProbability()).isTrue();
-            assertThat(trigger.getProbability().getValue()).isEqualTo(50);
+            assertThat(trigger.getProbability().eval()).isEqualTo(50);
         }
 
         {
@@ -438,7 +437,7 @@ public class MachinationsFactoryTests {
             assertThat(trigger.getCondition().eval()).isFalse();
 
             assertThat(trigger.isUsingProbability()).isTrue();
-            assertThat(trigger.getProbability().getValue()).isEqualTo(50);
+            assertThat(trigger.getProbability().eval()).isEqualTo(50);
         }
     }
 
@@ -482,32 +481,10 @@ public class MachinationsFactoryTests {
         return consumer.apply(getParser(decl));
     }
 
-    private ArithmeticExpression arithmetic(String decl) {
-        MachinationsFactory factory = new MachinationsFactory();
-        return factory.buildArithmetic(null, parse(decl, GameMLParser::arithmeticExpression));
-    }
-
     private LogicalExpression bool(String decl) {
         MachinationsFactory factory = new MachinationsFactory();
         return factory.buildBoolean(null, parse(decl, GameMLParser::logicalExpression));
     }
-
-//    @Test
-//    public void should_construct_arithmetic_expressions() throws Exception {
-//        assertThat(arithmetic("1").eval()).isEqualTo(1);
-//        assertThat(arithmetic("1+2").eval()).isEqualTo(3);
-//        assertThat(arithmetic("1 - 3").eval()).isEqualTo(-2);
-//        assertThat(arithmetic("3* 2").eval()).isEqualTo(6);
-//        assertThat(arithmetic("3*(3+4)").eval()).isEqualTo(21);
-//
-//        assertThat(arithmetic("1 + 5%").eval()).isGreaterThan(0);
-//
-//        assertThat(arithmetic("D").eval()).isGreaterThan(0);
-//        assertThat(arithmetic("2D").eval()).isGreaterThan(0);
-//        assertThat(arithmetic("D5").eval()).isGreaterThan(0);
-//        assertThat(arithmetic("2D5").eval()).isGreaterThan(0);
-//        assertThat(arithmetic("2D5 + 3/4").eval()).isGreaterThan(0);
-//    }
 
     @Test
     public void should_construct_boolean_expressions() throws Exception {

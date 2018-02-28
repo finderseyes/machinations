@@ -1,0 +1,18 @@
+# Interval modifiers
+---
+nodes:
+  - type: source
+    id: p0
+    connections:
+      - --> p1
+      - "1/1 --> p2 :e_0_2"
+
+  - type: pool
+    id: p1
+    activationMode: startingAction
+    modifiers:
+      - "+1i --> e_0_2"
+
+  - type: pool
+    id: p2
+    activationMode: automatic

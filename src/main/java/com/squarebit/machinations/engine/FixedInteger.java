@@ -4,7 +4,7 @@ package com.squarebit.machinations.engine;
  * A fixed flow rate expression.
  */
 public class FixedInteger extends IntegerExpression {
-    private float value = 1.0f;
+    protected float value = 1.0f;
 
     /**
      * Determines if the expression evaluates to a random value.
@@ -17,13 +17,13 @@ public class FixedInteger extends IntegerExpression {
     }
 
     /**
-     * Evaluates the flow rate.
+     * Evaluates the expression to universal numerical type (float).
      *
-     * @return integer value of the flow rate.
+     * @return value as float
      */
     @Override
-    public int eval() {
-        return (int)Math.floor(value);
+    public float evalAsFloat() {
+        return value;
     }
 
     /**
@@ -46,5 +46,15 @@ public class FixedInteger extends IntegerExpression {
      */
     public static FixedInteger parse(String text) {
         return FixedInteger.of(Float.parseFloat(text));
+    }
+
+    /**
+     * Parse percentage fixed integer.
+     *
+     * @param text the text
+     * @return the fixed integer
+     */
+    public static FixedInteger parsePercentage(String text) {
+        return FixedInteger.of(Integer.parseInt(text.substring(0, text.length() - 1)));
     }
 }

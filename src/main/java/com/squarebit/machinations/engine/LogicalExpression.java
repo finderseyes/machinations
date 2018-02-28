@@ -1,6 +1,6 @@
 package com.squarebit.machinations.engine;
 
-public abstract class LogicalExpression extends Expression {
+public abstract class LogicalExpression {
     /**
      * Evaluate boolean.
      *

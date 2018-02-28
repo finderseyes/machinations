@@ -119,7 +119,7 @@ public class FlowRate {
                 if (take)
                     result += evaluateFlowValue();
 
-                if (interval != null && interval.isRandom())
+                if (interval != null)
                     currentInterval = evaluateInterval();
                 else
                     currentInterval = 1;
@@ -138,7 +138,7 @@ public class FlowRate {
      * @return
      */
     private float evaluateProbability() {
-        return (probability != null) ? probability.getValue() / 100.0f : 1.0f;
+        return (probability != null) ? probability.eval() / 100.0f : 1.0f;
     }
 
     /**

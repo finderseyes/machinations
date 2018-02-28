@@ -498,4 +498,135 @@ public class MachinationsTests {
 
         assertThat(machinations.getTime()).isEqualTo(6);
     }
+
+    @Test
+    public void should_support_value_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-15.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+        Pool p4 = (Pool) machinations.findById("p4");
+        Pool p5 = (Pool) machinations.findById("p5");
+        Pool p6 = (Pool) machinations.findById("p6");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(1);
+
+            assertThat(p4.getResources().size()).isEqualTo(1);
+            assertThat(p5.getResources().size()).isEqualTo(1);
+            assertThat(p6.evaluate()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(2);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+            assertThat(p3.getResources().size()).isEqualTo(2);
+
+            assertThat(p4.getResources().size()).isEqualTo(2);
+            assertThat(p5.getResources().size()).isEqualTo(2);
+            assertThat(p6.evaluate()).isEqualTo(4);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(3);
+            assertThat(p2.getResources().size()).isEqualTo(6);
+            assertThat(p3.getResources().size()).isEqualTo(4);
+        }
+    }
+
+    @Test
+    public void should_support_interval_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-16.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+        }
+    }
+
+    @Test
+    public void should_support_multiplier_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-17.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+        }
+    }
+
+    @Test
+    public void should_support_probability_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-18.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        int times = 1000;
+        for (int i = 0; i < times; i++)
+            machinations.simulateOneTimeStep();
+
+        assertThat(p2.getResources().size() / (float)times).isCloseTo(0.75f, Offset.offset(5e-2f));
+
+//        {
+//            machinations.simulateOneTimeStep();
+//            assertThat(p1.getResources().size()).isEqualTo(1);
+//            assertThat(p2.getResources().size()).isEqualTo(1);
+//        }
+//
+//        {
+//            machinations.simulateOneTimeStep();
+//            assertThat(p1.getResources().size()).isEqualTo(1);
+//            assertThat(p2.getResources().size()).isEqualTo(3);
+//        }
+    }
 }

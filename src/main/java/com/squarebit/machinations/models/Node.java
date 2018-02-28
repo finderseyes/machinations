@@ -1,9 +1,12 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.engine.*;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class Node extends GraphElement {
     private String name;
@@ -20,6 +23,9 @@ public abstract class Node extends GraphElement {
     private Set<Modifier> modifiers = new HashSet<>();
     private Set<Trigger> triggers = new HashSet<>();
     private Set<Activator> activators = new HashSet<>();
+
+    private boolean initialized = false;
+    private IntegerExpression modifiedResourceSize = null;
 
     /**
      * Gets name.
@@ -317,6 +323,54 @@ public abstract class Node extends GraphElement {
      * @return the int
      */
     public int evaluate(NodeEvaluationContext context) {
-        return this.resources.size();
+        this.initializeIfNeeded();
+
+        if (context != null && context.getRequester() instanceof Modifier) {
+            return this.resources.deltaSize();
+        }
+
+        return evaluateResourceSize();
+    }
+
+    private int evaluateResourceSize() {
+        if (this.modifiedResourceSize != null)
+            return modifiedResourceSize.eval();
+        else
+            return this.resources.size();
+    }
+
+    /**
+     *
+     *
+     */
+    private void initializeIfNeeded() {
+        if (initialized)
+            return;
+
+        this.initialized = true;
+
+        if (!getModifiedBy().isEmpty()) {
+            Set<Modifier> modifiedBy = this.getModifiedBy();
+
+            Set<ValueModifier> valueModifiers = modifiedBy.stream()
+                    .filter(m -> m instanceof ValueModifier).map(m -> (ValueModifier)m)
+                    .collect(Collectors.toSet());
+
+            Variable resourceSize = Variable.of("", () -> (float)this.resources.size());
+
+            if (!valueModifiers.isEmpty()) {
+                IntegerExpression modifiedValue = valueModifiers.stream()
+                        .map(m -> {
+                            IntegerExpression value = m.getValue();
+                            NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                    new NodeEvaluationContext().setRequester(m)
+                            );
+                            return (IntegerExpression) Multiplication.of(nodeRef, value);
+                        })
+                        .reduce(resourceSize, Addition::of);
+
+                this.modifiedResourceSize = modifiedValue;
+            }
+        }
     }
 }

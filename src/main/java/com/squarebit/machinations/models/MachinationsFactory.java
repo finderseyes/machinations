@@ -146,19 +146,6 @@ public class MachinationsFactory {
         return context.machinations;
     }
 
-    public Expression buildExpression(BuildingContext context,
-                                      GameMLParser.ExpressionContext expressionContext)
-    {
-        ParseTree decl = expressionContext.getChild(0);
-
-        if (decl instanceof GameMLParser.ArithmeticExpressionContext)
-            return buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)decl);
-        else if (decl instanceof GameMLParser.LogicalExpressionContext)
-            return buildBoolean(context, (GameMLParser.LogicalExpressionContext)decl);
-
-        return null;
-    }
-
     public LogicalExpression buildBoolean(BuildingContext context,
                                           GameMLParser.LogicalExpressionContext expressionContext)
     {
@@ -230,20 +217,20 @@ public class MachinationsFactory {
     private LogicalExpression buildLeftImplicitRelation(BuildingContext context,
                                                         GameMLParser.LeftImplicitRelationalExpressionContext expressionContext)
     {
-        AbstractNodeRef lhs = null;
-        ArithmeticExpression rhs = null;
+        NodeRef lhs = null;
+        IntegerExpression rhs = null;
 
         if (context.currentObject instanceof Activator) {
             Activator activator = (Activator)context.currentObject;
-            lhs = AbstractNodeRef.of(activator.getOwner());
+            lhs = NodeRef.of(activator.getOwner());
         }
         else if (context.currentObject instanceof ResourceConnection) {
             ResourceConnection connection = (ResourceConnection)context.currentObject;
-            lhs = AbstractNodeRef.of(connection.getFrom());
+            lhs = NodeRef.of(connection.getFrom());
         }
         else if (context.currentObject instanceof  Trigger) {
             Trigger trigger = (Trigger)context.currentObject;
-            lhs = AbstractNodeRef.of(trigger.getOwner());
+            lhs = NodeRef.of(trigger.getOwner());
         }
 
         rhs = buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(1));
@@ -253,7 +240,7 @@ public class MachinationsFactory {
         LogicalExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
 
         if (lhs != null)
-            lhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
+            lhs.setContext(new NodeEvaluationContext().setRequester(context.currentObject).setExpression(expression));
 
         return expression;
     }
@@ -261,20 +248,20 @@ public class MachinationsFactory {
     private LogicalExpression buildRightImplicitRelation(BuildingContext context,
                                                          GameMLParser.RightImplicitRelationalExpressionContext expressionContext)
     {
-        ArithmeticExpression lhs = null;
-        AbstractNodeRef rhs = null;
+        IntegerExpression lhs = null;
+        NodeRef rhs = null;
 
         if (context.currentObject instanceof Activator) {
             Activator activator = (Activator)context.currentObject;
-            rhs = AbstractNodeRef.of(activator.getOwner());
+            rhs = NodeRef.of(activator.getOwner());
         }
         else if (context.currentObject instanceof ResourceConnection) {
             GateConnection connection = (GateConnection)context.currentObject;
-            rhs = AbstractNodeRef.of(connection.getFrom());
+            rhs = NodeRef.of(connection.getFrom());
         }
         else if (context.currentObject instanceof  Trigger) {
             Trigger trigger = (Trigger)context.currentObject;
-            rhs = AbstractNodeRef.of(trigger.getOwner());
+            rhs = NodeRef.of(trigger.getOwner());
         }
 
         lhs = buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(0));
@@ -284,7 +271,7 @@ public class MachinationsFactory {
         LogicalExpression expression = Comparison.of(opFromToken(optoken), lhs, rhs);
 
         if (rhs != null)
-            rhs.setContext(new NodeEvaluationContext().setOwner(context.currentObject).setExpression(expression));
+            rhs.setContext(new NodeEvaluationContext().setRequester(context.currentObject).setExpression(expression));
 
         return expression;
     }
@@ -292,9 +279,9 @@ public class MachinationsFactory {
     private LogicalExpression buildRelation(BuildingContext context,
                                             GameMLParser.RelationalExpressionContext expressionContext)
     {
-        ArithmeticExpression lhs =
+        IntegerExpression lhs =
                 buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(0));
-        ArithmeticExpression rhs =
+        IntegerExpression rhs =
                 buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         Token optoken = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
@@ -317,7 +304,7 @@ public class MachinationsFactory {
         return op;
     }
 
-    public ArithmeticExpression buildArithmetic(BuildingContext context,
+    public IntegerExpression buildArithmetic(BuildingContext context,
                                                 GameMLParser.ArithmeticExpressionContext expressionContext)
     {
         ParseTree decl = expressionContext.getChild(0);
@@ -335,7 +322,7 @@ public class MachinationsFactory {
         return null;
     }
 
-    private ArithmeticExpression buildUnaryArithmetic(BuildingContext context,
+    private IntegerExpression buildUnaryArithmetic(BuildingContext context,
                                                       GameMLParser.UnaryArithmeticExpressionContext expressionContext) {
 
         ParseTree decl = expressionContext.getChild(0);
@@ -344,7 +331,7 @@ public class MachinationsFactory {
             Token token = ((TerminalNode)decl).getSymbol();
 
             if (token.getType() == GameMLParser.PLUS || token.getType() == GameMLParser.MINUS) {
-                ArithmeticExpression child = buildArithmetic(
+                IntegerExpression child = buildArithmetic(
                         context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(1)
                 );
 
@@ -354,7 +341,7 @@ public class MachinationsFactory {
                     return child;
             }
             else if (token.getType() == GameMLParser.INTEGER || token.getType() == GameMLParser.REAL) {
-                return IntNumber.of(Integer.parseInt(token.getText()));
+                return FixedInteger.of(Integer.parseInt(token.getText()));
             }
             else if (token.getType() == GameMLParser.IDENTIFIER) {
                 return null;
@@ -364,11 +351,11 @@ public class MachinationsFactory {
         return null;
     }
 
-    private ArithmeticExpression buildAdditiveExpressionContext(BuildingContext context,
+    private IntegerExpression buildAdditiveExpressionContext(BuildingContext context,
                                                                 GameMLParser.AdditiveExpressionContext expressionContext) {
-        ArithmeticExpression lhs = buildUnaryArithmetic(
+        IntegerExpression lhs = buildUnaryArithmetic(
                 context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
-        ArithmeticExpression rhs = buildArithmetic(
+        IntegerExpression rhs = buildArithmetic(
                 context,(GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         Token token = ((TerminalNode)expressionContext.getChild(1)).getSymbol();
@@ -379,11 +366,11 @@ public class MachinationsFactory {
             return Subtraction.of(lhs, rhs);
     }
 
-    private ArithmeticExpression buildMultiplicativeExpressionContext(BuildingContext context,
+    private IntegerExpression buildMultiplicativeExpressionContext(BuildingContext context,
                                                                       GameMLParser.MultiplicativeExpressionContext expressionContext) {
-        ArithmeticExpression lhs = buildUnaryArithmetic(
+        IntegerExpression lhs = buildUnaryArithmetic(
                 context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
-        ArithmeticExpression rhs = buildArithmetic(
+        IntegerExpression rhs = buildArithmetic(
                 context,(GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
         return Multiplication.of(lhs, rhs);
@@ -667,8 +654,10 @@ public class MachinationsFactory {
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
                 value = FixedInteger.parse(second.getText());
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     valueModifier.setSign(-1);
+                    value = Negation.of(value);
+                }
             }
             else
                 value = FixedInteger.parse(first.getText());
@@ -682,8 +671,10 @@ public class MachinationsFactory {
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
                 value = FixedInteger.of(parseIntSkipSuffix(second.getText()));
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     intervalModifier.setSign(-1);
+                    value = Negation.of(value);
+                }
             }
             else
                 value = FixedInteger.of(parseIntSkipSuffix(first.getText()));
@@ -697,8 +688,10 @@ public class MachinationsFactory {
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
                 value = FixedInteger.of(parseIntSkipSuffix(second.getText()));
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     multiplierModifier.setSign(-1);
+                    value = Negation.of(value);
+                }
             }
             else
                 value = FixedInteger.of(parseIntSkipSuffix(first.getText()));
@@ -711,9 +704,12 @@ public class MachinationsFactory {
             Percentage value;
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
-                value = Percentage.parse(second.getText());
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                IntegerExpression intValue = FixedInteger.parsePercentage(second.getText());
+                value = Percentage.of(intValue);
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     probabilityModifier.setSign(-1);
+                    value = Percentage.of(Negation.of(intValue));
+                }
             }
             else
                 value = Percentage.parse(first.getText());
@@ -886,9 +882,9 @@ public class MachinationsFactory {
             TerminalNode opToken = (TerminalNode)decl.getChild(1);
 
             if (opToken.getSymbol().getType() == GameMLParser.PLUS)
-                return AdditiveIntegerExpression.of(lhs, rhs);
+                return Addition.of(lhs, rhs);
             else
-                return SubtractiveIntegerExpression.of(lhs, rhs);
+                return Subtraction.of(lhs, rhs);
         }
 
         throw new RuntimeException("Shall not reach here");

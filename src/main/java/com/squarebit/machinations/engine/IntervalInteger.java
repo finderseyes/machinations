@@ -40,6 +40,16 @@ public class IntervalInteger extends IntegerExpression {
     }
 
     /**
+     * Evaluates the expression to universal numerical type (float).
+     *
+     * @return value as float
+     */
+    @Override
+    public float evalAsFloat() {
+        return this.eval();
+    }
+
+    /**
      * Creates a new instance of interval integer.
      *
      * @param value    the value

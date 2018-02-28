@@ -2,6 +2,9 @@ package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class ResourceConnection extends Connection {
     public static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
 
@@ -11,6 +14,9 @@ public class ResourceConnection extends Connection {
     private LogicalExpression condition = DEFAULT_CONDITION;
     private FlowRate flowRate = new FlowRate();
     private String resourceName = null; // if null, any resource.
+
+    private boolean initialized = false;
+    private FlowRate modifiedFlowRate = null;
 
     /**
      * Gets from.
@@ -118,11 +124,121 @@ public class ResourceConnection extends Connection {
      * @return the required resource set
      */
     public ResourceSet fire() {
+        this.initializeIfNeeded();
+
         if (condition.eval()) {
-            int amount = flowRate.get();
+            int amount = modifiedFlowRate != null ? modifiedFlowRate.get() : flowRate.get();
+            amount = Math.max(amount, 0);
             return ResourceSet.of(this.resourceName, amount);
         }
         else
             return ResourceSet.empty();
+    }
+
+    /**
+     * Initializes the connection if needed.
+     */
+    private void initializeIfNeeded() {
+        if (this.initialized)
+            return;
+
+        this.initialized = true;
+
+        if (!getModifiedBy().isEmpty()) {
+            FlowRate modifiedFlowRate = new FlowRate();
+            modifiedFlowRate
+                    .setValue(this.flowRate.getValue())
+                    .setInterval(this.flowRate.getInterval())
+                    .setMultiplier(this.flowRate.getMultiplier())
+                    .setProbability(this.flowRate.getProbability());
+
+            Set<Modifier> modifiedBy = this.getModifiedBy();
+
+            // Value modifiers
+            {
+                Set<ValueModifier> valueModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof ValueModifier).map(m -> (ValueModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!valueModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = valueModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getValue(), Addition::of);
+
+                    modifiedFlowRate.setValue(modifiedValue);
+                }
+            }
+
+            // Interval modifiers
+            {
+                Set<IntervalModifier> intervalModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof IntervalModifier).map(m -> (IntervalModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!intervalModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = intervalModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getInterval(), Addition::of);
+
+                    modifiedFlowRate.setInterval(modifiedValue);
+                }
+            }
+
+            // Multipliers
+            {
+                Set<MultiplierModifier> multiplierModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof MultiplierModifier).map(m -> (MultiplierModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!multiplierModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = multiplierModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getMultiplier(), Addition::of);
+
+                    modifiedFlowRate.setMultiplier(modifiedValue);
+                }
+            }
+
+            // Probability
+            {
+                Set<ProbabilityModifier> probabilityModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof ProbabilityModifier).map(m -> (ProbabilityModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!probabilityModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = probabilityModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue().getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getProbability().getValue(), Addition::of);
+
+                    modifiedFlowRate.setProbability(Percentage.of(modifiedValue));
+                }
+            }
+
+            this.modifiedFlowRate = modifiedFlowRate;
+        }
     }
 }

@@ -3,7 +3,7 @@ package com.squarebit.machinations.engine;
 import com.squarebit.machinations.models.Node;
 import com.squarebit.machinations.models.NodeEvaluationContext;
 
-public class AbstractNodeRef extends ArithmeticExpression {
+public class NodeRef extends IntegerExpression {
     private Node node;
     private NodeEvaluationContext context;
 
@@ -22,7 +22,7 @@ public class AbstractNodeRef extends ArithmeticExpression {
      * @param node the node
      * @return the node
      */
-    public AbstractNodeRef setNode(Node node) {
+    public NodeRef setNode(Node node) {
         this.node = node;
         return this;
     }
@@ -42,23 +42,32 @@ public class AbstractNodeRef extends ArithmeticExpression {
      * @param context the context
      * @return the context
      */
-    public AbstractNodeRef setContext(NodeEvaluationContext context) {
+    public NodeRef setContext(NodeEvaluationContext context) {
         this.context = context;
         return this;
     }
 
     /**
-     * Evaluates the expression and returns its result.
+     * Evaluates the expression to universal numerical type (float).
      *
-     * @return integer result.
+     * @return value as float
      */
     @Override
-    public int eval() {
-        // Default to getting all resources count.
+    public float evalAsFloat() {
         return node.evaluate(context);
     }
 
-    public static AbstractNodeRef of(Node node) {
-        return new AbstractNodeRef().setNode(node);
+    public static NodeRef of(Node node) {
+        return new NodeRef().setNode(node);
+    }
+
+    /**
+     * Determines if the expression evaluates to a random value.
+     *
+     * @return true if the expression value is random, false otherwise
+     */
+    @Override
+    public boolean isRandom() {
+        return false;
     }
 }

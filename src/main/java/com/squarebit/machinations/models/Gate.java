@@ -68,17 +68,17 @@ public class Gate extends Node {
 
     @Override
     public int evaluate(NodeEvaluationContext context) {
-        if (context.getOwner() instanceof ResourceConnection) {
+        if (context.getRequester() instanceof ResourceConnection) {
             if (!this.random)
                 return this.passedThroughResources;
             else
                 return this.currentDraw;
         }
-        else if (context.getOwner() instanceof Trigger) {
+        else if (context.getRequester() instanceof Trigger) {
             return this.currentDraw;
         }
         else
-            throw new RuntimeException("Should not reach here.");
+            return super.evaluate(context);
     }
 
     @Override
@@ -194,10 +194,10 @@ public class Gate extends Node {
 
                 if (useFlowProbability) {
                     float sum = (float)connections.stream()
-                            .mapToDouble(c -> c.getFlowRate().getProbability().getValue() * 1e-2f).sum();
+                            .mapToDouble(c -> c.getFlowRate().getProbability().eval() * 1e-2f).sum();
                     connections.forEach(c -> {
                         FlowRate flowRate = c.getFlowRate();
-                        probabilities.put(c, flowRate.getProbability().getValue() * 1e-2f);
+                        probabilities.put(c, flowRate.getProbability().eval() * 1e-2f);
                     });
 
                     if (sum < 1.0f) {
@@ -238,8 +238,8 @@ public class Gate extends Node {
 
                 if (useTriggerProbability) {
                     float sum = (float)triggers.stream()
-                            .mapToDouble(t -> t.getProbability().getValue() * 1e-2f).sum();
-                    triggers.forEach(t -> probabilities.put(t, t.getProbability().getValue() * 1e-2f));
+                            .mapToDouble(t -> t.getProbability().eval() * 1e-2f).sum();
+                    triggers.forEach(t -> probabilities.put(t, t.getProbability().eval() * 1e-2f));
 
                     if (sum < 1.0f) {
                         probabilities.put(NULL_TRIGGER, 1.0f - sum);

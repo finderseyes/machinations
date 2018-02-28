@@ -27,6 +27,16 @@ public class MaxInteger extends IntegerExpression {
     }
 
     /**
+     * Evaluates the expression to universal numerical type (float).
+     *
+     * @return value as float
+     */
+    @Override
+    public float evalAsFloat() {
+        return this.eval();
+    }
+
+    /**
      * Gets the maximum integer instance.
      * @return the instance
      */
