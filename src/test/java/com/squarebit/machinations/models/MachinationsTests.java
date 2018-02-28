@@ -542,4 +542,62 @@ public class MachinationsTests {
             assertThat(p3.getResources().size()).isEqualTo(4);
         }
     }
+
+    @Test
+    public void should_support_interval_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-16.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+        }
+    }
+
+    @Test
+    public void should_support_multiplier_modifiers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-17.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(3);
+        }
+    }
 }

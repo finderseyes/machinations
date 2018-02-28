@@ -154,22 +154,67 @@ public class ResourceConnection extends Connection {
 
             Set<Modifier> modifiedBy = this.getModifiedBy();
 
-            Set<ValueModifier> valueModifiers = modifiedBy.stream()
-                    .filter(m -> m instanceof ValueModifier).map(m -> (ValueModifier)m)
-                    .collect(Collectors.toSet());
+            // Value modifiers
+            {
+                Set<ValueModifier> valueModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof ValueModifier).map(m -> (ValueModifier)m)
+                        .collect(Collectors.toSet());
 
-            if (!valueModifiers.isEmpty()) {
-                IntegerExpression modifiedValue = valueModifiers.stream()
-                        .map(m -> {
-                            IntegerExpression value = m.getValue();
-                            NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
-                                    new NodeEvaluationContext().setRequester(m)
-                            );
-                            return (IntegerExpression)Multiplication.of(nodeRef, value);
-                        })
-                        .reduce(this.flowRate.getValue(), Addition::of);
+                if (!valueModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = valueModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getValue(), Addition::of);
 
-                modifiedFlowRate.setValue(modifiedValue);
+                    modifiedFlowRate.setValue(modifiedValue);
+                }
+            }
+
+            // Interval modifiers
+            {
+                Set<IntervalModifier> intervalModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof IntervalModifier).map(m -> (IntervalModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!intervalModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = intervalModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getInterval(), Addition::of);
+
+                    modifiedFlowRate.setInterval(modifiedValue);
+                }
+            }
+
+            // Multipliers
+            {
+                Set<MultiplierModifier> multiplierModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof MultiplierModifier).map(m -> (MultiplierModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!multiplierModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = multiplierModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getMultiplier(), Addition::of);
+
+                    modifiedFlowRate.setMultiplier(modifiedValue);
+                }
             }
 
             this.modifiedFlowRate = modifiedFlowRate;

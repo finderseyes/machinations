@@ -119,7 +119,7 @@ public class FlowRate {
                 if (take)
                     result += evaluateFlowValue();
 
-                if (interval != null && interval.isRandom())
+                if (interval != null)
                     currentInterval = evaluateInterval();
                 else
                     currentInterval = 1;
