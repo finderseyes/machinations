@@ -140,10 +140,10 @@ logicalExpression
     ;
 
 multiplicativeExpression
-    : unaryArithmeticExpression TIMES arithmeticExpression;
+    : unaryArithmeticExpression (TIMES arithmeticExpression)?;
 
 additiveExpression
-    : unaryArithmeticExpression (PLUS|MINUS) arithmeticExpression;
+    : multiplicativeExpression (PLUS|MINUS) arithmeticExpression;
 
 relationalExpression
     : arithmeticExpression (GT|GTE|LT|LTE|EQ|NEQ) arithmeticExpression;

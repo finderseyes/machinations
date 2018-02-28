@@ -147,7 +147,7 @@ public class MachinationsFactory {
     }
 
     public LogicalExpression buildBoolean(BuildingContext context,
-                                          GameMLParser.LogicalExpressionContext expressionContext)
+                                          GameMLParser.LogicalExpressionContext expressionContext) throws Exception
     {
         ParseTree decl = expressionContext.getChild(0);
 
@@ -165,7 +165,7 @@ public class MachinationsFactory {
     }
 
     private LogicalExpression buildAnd(BuildingContext context,
-                                       GameMLParser.LogicalAndExpressionContext expressionContext)
+                                       GameMLParser.LogicalAndExpressionContext expressionContext) throws Exception
     {
         LogicalExpression lhs = buildUnaryBoolean(context,
                 (GameMLParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
@@ -175,7 +175,7 @@ public class MachinationsFactory {
     }
 
     private LogicalExpression buildOr(BuildingContext context,
-                                      GameMLParser.LogicalOrExpressionContext expressionContext)
+                                      GameMLParser.LogicalOrExpressionContext expressionContext) throws Exception
     {
         LogicalExpression lhs = buildUnaryBoolean(context,
                 (GameMLParser.UnaryLogicalExpressionContext)expressionContext.getChild(0));
@@ -185,7 +185,7 @@ public class MachinationsFactory {
     }
 
     private LogicalExpression buildUnaryBoolean(BuildingContext context,
-                                                GameMLParser.UnaryLogicalExpressionContext expressionContext)
+                                                GameMLParser.UnaryLogicalExpressionContext expressionContext) throws Exception
     {
         ParseTree decl = expressionContext.getChild(0);
 
@@ -216,6 +216,7 @@ public class MachinationsFactory {
 
     private LogicalExpression buildLeftImplicitRelation(BuildingContext context,
                                                         GameMLParser.LeftImplicitRelationalExpressionContext expressionContext)
+            throws Exception
     {
         NodeRef lhs = null;
         IntegerExpression rhs = null;
@@ -247,6 +248,7 @@ public class MachinationsFactory {
 
     private LogicalExpression buildRightImplicitRelation(BuildingContext context,
                                                          GameMLParser.RightImplicitRelationalExpressionContext expressionContext)
+            throws Exception
     {
         IntegerExpression lhs = null;
         NodeRef rhs = null;
@@ -278,6 +280,7 @@ public class MachinationsFactory {
 
     private LogicalExpression buildRelation(BuildingContext context,
                                             GameMLParser.RelationalExpressionContext expressionContext)
+            throws Exception
     {
         IntegerExpression lhs =
                 buildArithmetic(context, (GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(0));
@@ -305,7 +308,8 @@ public class MachinationsFactory {
     }
 
     public IntegerExpression buildArithmetic(BuildingContext context,
-                                                GameMLParser.ArithmeticExpressionContext expressionContext)
+                                             GameMLParser.ArithmeticExpressionContext expressionContext)
+            throws Exception
     {
         ParseTree decl = expressionContext.getChild(0);
 
@@ -323,7 +327,9 @@ public class MachinationsFactory {
     }
 
     private IntegerExpression buildUnaryArithmetic(BuildingContext context,
-                                                      GameMLParser.UnaryArithmeticExpressionContext expressionContext) {
+                                                   GameMLParser.UnaryArithmeticExpressionContext expressionContext)
+            throws Exception
+    {
 
         ParseTree decl = expressionContext.getChild(0);
 
@@ -344,7 +350,8 @@ public class MachinationsFactory {
                 return FixedInteger.of(Integer.parseInt(token.getText()));
             }
             else if (token.getType() == GameMLParser.IDENTIFIER) {
-                return null;
+                Node node = fromIdentifier(context, decl, Node.class);
+                return NodeRef.of(node);
             }
         }
 
@@ -352,9 +359,11 @@ public class MachinationsFactory {
     }
 
     private IntegerExpression buildAdditiveExpressionContext(BuildingContext context,
-                                                                GameMLParser.AdditiveExpressionContext expressionContext) {
-        IntegerExpression lhs = buildUnaryArithmetic(
-                context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
+                                                             GameMLParser.AdditiveExpressionContext expressionContext)
+            throws Exception
+    {
+        IntegerExpression lhs = buildMultiplicativeExpressionContext(
+                context, (GameMLParser.MultiplicativeExpressionContext)expressionContext.getChild(0));
         IntegerExpression rhs = buildArithmetic(
                 context,(GameMLParser.ArithmeticExpressionContext)expressionContext.getChild(2));
 
@@ -367,7 +376,9 @@ public class MachinationsFactory {
     }
 
     private IntegerExpression buildMultiplicativeExpressionContext(BuildingContext context,
-                                                                      GameMLParser.MultiplicativeExpressionContext expressionContext) {
+                                                                   GameMLParser.MultiplicativeExpressionContext expressionContext)
+            throws Exception
+    {
         IntegerExpression lhs = buildUnaryArithmetic(
                 context, (GameMLParser.UnaryArithmeticExpressionContext)expressionContext.getChild(0));
         IntegerExpression rhs = buildArithmetic(
@@ -424,6 +435,11 @@ public class MachinationsFactory {
                 Converter converter = new Converter();
                 node = converter;
             }
+            else if (nodeSpec instanceof RegisterSpec) {
+                RegisterSpec registerSpec = (RegisterSpec)nodeSpec;
+                Register register = new Register();
+                node = register;
+            }
 
             if (node != null) {
                 try {
@@ -439,6 +455,23 @@ public class MachinationsFactory {
                 catch (Exception ex) {
                     lastError.compareAndSet(null, ex);
                 }
+            }
+        });
+
+        context.machinations.getElements().forEach(e -> {
+            try {
+                if (e instanceof Register) {
+                    Register register = (Register)e;
+                    RegisterSpec registerSpec = (RegisterSpec)context.elementSpec.get(e);
+
+                    if (registerSpec.getValue() != null) {
+                        GameMLParser parser = getGameMLParser(registerSpec.getValue());
+                        register.setValue(buildArithmetic(context, parser.arithmeticExpression()));
+                    }
+                }
+            }
+            catch (Exception ex) {
+                lastError.compareAndSet(null, ex);
             }
         });
 
@@ -572,7 +605,9 @@ public class MachinationsFactory {
         context.buildContext.put(trigger, buildContext);
     }
 
-    private void buildTriggerLabel(BuildingContext context, Trigger trigger, GameMLParser.TriggerLabelContext labelContext) {
+    private void buildTriggerLabel(BuildingContext context, Trigger trigger,
+                                   GameMLParser.TriggerLabelContext labelContext) throws Exception
+    {
         int next = 0;
         ParseTree decl = labelContext.getChild(next);
 

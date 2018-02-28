@@ -22,6 +22,7 @@ import java.util.List;
         @JsonSubTypes.Type(value = ConverterSpec.class, name = "converter"),
         @JsonSubTypes.Type(value = TraderSpec.class, name = "trader"),
         @JsonSubTypes.Type(value = EndSpec.class, name = "end"),
+        @JsonSubTypes.Type(value = RegisterSpec.class, name = "register"),
 })
 public abstract class NodeSpec extends ElementSpec {
     private String name;

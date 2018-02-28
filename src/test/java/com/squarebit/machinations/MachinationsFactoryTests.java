@@ -481,7 +481,7 @@ public class MachinationsFactoryTests {
         return consumer.apply(getParser(decl));
     }
 
-    private LogicalExpression bool(String decl) {
+    private LogicalExpression bool(String decl) throws Exception {
         MachinationsFactory factory = new MachinationsFactory();
         return factory.buildBoolean(null, parse(decl, GameMLParser::logicalExpression));
     }

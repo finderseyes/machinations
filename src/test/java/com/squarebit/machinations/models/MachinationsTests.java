@@ -629,4 +629,31 @@ public class MachinationsTests {
 //            assertThat(p2.getResources().size()).isEqualTo(3);
 //        }
     }
+
+    @Test
+    public void should_support_registers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-19.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Pool p1 = (Pool) machinations.findById("p1");
+        Pool p2 = (Pool) machinations.findById("p2");
+        Register p3 = (Register) machinations.findById("p3");
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(1);
+            assertThat(p2.getResources().size()).isEqualTo(2);
+            assertThat(p3.evaluate()).isEqualTo(4);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            machinations.simulateOneTimeStep();
+
+            assertThat(p3.evaluate()).isEqualTo(8);
+            assertThat(machinations.isTerminated()).isTrue();
+        }
+    }
 }
