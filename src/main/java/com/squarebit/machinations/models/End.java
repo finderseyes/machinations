@@ -1,4 +1,4 @@
 package com.squarebit.machinations.models;
 
-public class End extends AbstractNode {
+public class End extends Node {
 }

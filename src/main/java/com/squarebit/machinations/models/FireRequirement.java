@@ -2,12 +2,12 @@ package com.squarebit.machinations.models;
 
 import java.util.Set;
 
-public class ActivationRequirement {
-    private AbstractNode target;
+public class FireRequirement {
+    private Node target;
     private Set<ResourceConnection> connections;
     private boolean requiringAll = false;
 
-    private ActivationRequirement() {
+    private FireRequirement() {
 
     }
 
@@ -16,11 +16,11 @@ public class ActivationRequirement {
      *
      * @return the target
      */
-    public AbstractNode getTarget() {
+    public Node getTarget() {
         return target;
     }
 
-    private ActivationRequirement setTarget(AbstractNode target) {
+    private FireRequirement setTarget(Node target) {
         this.target = target;
         return this;
     }
@@ -34,7 +34,7 @@ public class ActivationRequirement {
         return connections;
     }
 
-    private ActivationRequirement setConnections(Set<ResourceConnection> connections) {
+    private FireRequirement setConnections(Set<ResourceConnection> connections) {
         this.connections = connections;
         return this;
     }
@@ -48,7 +48,7 @@ public class ActivationRequirement {
         return requiringAll;
     }
 
-    private ActivationRequirement setRequiringAll(boolean requiringAll) {
+    private FireRequirement setRequiringAll(boolean requiringAll) {
         this.requiringAll = requiringAll;
         return this;
     }
@@ -59,8 +59,8 @@ public class ActivationRequirement {
      * @param connections the connections
      * @return the activation requirement
      */
-    public static ActivationRequirement all(AbstractNode target, Set<ResourceConnection> connections) {
-        return new ActivationRequirement()
+    public static FireRequirement all(Node target, Set<ResourceConnection> connections) {
+        return new FireRequirement()
                 .setRequiringAll(true).setConnections(connections).setTarget(target);
     }
 
@@ -70,8 +70,8 @@ public class ActivationRequirement {
      * @param connections the connections
      * @return the activation requirement
      */
-    public static ActivationRequirement any(AbstractNode target, Set<ResourceConnection> connections) {
-        return new ActivationRequirement()
+    public static FireRequirement any(Node target, Set<ResourceConnection> connections) {
+        return new FireRequirement()
                 .setRequiringAll(false).setConnections(connections).setTarget(target);
     }
 }

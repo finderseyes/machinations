@@ -26,7 +26,7 @@ nodes:
     id: p4
     resources: 10
     connections:
-      - --> p5 (e45)
+      - --> p5 :e45
 
   - type: pool
     id: p5

@@ -1,14 +1,14 @@
 package com.squarebit.machinations.engine;
 
-public class Not extends BooleanExpression {
-    private BooleanExpression expression;
+public class Not extends LogicalExpression {
+    private LogicalExpression expression;
 
     /**
      * Gets expression.
      *
      * @return the expression
      */
-    public BooleanExpression getExpression() {
+    public LogicalExpression getExpression() {
         return expression;
     }
 
@@ -18,7 +18,7 @@ public class Not extends BooleanExpression {
      * @param expression the expression
      * @return the expression
      */
-    public Not setExpression(BooleanExpression expression) {
+    public Not setExpression(LogicalExpression expression) {
         this.expression = expression;
         return this;
     }
@@ -29,11 +29,11 @@ public class Not extends BooleanExpression {
      * @return the boolean
      */
     @Override
-    public boolean evaluate() {
-        return !expression.evaluate();
+    public boolean eval() {
+        return !expression.eval();
     }
 
-    public static Not of(BooleanExpression expression) {
+    public static Not of(LogicalExpression expression) {
         return (new Not().setExpression(expression));
     }
 }

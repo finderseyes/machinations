@@ -1,50 +1,73 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.BooleanExpression;
+import com.squarebit.machinations.engine.LogicalExpression;
 
-public class Activator {
-    private AbstractNode owner;
-    private AbstractNode target;
-    private String label;
-    private BooleanExpression conditionExpression;
+public class Activator extends Element {
+    private Node owner;
+    private Node target;
+    private LogicalExpression condition;
 
-    public AbstractNode getOwner() {
+    /**
+     * Gets owner.
+     *
+     * @return the owner
+     */
+    public Node getOwner() {
         return owner;
     }
 
-    public Activator setOwner(AbstractNode owner) {
+    /**
+     * Sets owner.
+     *
+     * @param owner the owner
+     * @return the owner
+     */
+    public Activator setOwner(Node owner) {
         this.owner = owner;
         return this;
     }
 
-    public AbstractNode getTarget() {
+    /**
+     * Gets target.
+     *
+     * @return the target
+     */
+    public Node getTarget() {
         return target;
     }
 
-    public Activator setTarget(AbstractNode target) {
+    /**
+     * Sets target.
+     *
+     * @param target the target
+     * @return the target
+     */
+    public Activator setTarget(Node target) {
         this.target = target;
         return this;
     }
 
-    public String getLabel() {
-        return label;
+    /**
+     * Gets condition.
+     *
+     * @return the condition
+     */
+    public LogicalExpression getCondition() {
+        return condition;
     }
 
-    public Activator setLabel(String label) {
-        this.label = label;
-        return this;
-    }
-
-    public BooleanExpression getConditionExpression() {
-        return conditionExpression;
-    }
-
-    public Activator setConditionExpression(BooleanExpression conditionExpression) {
-        this.conditionExpression = conditionExpression;
+    /**
+     * Sets condition.
+     *
+     * @param condition the condition
+     * @return the condition
+     */
+    public Activator setCondition(LogicalExpression condition) {
+        this.condition = condition;
         return this;
     }
 
     public boolean evaluate() {
-        return this.conditionExpression.evaluate();
+        return this.condition.eval();
     }
 }

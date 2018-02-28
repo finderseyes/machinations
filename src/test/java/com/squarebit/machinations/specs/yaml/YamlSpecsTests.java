@@ -1,7 +1,6 @@
 package com.squarebit.machinations.specs.yaml;
 
 import com.squarebit.machinations.Utils;
-import com.squarebit.machinations.models.AbstractElement;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

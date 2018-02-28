@@ -1,20 +1,21 @@
 package com.squarebit.machinations.models;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Pool extends AbstractNode {
+public class Pool extends Node {
     @Override
-    public ActivationRequirement getActivationRequirement() {
+    public FireRequirement getFireRequirement() {
         if (isPulling()) {
             if (isAllOrNoneFlow())
-                return ActivationRequirement.all(this, this.getIncomingConnections());
+                return FireRequirement.all(this, this.getIncomingConnections());
             else
-                return ActivationRequirement.any(this, this.getIncomingConnections());
+                return FireRequirement.any(this, this.getIncomingConnections());
         }
         else
-            return ActivationRequirement.any(this, Collections.emptySet());
+            return FireRequirement.any(this, Collections.emptySet());
     }
 
     @Override
@@ -22,26 +23,54 @@ public class Pool extends AbstractNode {
         return this.resources;
     }
 
+    /**
+     * Activates a node, giving incoming resource flow.
+     *
+     * @param incomingResources incoming resources
+     */
     @Override
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
+    public Set<ResourceConnection> fire(ResourceSet incomingResources) {
         if (isPulling()) {
-            incomingFlows.forEach((c, a) -> {
-                c.getFrom().extract(a);
-                this.receive(a);
-            });
-
+            this.receive(incomingResources);
             return Collections.emptySet();
         }
         else {
+            Set<ResourceConnection> connections = new HashSet<>();
+
             this.getOutgoingConnections().forEach(c -> {
-                int rate = c.getFlowRate();
-                ResourceSet extracted = this.extract(ResourceSet.of(rate));
-                c.getTo().receive(extracted);
+                ResourceSet requiredResources = c.fire();
+                ResourceSet extracted = this.extract(requiredResources);
+
+                if (extracted.size() > 0) {
+                    c.getTo().receive(extracted);
+                    connections.add(c);
+                }
             });
 
-            return this.getOutgoingConnections();
+            return connections;
         }
     }
+
+    //    @Override
+//    public Set<ResourceConnection> fire(ResourceSet incomingFlows) {
+//        if (isPulling()) {
+//            incomingFlows.forEach((c, a) -> {
+//                c.getFrom().extract(a);
+//                this.receive(a);
+//            });
+//
+//            return Collections.emptySet();
+//        }
+//        else {
+//            this.getOutgoingConnections().forEach(c -> {
+////                int rate = c.getFlowRateValue();
+////                ResourceSet extracted = this.extract(ResourceSet.of(rate));
+////                c.getTo().receive(extracted);
+//            });
+//
+//            return this.getOutgoingConnections();
+//        }
+//    }
 
     @Override
     public ResourceSet extract(ResourceSet resourceSet) {

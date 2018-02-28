@@ -29,17 +29,7 @@ public class IntNumber extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
-        return this.value;
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float evaluateAsProbable() {
+    public int eval() {
         return this.value;
     }
 

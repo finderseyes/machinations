@@ -1,9 +1,8 @@
 package com.squarebit.machinations.models;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -437,5 +436,45 @@ public class ResourceSet {
      */
     public static ResourceSet infinite() {
         return INFINITE_SET;
+    }
+
+    /**
+     * Returns a string representation of the object. In general, the
+     * {@code toString} method returns a string that
+     * "textually represents" this object. The result should
+     * be a concise but informative representation that is easy for a
+     * person to read.
+     * It is recommended that all subclasses override this method.
+     * <p>
+     * The {@code toString} method for class {@code Object}
+     * returns a string consisting of the name of the class of which the
+     * object is an instance, the at-sign character `{@code @}', and
+     * the unsigned hexadecimal representation of the hash code of the
+     * object. In other words, this method returns a string equal to the
+     * value of:
+     * <blockquote>
+     * <pre>
+     * getClass().getName() + '@' + Integer.toHexString(hashCode())
+     * </pre></blockquote>
+     *
+     * @return a string representation of the object.
+     */
+    @Override
+    public String toString() {
+        if (this.isEmpty()) {
+            return "Empty";
+        }
+        else {
+            List<String> parts = this.content.entrySet().stream()
+                    .map(e -> {
+                        if (!e.getKey().equals(DEFAULT_RESOURCE_NAME))
+                            return String.format("%s:%d", e.getKey(), e.getValue());
+                        else
+                            return String.format("%d", e.getValue());
+                    })
+                    .collect(Collectors.toList());
+
+            return String.format("{%s}", StringUtils.join(parts, ","));
+        }
     }
 }

@@ -52,22 +52,11 @@ public class DiceNumber extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
+    public int eval() {
         int sum = 0;
         for (int i = 0; i < this.times; i++)
             sum += RandomUtils.nextInt(1, this.faces + 1);
         return sum;
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float evaluateAsProbable() {
-        // Return 1 due to dice expression always returns value larger than or equal to 1
-        return 1.0f;
     }
 
     public static DiceNumber of(int times, int faces) {

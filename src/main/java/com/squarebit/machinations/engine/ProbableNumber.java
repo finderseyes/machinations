@@ -48,27 +48,9 @@ public class ProbableNumber extends ArithmeticExpression {
      * @return integer result.
      */
     @Override
-    public int evaluate() {
+    public int eval() {
         float rand = RandomUtils.nextFloat(0.0f, 1.0f);
         return rand <= probability ? 1 : 0;
-    }
-
-    /**
-     * Evaluate as probable and return probability.
-     *
-     * @return probability
-     */
-    @Override
-    public float evaluateAsProbable() {
-        return probability;
-    }
-
-    @Override
-    public float evaluate(EvaluationContext context) {
-        if (!context.doesForceDeterministic())
-            return super.evaluate(context);
-        else
-            return this.probability;
     }
 
     /**

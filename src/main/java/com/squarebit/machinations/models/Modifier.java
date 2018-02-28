@@ -1,46 +1,49 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.ArithmeticExpression;
+/**
+ * Base class for modifiers.
+ */
+public abstract class Modifier extends Element {
+    private Node owner;
+    private GraphElement target;
 
-public class Modifier {
-    private AbstractNode owner;
-    private AbstractElement target;
-    private String label;
-    private ArithmeticExpression rateExpression;
-
-    public AbstractNode getOwner() {
+    /**
+     * Gets owner.
+     *
+     * @return the owner
+     */
+    public Node getOwner() {
         return owner;
     }
 
-    public Modifier setOwner(AbstractNode owner) {
+    /**
+     * Sets owner.
+     *
+     * @param owner the owner
+     * @return the owner
+     */
+    public Modifier setOwner(Node owner) {
         this.owner = owner;
         return this;
     }
 
-    public AbstractElement getTarget() {
+    /**
+     * Gets target.
+     *
+     * @return the target
+     */
+    public GraphElement getTarget() {
         return target;
     }
 
-    public Modifier setTarget(AbstractElement target) {
+    /**
+     * Sets target.
+     *
+     * @param target the target
+     * @return the target
+     */
+    public Modifier setTarget(GraphElement target) {
         this.target = target;
-        return this;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public Modifier setLabel(String label) {
-        this.label = label;
-        return this;
-    }
-
-    public ArithmeticExpression getRateExpression() {
-        return rateExpression;
-    }
-
-    public Modifier setRateExpression(ArithmeticExpression rateExpression) {
-        this.rateExpression = rateExpression;
         return this;
     }
 }

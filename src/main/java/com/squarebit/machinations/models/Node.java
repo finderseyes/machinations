@@ -1,15 +1,11 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.BooleanExpression;
-import com.squarebit.machinations.engine.Expression;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public abstract class AbstractNode extends AbstractElement {
+public abstract class Node extends GraphElement {
     private String name;
     private ActivationMode activationMode;
 
@@ -40,7 +36,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param name the name
      * @return the name
      */
-    public AbstractNode setName(String name) {
+    public Node setName(String name) {
         this.name = name;
         return this;
     }
@@ -60,7 +56,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param activationMode the activation mode
      * @return the activation mode
      */
-    public AbstractNode setActivationMode(ActivationMode activationMode) {
+    public Node setActivationMode(ActivationMode activationMode) {
         this.activationMode = activationMode;
         return this;
     }
@@ -80,7 +76,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param enabled the enabled
      * @return the enabled
      */
-    public AbstractNode setEnabled(boolean enabled) {
+    public Node setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
     }
@@ -116,7 +112,7 @@ public abstract class AbstractNode extends AbstractElement {
      * @param flowMode the flow mode
      * @return the flow mode
      */
-    public AbstractNode setFlowMode(FlowMode flowMode) {
+    public Node setFlowMode(FlowMode flowMode) {
         this.flowMode = flowMode;
         return this;
     }
@@ -218,24 +214,19 @@ public abstract class AbstractNode extends AbstractElement {
         return activators;
     }
 
-    @Override
-    protected void doActivate(int time) {
-        super.doActivate(time);
-    }
-
     /**
-     * Gets the activation requirement.
-     * @return the activation requirement
+     * Gets requirements for firing this node.
+     * @return the fire requirements
      */
-    public ActivationRequirement getActivationRequirement() {
+    public FireRequirement getFireRequirement() {
         if (isPulling()) {
             if (isAllOrNoneFlow())
-                return ActivationRequirement.all(this, this.getIncomingConnections());
+                return FireRequirement.all(this, this.getIncomingConnections());
             else
-                return ActivationRequirement.any(this, this.getIncomingConnections());
+                return FireRequirement.any(this, this.getIncomingConnections());
         }
         else
-            return ActivationRequirement.any(this, Collections.emptySet());
+            return FireRequirement.any(this, Collections.emptySet());
     }
 
     /**
@@ -266,12 +257,29 @@ public abstract class AbstractNode extends AbstractElement {
     }
 
     /**
-     * Activates a node, giving incoming resource flow.
-     * @param time
-     * @param incomingFlows
+     * Activates the node.
+     *
+     * @return true if the node needs to be fired after activation, false otherwise.
      */
-    public Set<ResourceConnection> activate(int time, Map<ResourceConnection, ResourceSet> incomingFlows) {
-        // By default, does not activate any output resource connections.
+    public final boolean activate() {
+        return doActivate();
+    }
+
+    /**
+     * Do activate boolean.
+     *
+     * @return the boolean
+     */
+    protected boolean doActivate() {
+        return true;
+    }
+
+    /**
+     * Activates a node, giving incoming resource flow.
+     * @param incomingResources incoming resources
+     */
+    public Set<ResourceConnection> fire(ResourceSet incomingResources) {
+        // By default, does not fire any output resource connections.
         return Collections.emptySet();
     }
 
@@ -286,8 +294,8 @@ public abstract class AbstractNode extends AbstractElement {
 //                .filter(t -> {
 //                    Expression expression = t.getLabelExpression();
 //
-//                    if (expression instanceof BooleanExpression)
-//                        return ((BooleanExpression)expression).evaluate();
+//                    if (expression instanceof LogicalExpression)
+//                        return ((LogicalExpression)expression).eval();
 //
 //                    return true;
 //                }).collect(Collectors.toSet());
