@@ -5,15 +5,42 @@ nodes:
     id: p0
     connections:
       - --> p1
-      - --> p2 :e_1_2
+      - --> p2 :e_0_2
+      - --> p3 :e_0_3
+      - --> p4 :e_0_4
+      - --> p5 :e_0_5
 
   - type: pool
     id: p1
     activationMode: automatic
     modifiers:
-      - +1 --> e_1_2
+      - +1 --> e_0_2
+      - +0.5 --> e_0_3
 
   - type: pool
     id: p2
     activationMode: automatic
+
+  - type: pool
+    id: p3
+    activationMode: automatic
+
+  - type: pool
+    id: p4
+    activationMode: automatic
+    connections:
+      - --> p6
+    modifiers:
+      - +4 --> p6
+
+  - type: pool
+    id: p5
+    activationMode: automatic
+    connections:
+      - --> p6
+    modifiers:
+      - -2 --> p6
+
+  - type: pool
+    id: p6
 

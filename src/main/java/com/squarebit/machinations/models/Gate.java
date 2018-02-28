@@ -78,7 +78,7 @@ public class Gate extends Node {
             return this.currentDraw;
         }
         else
-            throw new RuntimeException("Should not reach here.");
+            return super.evaluate(context);
     }
 
     @Override

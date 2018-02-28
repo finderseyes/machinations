@@ -16,7 +16,7 @@ public class ResourceConnection extends Connection {
     private String resourceName = null; // if null, any resource.
 
     private boolean initialized = false;
-    private FlowRate originalFlowRate = null;
+    private FlowRate modifiedFlowRate = null;
 
     /**
      * Gets from.
@@ -127,7 +127,8 @@ public class ResourceConnection extends Connection {
         this.initializeIfNeeded();
 
         if (condition.eval()) {
-            int amount = flowRate.get();
+            int amount = modifiedFlowRate != null ? modifiedFlowRate.get() : flowRate.get();
+            amount = Math.max(amount, 0);
             return ResourceSet.of(this.resourceName, amount);
         }
         else
@@ -151,8 +152,6 @@ public class ResourceConnection extends Connection {
                     .setMultiplier(this.flowRate.getMultiplier())
                     .setProbability(this.flowRate.getProbability());
 
-            this.originalFlowRate = this.flowRate;
-
             Set<Modifier> modifiedBy = this.getModifiedBy();
 
             Set<ValueModifier> valueModifiers = modifiedBy.stream()
@@ -163,17 +162,17 @@ public class ResourceConnection extends Connection {
                 IntegerExpression modifiedValue = valueModifiers.stream()
                         .map(m -> {
                             IntegerExpression value = m.getValue();
-                            NodeRef nodeRef = NodeRef.of(from).setContext(
+                            NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
                                     new NodeEvaluationContext().setRequester(m)
                             );
-                            return (IntegerExpression) Multiplication.of(nodeRef, value);
+                            return (IntegerExpression)Multiplication.of(nodeRef, value);
                         })
                         .reduce(this.flowRate.getValue(), Addition::of);
 
                 modifiedFlowRate.setValue(modifiedValue);
             }
 
-            this.flowRate = modifiedFlowRate;
+            this.modifiedFlowRate = modifiedFlowRate;
         }
     }
 }

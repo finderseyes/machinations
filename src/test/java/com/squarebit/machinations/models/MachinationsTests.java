@@ -508,17 +508,38 @@ public class MachinationsTests {
 
         Pool p1 = (Pool) machinations.findById("p1");
         Pool p2 = (Pool) machinations.findById("p2");
+        Pool p3 = (Pool) machinations.findById("p3");
+        Pool p4 = (Pool) machinations.findById("p4");
+        Pool p5 = (Pool) machinations.findById("p5");
+        Pool p6 = (Pool) machinations.findById("p6");
 
         {
             machinations.simulateOneTimeStep();
             assertThat(p1.getResources().size()).isEqualTo(1);
             assertThat(p2.getResources().size()).isEqualTo(1);
+            assertThat(p3.getResources().size()).isEqualTo(1);
+
+            assertThat(p4.getResources().size()).isEqualTo(1);
+            assertThat(p5.getResources().size()).isEqualTo(1);
+            assertThat(p6.evaluate()).isEqualTo(2);
         }
 
         {
             machinations.simulateOneTimeStep();
             assertThat(p1.getResources().size()).isEqualTo(2);
             assertThat(p2.getResources().size()).isEqualTo(3);
+            assertThat(p3.getResources().size()).isEqualTo(2);
+
+            assertThat(p4.getResources().size()).isEqualTo(2);
+            assertThat(p5.getResources().size()).isEqualTo(2);
+            assertThat(p6.evaluate()).isEqualTo(4);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p1.getResources().size()).isEqualTo(3);
+            assertThat(p2.getResources().size()).isEqualTo(6);
+            assertThat(p3.getResources().size()).isEqualTo(4);
         }
     }
 }

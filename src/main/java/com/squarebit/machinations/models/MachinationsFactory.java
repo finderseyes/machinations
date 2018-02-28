@@ -650,12 +650,14 @@ public class MachinationsFactory {
 
         if (decl instanceof GameMLParser.FlowRateModifierContext) {
             ValueModifier valueModifier = new ValueModifier();
-            FixedInteger value;
+            IntegerExpression value;
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
                 value = FixedInteger.parse(second.getText());
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     valueModifier.setSign(-1);
+                    value = Negation.of(value);
+                }
             }
             else
                 value = FixedInteger.parse(first.getText());
