@@ -138,7 +138,7 @@ public class FlowRate {
      * @return
      */
     private float evaluateProbability() {
-        return (probability != null) ? probability.getValue() / 100.0f : 1.0f;
+        return (probability != null) ? probability.eval() / 100.0f : 1.0f;
     }
 
     /**

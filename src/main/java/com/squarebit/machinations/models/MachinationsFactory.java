@@ -688,8 +688,10 @@ public class MachinationsFactory {
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
                 value = FixedInteger.of(parseIntSkipSuffix(second.getText()));
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     multiplierModifier.setSign(-1);
+                    value = Negation.of(value);
+                }
             }
             else
                 value = FixedInteger.of(parseIntSkipSuffix(first.getText()));
@@ -702,9 +704,12 @@ public class MachinationsFactory {
             Percentage value;
 
             if (first.getSymbol().getType() == GameMLParser.PLUS || first.getSymbol().getType() == GameMLParser.MINUS) {
-                value = Percentage.parse(second.getText());
-                if (first.getSymbol().getType() == GameMLParser.MINUS)
+                IntegerExpression intValue = FixedInteger.parsePercentage(second.getText());
+                value = Percentage.of(intValue);
+                if (first.getSymbol().getType() == GameMLParser.MINUS) {
                     probabilityModifier.setSign(-1);
+                    value = Percentage.of(Negation.of(intValue));
+                }
             }
             else
                 value = Percentage.parse(first.getText());

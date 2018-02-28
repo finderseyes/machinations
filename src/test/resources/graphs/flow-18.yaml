@@ -1,0 +1,18 @@
+# Multiplier modifiers
+---
+nodes:
+  - type: source
+    id: p0
+    connections:
+      - --> p1
+      - "75% --> p2 :e_0_2"
+
+  - type: pool
+    id: p1
+    activationMode: startingAction
+    modifiers:
+      - "+25% --> e_0_2"
+
+  - type: pool
+    id: p2
+    activationMode: automatic

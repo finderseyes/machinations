@@ -217,6 +217,27 @@ public class ResourceConnection extends Connection {
                 }
             }
 
+            // Probability
+            {
+                Set<ProbabilityModifier> probabilityModifiers = modifiedBy.stream()
+                        .filter(m -> m instanceof ProbabilityModifier).map(m -> (ProbabilityModifier)m)
+                        .collect(Collectors.toSet());
+
+                if (!probabilityModifiers.isEmpty()) {
+                    IntegerExpression modifiedValue = probabilityModifiers.stream()
+                            .map(m -> {
+                                IntegerExpression value = m.getValue().getValue();
+                                NodeRef nodeRef = NodeRef.of(m.getOwner()).setContext(
+                                        new NodeEvaluationContext().setRequester(m)
+                                );
+                                return (IntegerExpression)Multiplication.of(nodeRef, value);
+                            })
+                            .reduce(this.flowRate.getProbability().getValue(), Addition::of);
+
+                    modifiedFlowRate.setProbability(Percentage.of(modifiedValue));
+                }
+            }
+
             this.modifiedFlowRate = modifiedFlowRate;
         }
     }

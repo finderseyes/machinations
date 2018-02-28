@@ -47,4 +47,14 @@ public class FixedInteger extends IntegerExpression {
     public static FixedInteger parse(String text) {
         return FixedInteger.of(Float.parseFloat(text));
     }
+
+    /**
+     * Parse percentage fixed integer.
+     *
+     * @param text the text
+     * @return the fixed integer
+     */
+    public static FixedInteger parsePercentage(String text) {
+        return FixedInteger.of(Integer.parseInt(text.substring(0, text.length() - 1)));
+    }
 }

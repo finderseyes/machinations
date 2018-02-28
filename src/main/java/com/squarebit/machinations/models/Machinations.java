@@ -398,7 +398,7 @@ public class Machinations {
 //            // synchronous time mode require each provider node to provide all or none dependent connections.
 //            Set<ResourceConnection> nonFlows = requiredConnectionsByProvider.entrySet().stream()
 //                    .map(e -> {
-//                        List<ResourceConnection> dependentConnections = e.getValue();
+//                        List<ResourceConnection> dependentConnections = e.eval();
 //                        if (!actualFlows.keySet().containsAll(dependentConnections))
 //                            return dependentConnections;
 //                        else
@@ -426,7 +426,7 @@ public class Machinations {
 //            Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
 //            actualFlows.entrySet().stream()
 //                    .filter(e -> connections.contains(e.getKey()))
-//                    .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+//                    .forEach(e -> incomingFlows.put(e.getKey(), e.eval()));
 //
 //            if (r.getTarget() instanceof End)
 //                this.terminated = true;
@@ -440,7 +440,7 @@ public class Machinations {
 //
 //        // Trigger owners are those having all input connections satisfied.
 //        Set<Node> triggerOwners = firedConnectionByTarget.entrySet().stream()
-//                .filter(e -> e.getKey().getIncomingConnections().containsAll(e.getValue()))
+//                .filter(e -> e.getKey().getIncomingConnections().containsAll(e.eval()))
 //                .map(Map.Entry::getKey).collect(Collectors.toSet());
 //
 //        // Add those nodes previously fired but do not have any input requirements.
@@ -555,7 +555,7 @@ public class Machinations {
 //            Map<ResourceConnection, ResourceSet> incomingFlows = new HashMap<>();
 //            actualFlows.entrySet().stream()
 //                    .filter(e -> connections.contains(e.getKey()))
-//                    .forEach(e -> incomingFlows.put(e.getKey(), e.getValue()));
+//                    .forEach(e -> incomingFlows.put(e.getKey(), e.eval()));
 //
 //            requirement.getTarget().fire(incomingFlows);
 //        }
