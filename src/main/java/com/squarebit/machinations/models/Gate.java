@@ -68,13 +68,13 @@ public class Gate extends Node {
 
     @Override
     public int evaluate(NodeEvaluationContext context) {
-        if (context.getOwner() instanceof ResourceConnection) {
+        if (context.getRequester() instanceof ResourceConnection) {
             if (!this.random)
                 return this.passedThroughResources;
             else
                 return this.currentDraw;
         }
-        else if (context.getOwner() instanceof Trigger) {
+        else if (context.getRequester() instanceof Trigger) {
             return this.currentDraw;
         }
         else

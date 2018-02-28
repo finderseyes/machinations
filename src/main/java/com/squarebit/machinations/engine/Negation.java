@@ -1,45 +1,37 @@
 package com.squarebit.machinations.engine;
 
-public class Negation extends ArithmeticExpression {
-    private ArithmeticExpression value;
+public class Negation extends IntegerExpression {
+    private IntegerExpression child;
 
     /**
-     * Gets value.
+     * Determines if the expression evaluates to a random value.
      *
-     * @return the value
-     */
-    public ArithmeticExpression getValue() {
-        return value;
-    }
-
-    /**
-     * Sets value.
-     *
-     * @param value the value
-     * @return the value
-     */
-    public Negation setValue(ArithmeticExpression value) {
-        this.value = value;
-        return this;
-    }
-
-    /**
-     * Evaluates the expression and returns its result.
-     *
-     * @return integer result.
+     * @return true if the expression value is random, false otherwise
      */
     @Override
-    public int eval() {
-        return -this.value.eval();
+    public boolean isRandom() {
+        return false;
     }
 
     /**
-     * Of negate.
+     * Evaluates the expression to universal numerical type (float).
      *
-     * @param expression the expression
-     * @return the negate
+     * @return value as float
      */
-    public static Negation of(ArithmeticExpression expression) {
-        return new Negation().setValue(expression);
+    @Override
+    public float evalAsFloat() {
+        return -child.evalAsFloat();
+    }
+
+    /**
+     * Of negative integer expression.
+     *
+     * @param child the child
+     * @return the negative integer expression
+     */
+    public static Negation of(IntegerExpression child) {
+        Negation expression = new Negation();
+        expression.child = child;
+        return expression;
     }
 }

@@ -2,6 +2,9 @@ package com.squarebit.machinations.models;
 
 import com.squarebit.machinations.engine.*;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class ResourceConnection extends Connection {
     public static final LogicalExpression DEFAULT_CONDITION = BooleanValue.of(true);
 
@@ -11,6 +14,9 @@ public class ResourceConnection extends Connection {
     private LogicalExpression condition = DEFAULT_CONDITION;
     private FlowRate flowRate = new FlowRate();
     private String resourceName = null; // if null, any resource.
+
+    private boolean initialized = false;
+    private FlowRate originalFlowRate = null;
 
     /**
      * Gets from.
@@ -118,11 +124,56 @@ public class ResourceConnection extends Connection {
      * @return the required resource set
      */
     public ResourceSet fire() {
+        this.initializeIfNeeded();
+
         if (condition.eval()) {
             int amount = flowRate.get();
             return ResourceSet.of(this.resourceName, amount);
         }
         else
             return ResourceSet.empty();
+    }
+
+    /**
+     * Initializes the connection if needed.
+     */
+    private void initializeIfNeeded() {
+        if (this.initialized)
+            return;
+
+        this.initialized = true;
+
+        if (!getModifiedBy().isEmpty()) {
+            FlowRate modifiedFlowRate = new FlowRate();
+            modifiedFlowRate
+                    .setValue(this.flowRate.getValue())
+                    .setInterval(this.flowRate.getInterval())
+                    .setMultiplier(this.flowRate.getMultiplier())
+                    .setProbability(this.flowRate.getProbability());
+
+            this.originalFlowRate = this.flowRate;
+
+            Set<Modifier> modifiedBy = this.getModifiedBy();
+
+            Set<ValueModifier> valueModifiers = modifiedBy.stream()
+                    .filter(m -> m instanceof ValueModifier).map(m -> (ValueModifier)m)
+                    .collect(Collectors.toSet());
+
+            if (!valueModifiers.isEmpty()) {
+                IntegerExpression modifiedValue = valueModifiers.stream()
+                        .map(m -> {
+                            IntegerExpression value = m.getValue();
+                            NodeRef nodeRef = NodeRef.of(from).setContext(
+                                    new NodeEvaluationContext().setRequester(m)
+                            );
+                            return (IntegerExpression) Multiplication.of(nodeRef, value);
+                        })
+                        .reduce(this.flowRate.getValue(), Addition::of);
+
+                modifiedFlowRate.setValue(modifiedValue);
+            }
+
+            this.flowRate = modifiedFlowRate;
+        }
     }
 }

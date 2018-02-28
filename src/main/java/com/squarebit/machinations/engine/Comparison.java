@@ -54,7 +54,7 @@ public class Comparison extends RelationOperator {
         return false;
     }
 
-    public static Comparison of(String op, ArithmeticExpression lhs, ArithmeticExpression rhs) {
+    public static Comparison of(String op, IntegerExpression lhs, IntegerExpression rhs) {
         return (Comparison)(new Comparison().setOperator(op).setLhs(lhs).setRhs(rhs));
     }
 }

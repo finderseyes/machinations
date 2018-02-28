@@ -1,9 +1,12 @@
 package com.squarebit.machinations.engine;
 
-public abstract class ArithmeticExpression extends Expression {
+/**
+ * The arithmetic expression.
+ */
+public abstract class ArithmeticExpression {
     /**
-     * Evaluates the expression and returns its result.
-     * @return integer result.
+     * Evaluates the expression to universal numerical type (float).
+     * @return value as float
      */
-    public abstract int eval();
+    public abstract float evalAsFloat();
 }

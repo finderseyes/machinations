@@ -54,6 +54,16 @@ public class RandomInteger extends IntegerExpression {
     }
 
     /**
+     * Evaluates the expression to universal numerical type (float).
+     *
+     * @return value as float
+     */
+    @Override
+    public float evalAsFloat() {
+        return this.eval();
+    }
+
+    /**
      * Creates a new random flow rate instance.
      *
      * @param times the number of rolling times

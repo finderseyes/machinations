@@ -1,12 +1,13 @@
 package com.squarebit.machinations.models;
 
+import com.squarebit.machinations.engine.FixedInteger;
 import com.squarebit.machinations.engine.IntegerExpression;
 
 /**
  * The flow rate value modifier.
  */
 public class ValueModifier extends Modifier {
-    private IntegerExpression value;
+    private FixedInteger value;
     private int sign = 1;
 
     /**
@@ -24,7 +25,7 @@ public class ValueModifier extends Modifier {
      * @param value the value
      * @return the value
      */
-    public ValueModifier setValue(IntegerExpression value) {
+    public ValueModifier setValue(FixedInteger value) {
         this.value = value;
         return this;
     }

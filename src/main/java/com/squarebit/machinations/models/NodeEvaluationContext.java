@@ -1,25 +1,23 @@
 package com.squarebit.machinations.models;
 
-import com.squarebit.machinations.engine.Expression;
-
 public class NodeEvaluationContext {
-    private Object owner;
-    private Expression expression;
+    private Object requester;
+    private Object expression;
 
-    public Object getOwner() {
-        return owner;
+    public Object getRequester() {
+        return requester;
     }
 
-    public NodeEvaluationContext setOwner(Object owner) {
-        this.owner = owner;
+    public NodeEvaluationContext setRequester(Object requester) {
+        this.requester = requester;
         return this;
     }
 
-    public Expression getExpression() {
+    public Object getExpression() {
         return expression;
     }
 
-    public NodeEvaluationContext setExpression(Expression expression) {
+    public NodeEvaluationContext setExpression(Object expression) {
         this.expression = expression;
         return this;
     }

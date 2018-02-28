@@ -482,11 +482,6 @@ public class MachinationsFactoryTests {
         return consumer.apply(getParser(decl));
     }
 
-    private ArithmeticExpression arithmetic(String decl) {
-        MachinationsFactory factory = new MachinationsFactory();
-        return factory.buildArithmetic(null, parse(decl, GameMLParser::arithmeticExpression));
-    }
-
     private LogicalExpression bool(String decl) {
         MachinationsFactory factory = new MachinationsFactory();
         return factory.buildBoolean(null, parse(decl, GameMLParser::logicalExpression));

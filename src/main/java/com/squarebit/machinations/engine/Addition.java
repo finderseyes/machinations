@@ -1,24 +1,43 @@
 package com.squarebit.machinations.engine;
 
-public class Addition extends BinaryOperator {
+public class Addition extends IntegerExpression {
+    private IntegerExpression lhs, rhs;
+    private boolean random;
+
     /**
-     * Evaluates the expression and returns its result.
+     * Determines if the expression evaluates to a random value.
      *
-     * @return integer result.
+     * @return true if the expression value is random, false otherwise
      */
     @Override
-    public int eval() {
-        return this.lhs.eval() + this.rhs.eval();
+    public boolean isRandom() {
+        return this.random;
     }
 
     /**
-     * Of addition.
+     * Evaluates the expression to universal numerical type (float).
      *
-     * @param lhs the lhs
-     * @param rhs the rhs
-     * @return the addition
+     * @return value as float
      */
-    public static Addition of(ArithmeticExpression lhs, ArithmeticExpression rhs) {
-        return (Addition) new Addition().setLhs(lhs).setRhs(rhs);
+    @Override
+    public float evalAsFloat() {
+        return (lhs.evalAsFloat() + rhs.evalAsFloat());
+    }
+
+    /**
+     * Creates an instance of multiplicative flow rate.
+     *
+     * @param lhs the left hand side expression
+     * @param rhs the right hand side expression
+     * @return the additive flow rate instance
+     */
+    public static Addition of(IntegerExpression lhs, IntegerExpression rhs) {
+        Addition expression = new Addition();
+
+        expression.lhs = lhs;
+        expression.rhs = rhs;
+        expression.random = lhs.isRandom() || rhs.isRandom();
+
+        return expression;
     }
 }

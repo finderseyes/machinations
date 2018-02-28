@@ -1,24 +1,46 @@
 package com.squarebit.machinations.engine;
 
-public class Subtraction extends BinaryOperator {
+/**
+ * An subtractive flow rate expression.
+ */
+public class Subtraction extends IntegerExpression {
+    private IntegerExpression lhs, rhs;
+    private boolean random;
+
     /**
-     * Evaluates the expression and returns its result.
+     * Determines if the expression evaluates to a random value.
      *
-     * @return integer result.
+     * @return true if the expression value is random, false otherwise
      */
     @Override
-    public int eval() {
-        return this.lhs.eval() - this.rhs.eval();
+    public boolean isRandom() {
+        return this.random;
     }
 
     /**
-     * Of subtraction.
+     * Evaluates the expression to universal numerical type (float).
      *
-     * @param lhs the lhs
-     * @param rhs the rhs
-     * @return the subtraction
+     * @return value as float
      */
-    public static Subtraction of(ArithmeticExpression lhs, ArithmeticExpression rhs) {
-        return (Subtraction)new Subtraction().setLhs(lhs).setRhs(rhs);
+    @Override
+    public float evalAsFloat() {
+        return (lhs.evalAsFloat() - rhs.evalAsFloat());
+    }
+
+    /**
+     * Creates an instance of subtractive flow rate.
+     *
+     * @param lhs the left hand side expression
+     * @param rhs the right hand side expression
+     * @return the subtractive flow rate instance
+     */
+    public static Subtraction of(IntegerExpression lhs, IntegerExpression rhs) {
+        Subtraction subtractive = new Subtraction();
+
+        subtractive.lhs = lhs;
+        subtractive.rhs = rhs;
+        subtractive.random = lhs.isRandom() || rhs.isRandom();
+
+        return subtractive;
     }
 }
