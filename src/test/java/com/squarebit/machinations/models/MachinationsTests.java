@@ -611,16 +611,22 @@ public class MachinationsTests {
         Pool p1 = (Pool) machinations.findById("p1");
         Pool p2 = (Pool) machinations.findById("p2");
 
-        {
+        int times = 1000;
+        for (int i = 0; i < times; i++)
             machinations.simulateOneTimeStep();
-            assertThat(p1.getResources().size()).isEqualTo(1);
-            assertThat(p2.getResources().size()).isEqualTo(1);
-        }
 
-        {
-            machinations.simulateOneTimeStep();
-            assertThat(p1.getResources().size()).isEqualTo(1);
-            assertThat(p2.getResources().size()).isEqualTo(3);
-        }
+        assertThat(p2.getResources().size() / (float)times).isCloseTo(0.75f, Offset.offset(5e-2f));
+
+//        {
+//            machinations.simulateOneTimeStep();
+//            assertThat(p1.getResources().size()).isEqualTo(1);
+//            assertThat(p2.getResources().size()).isEqualTo(1);
+//        }
+//
+//        {
+//            machinations.simulateOneTimeStep();
+//            assertThat(p1.getResources().size()).isEqualTo(1);
+//            assertThat(p2.getResources().size()).isEqualTo(3);
+//        }
     }
 }

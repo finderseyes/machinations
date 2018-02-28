@@ -5,7 +5,7 @@ nodes:
     id: p0
     connections:
       - --> p1
-      - "75% --> p2 :e_0_2"
+      - "50% --> p2 :e_0_2"
 
   - type: pool
     id: p1
