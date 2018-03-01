@@ -443,6 +443,15 @@ public class MachinationsFactory {
                 Register register = new Register();
                 node = register;
             }
+            else if (nodeSpec instanceof QueueSpec) {
+                QueueSpec queueSpec = (QueueSpec)nodeSpec;
+                Queue queue = new Queue();
+                if (queueSpec.getDelay() != null) {
+                    GameMLParser parser = getGameMLParser(queueSpec.getDelay());
+                    queue.setDelay(buildInteger(parser.integerExpression()));
+                }
+                node = queue;
+            }
 
             if (node != null) {
                 try {

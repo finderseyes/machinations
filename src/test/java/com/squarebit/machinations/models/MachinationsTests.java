@@ -674,4 +674,38 @@ public class MachinationsTests {
             assertThat(machinations.isTerminated()).isTrue();
         }
     }
+
+    @Test
+    public void should_support_delays_and_queues() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-21.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Trigger trigger = (Trigger)machinations.findById("t_queue_s0");
+        Queue queue = (Queue)machinations.findById("queue");
+        Pool p0 = (Pool)machinations.findById("p0");
+        Pool p1 = (Pool)machinations.findById("p1");
+
+        assertThat(queue.getDelay().eval()).isEqualTo(2);
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p0.getResources().size()).isEqualTo(0);
+            assertThat(queue.evaluate()).isEqualTo(1);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p0.getResources().size()).isEqualTo(0);
+            assertThat(queue.evaluate()).isEqualTo(2);
+        }
+
+        {
+            machinations.simulateOneTimeStep();
+            assertThat(p0.getResources().size()).isEqualTo(1);
+            assertThat(queue.evaluate()).isEqualTo(2);
+            assertThat(p1.getResources().size()).isEqualTo(3);
+        }
+    }
 }

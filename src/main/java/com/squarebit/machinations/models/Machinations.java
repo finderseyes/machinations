@@ -1,6 +1,8 @@
 package com.squarebit.machinations.models;
 
+import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Machinations {
@@ -17,6 +19,9 @@ public class Machinations {
     private Set<Node> automaticNodes;
     private Set<Node> activatedByActivatorNodes = new HashSet<>();
     private boolean terminated = false;
+
+    private Map<Integer, List<Supplier<Set<ResourceConnection>>>> lateFiringActions = new HashMap<>();
+    private Set<ResourceConnection> lateFiredConnections = new HashSet<>();
 
     public Machinations() {
         this.elements = new HashSet<>();
@@ -136,6 +141,9 @@ public class Machinations {
         // Elements already fired in this time step.
         Set<GraphElement> firedElements = new HashSet<>(nodes);
 
+        // Late firing actions get executed first.
+        executeLateFiringActions();
+
         Set<GraphElement> nextElements = this.fireNodes(nodes);
         nextElements.removeAll(firedElements);
 
@@ -166,6 +174,34 @@ public class Machinations {
             if (extracted.size() > 0) {
                 c.getTo().receive(extracted);
             }
+        });
+    }
+
+    /**
+     *
+     * @param delaySteps
+     * @param firingAction
+     */
+    protected void registerLateFiringAction(int delaySteps, Supplier<Set<ResourceConnection>> firingAction) {
+        int firingTime = this.time + delaySteps;
+        List<Supplier<Set<ResourceConnection>>> actions =
+                this.lateFiringActions.computeIfAbsent(firingTime, t -> new ArrayList<>());
+
+        actions.add(firingAction);
+    }
+
+    /**
+     *
+     */
+    private void executeLateFiringActions() {
+        List<Integer> timeSteps = this.lateFiringActions.keySet().stream()
+                .filter(t -> t <= this.time).collect(Collectors.toList());
+
+        this.lateFiredConnections.clear();
+
+        timeSteps.forEach(t -> {
+            List<Supplier<Set<ResourceConnection>>> actions = this.lateFiringActions.remove(t);
+            actions.forEach(a -> lateFiredConnections.addAll(a.get()));
         });
     }
 
@@ -220,8 +256,12 @@ public class Machinations {
         ///////////////////////
         // --> Triggers.
 
+        firedOutgoingConnections.addAll(lateFiredConnections);
+
         // Add those fired out-going connections to incoming fired ones.
         firedConnections.addAll(firedOutgoingConnections);
+
+        lateFiredConnections.clear();
 
         Map<Node, List<ResourceConnection>> firedConnectionByTarget =
                 firedConnections.stream().collect(Collectors.groupingBy(ResourceConnection::getTo));
@@ -243,6 +283,7 @@ public class Machinations {
         Set<GraphElement> firedNextElements = triggerOwners.stream()
                 .flatMap(o -> o.activateTriggers().stream()).map(Trigger::getTarget)
                 .collect(Collectors.toSet());
+
 
         //////////////////////////
         // -->  Reverse triggers
