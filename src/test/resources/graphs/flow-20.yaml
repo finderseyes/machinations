@@ -1,0 +1,16 @@
+# Reverse trigger
+---
+nodes:
+  - type: pool
+    id: hitPoints
+    connections:
+      - --> damage
+
+  - type: drain
+    id: damage
+    activationMode: automatic
+    triggers:
+      - --> gameOver :t_drain_end { reverse=true }
+
+  - type: end
+    id: gameOver

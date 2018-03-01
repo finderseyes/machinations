@@ -7,6 +7,7 @@ import com.squarebit.machinations.specs.yaml.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang.math.IntRange;
 import org.bson.types.ObjectId;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MachinationsFactory {
     /**
@@ -50,6 +52,7 @@ public class MachinationsFactory {
         private GraphElement target;
         private String id;
         private GameMLParser.TriggerLabelContext labelContext;
+        private Map<String, String> properties;
     }
 
     private class ActivatorBuildContext {
@@ -599,6 +602,13 @@ public class MachinationsFactory {
             buildTriggerLabel(context, trigger, buildContext.labelContext);
         }
 
+        if (buildContext.properties != null) {
+            buildContext.properties.forEach((name, value) -> {
+                if (name.equals("reverse"))
+                    trigger.setReverse(Boolean.parseBoolean(value));
+            });
+        }
+
         buildContext.owner.getTriggers().add(trigger);
 
         context.machinations.addElement(trigger);
@@ -1103,9 +1113,26 @@ public class MachinationsFactory {
 
         if (decl instanceof GameMLParser.ElementIdContext) {
             buildContext.id = decl.getChild(1).getText();
+            next += 1;
+            decl = triggerContext.getChild(next);
+        }
+
+        if (decl instanceof GameMLParser.PropertiesContext) {
+            buildContext.properties = buildProperties((GameMLParser.PropertiesContext)decl);
         }
 
         return buildContext;
+    }
+
+    private Map<String, String> buildProperties(GameMLParser.PropertiesContext propertiesContext) {
+        Map<String, String> properties = new HashMap<>();
+
+        IntStream.range(1, propertiesContext.getChildCount() - 1).forEach(i -> {
+            ParseTree decl = propertiesContext.getChild(i);
+            properties.put(decl.getChild(0).getText(), decl.getChild(2).getText());
+        });
+
+        return properties;
     }
 
     private ActivatorBuildContext getActivatorBuildContext(BuildingContext context, String definition) throws Exception {

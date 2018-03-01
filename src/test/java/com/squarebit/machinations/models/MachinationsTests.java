@@ -651,8 +651,26 @@ public class MachinationsTests {
         {
             machinations.simulateOneTimeStep();
             machinations.simulateOneTimeStep();
+            machinations.simulateOneTimeStep();
 
-            assertThat(p3.evaluate()).isEqualTo(8);
+            assertThat(p3.evaluate()).isEqualTo(12);
+            assertThat(machinations.isTerminated()).isTrue();
+        }
+    }
+
+    @Test
+    public void should_support_reverse_triggers() throws Exception {
+        String path = Utils.absoluteResourcePath("graphs/flow-20.yaml");
+        YamlSpec spec = YamlSpec.fromFile(path);
+        MachinationsFactory factory = new MachinationsFactory();
+        Machinations machinations = factory.fromSpec(spec);
+
+        Trigger trigger = (Trigger)machinations.findById("t_drain_end");
+
+        assertThat(trigger.isReverse()).isTrue();
+
+        {
+            machinations.simulateOneTimeStep();
             assertThat(machinations.isTerminated()).isTrue();
         }
     }

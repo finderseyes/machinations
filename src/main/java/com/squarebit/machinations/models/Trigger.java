@@ -13,6 +13,7 @@ public class Trigger extends Element {
     private LogicalExpression condition = DEFAULT_CONDITION;
     private Percentage probability = DEFAULT_PROBABILITY;
     private IntegerExpression distribution = DEFAULT_DISTRIBUTION;
+    private boolean reverse = false;
 
     private boolean usingProbability = false;
 
@@ -133,6 +134,26 @@ public class Trigger extends Element {
      */
     public Trigger setUsingProbability(boolean usingProbability) {
         this.usingProbability = usingProbability;
+        return this;
+    }
+
+    /**
+     * Is reverse boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isReverse() {
+        return reverse;
+    }
+
+    /**
+     * Sets reverse.
+     *
+     * @param reverse the reverse
+     * @return the reverse
+     */
+    public Trigger setReverse(boolean reverse) {
+        this.reverse = reverse;
         return this;
     }
 }
