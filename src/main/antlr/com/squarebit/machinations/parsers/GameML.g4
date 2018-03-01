@@ -79,8 +79,8 @@ probabilityModifier
 
 // Triggers
 trigger
-    : triggerLabel? TO IDENTIFIER elementId?
-    | IDENTIFIER TO (triggerLabel TO)? IDENTIFIER elementId?
+    : triggerLabel? TO IDENTIFIER elementId? properties?
+    | IDENTIFIER TO (triggerLabel TO)? IDENTIFIER elementId? properties?
     ;
 
 triggerLabel
@@ -94,6 +94,22 @@ triggerProbability
     | INTEGER
     | REAL
     ;
+
+// connection or trigger properties
+properties
+    : LEFT_CURLY_BRACKET property* RIGHT_CURLY_BRACKET;
+
+property
+    : propertyName '=' (booleanValue | numericValue);
+
+propertyName
+    : IDENTIFIER;
+
+booleanValue
+    : TRUE | FALSE;
+
+numericValue
+    : INTEGER | REAL;
 
 // Activators
 activator
@@ -160,13 +176,16 @@ logicalOrExpression
 logicalAndExpression
     : unaryLogicalExpression AND logicalExpression;
 
+TRUE: 'true';
+FALSE: 'false';
+ALL: 'all';
+DRAW: 'draw'[0-9]+;
+
 INTEGER: [0-9]+;
 REAL: [0-9]*'.'[0-9]+;
 DICE: [0-9]*'D'[0-9]*;
 INTERVAL: [0-9]+'i';
 MULTIPLIER: [0-9]+'m';
-ALL: 'all';
-DRAW: 'draw'[0-9]+;
 PERCENTAGE: [0-9]+'%';
 IDENTIFIER: [a-zA-Z_]([a-zA-Z_0-9])*;
 TO: '-->';
@@ -187,4 +206,6 @@ NOT: '!';
 
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
+LEFT_CURLY_BRACKET: '{';
+RIGHT_CURLY_BRACKET: '}';
 WS: [ \r\t\n]+ -> skip;
