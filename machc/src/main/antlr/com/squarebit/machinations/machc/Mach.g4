@@ -26,28 +26,89 @@ eventHookDeclaration
     ;
 
 eventHookBody
-    :   LEFT_CURLY_BRACKET eventHookBodyDeclaration* RIGHT_CURLY_BRACKET
+    :   LEFT_CURLY_BRACKET statementDeclaration* RIGHT_CURLY_BRACKET
     ;
 
-eventHookBodyDeclaration
-    :   statement SEMI_COLON
+statementDeclaration
+    : emptyStatement
+    | statement
     ;
 
 statement
-    :   transferStatement
-    |   ifThenStatement
+    : block
+    | transferDeclarationStatement
+    | probabilisticDeclarationStatement
+    | expressionStatement
+    | ifThenStatement
+    | ifThenElseStatement
     ;
 
-transferStatement
-    :   TRANSFER connectionDeclaration;
+emptyStatement
+    : ';'
+    ;
+
+block
+	: '{' blockStatements? '}'
+	;
+
+blockStatements
+	: statementDeclaration+
+	;
+
+probabilisticDeclarationStatement
+    : probabilisticDeclaration
+    ;
+
+probabilisticDeclaration
+    : 'randomly' probabilisticStatementDeclaration+
+    ;
+
+probabilisticStatementDeclaration
+    : probability statement
+    ;
+
+probability
+    : expression
+    | 'else'
+    ;
+
+transferDeclarationStatement
+    : transferDeclaration
+    ;
+
+transferDeclaration
+    :   'transfer' transferModifierList resourceFlowDeclaration (',' resourceFlowDeclaration)*
+    ;
+
+transferModifierList
+    : transferModifier*
+    ;
+
+transferModifier
+    : 'all'
+    | 'any'
+    ;
+
+resourceFlowDeclaration
+    : flowRate? connectionDeclaration
+    ;
+
+flowRate
+    : expression
+    ;
 
 connectionDeclaration
     :   IDENTIFIER TO IDENTIFIER
     ;
 
 ifThenStatement
-    :   IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS statement
+    : 'if' '(' expression ')' statement
     ;
+
+ifThenElseStatement
+    : 'if' '(' expression ')' statement 'else' statement
+    ;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Expression
@@ -203,10 +264,29 @@ expressionName
 	;
 
 literal
-	:	INTEGER
-	|	REAL
+	: INTEGER
+	| FLOATING_POINT
+	| PERCENTAGE
+	| RANDOM_NUMBER
 	;
 
+RANDOM_NUMBER
+    : RANDOM_DRAW
+    | RANDOM_DICE
+    ;
+
+expressionStatement
+	:	statementExpression
+	;
+
+statementExpression
+	:	assignment
+	|	preIncrementExpression
+	|	preDecrementExpression
+	|	postIncrementExpression
+	|	postDecrementExpression
+	|	methodInvocation
+	;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tokens
@@ -219,7 +299,10 @@ IF: 'if';
 
 // Numerical
 INTEGER: [0-9]+;
-REAL: [0-9]*'.'[0-9]+;
+FLOATING_POINT: [0-9]*'.'[0-9]+;
+RANDOM_DRAW: 'draw'[0-9]+;
+RANDOM_DICE: [0-9]*'D'[0-9]*;
+PERCENTAGE: [0-9]+'%';
 
 // Math operator
 PLUS: '+';
@@ -240,3 +323,10 @@ COMMA: ',';
 IDENTIFIER: [a-zA-Z_]([a-zA-Z_0-9])*;
 
 WS: [ \r\t\n]+ -> skip;
+COMMENT
+    :   '/*' .*? '*/' -> skip
+    ;
+
+LINE_COMMENT
+    :   '//' ~[\r\n]* -> skip
+    ;
