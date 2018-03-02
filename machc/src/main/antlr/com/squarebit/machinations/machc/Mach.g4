@@ -14,10 +14,33 @@ graphBodyDeclaration
     ;
 
 nodeDeclaration
-    :   NODE IDENTIFIER (SEMI_COLON | nodeBody)
+    : nodeModifiers? 'node' nodeDeclaratorList ';'
     ;
 
-nodeBody
+nodeModifiers
+    : nodeModifier+
+    ;
+
+nodeModifier
+    : 'end'
+    | 'source'
+    | 'drain'
+    | 'interactive'
+    ;
+
+nodeDeclaratorList
+    : nodeDeclarator (',' nodeDeclarator)*
+    ;
+
+nodeDeclarator
+    : nodeId ('=' nodeInitializer)?
+    ;
+
+nodeId
+    : IDENTIFIER
+    ;
+
+nodeInitializer
     :   LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET
     ;
 
@@ -26,18 +49,17 @@ eventHookDeclaration
     ;
 
 eventHookBody
-    :   LEFT_CURLY_BRACKET statementDeclaration* RIGHT_CURLY_BRACKET
-    ;
-
-statementDeclaration
-    : emptyStatement
-    | statement
+    :   LEFT_CURLY_BRACKET blockStatements* RIGHT_CURLY_BRACKET
     ;
 
 statement
-    : block
+    : emptyStatement
+    | block
     | transferDeclarationStatement
     | probabilisticDeclarationStatement
+    | activationDeclarationStatement
+    | delayDeclarationStatement
+    | intervalDeclarationStatement
     | expressionStatement
     | ifThenStatement
     | ifThenElseStatement
@@ -47,24 +69,93 @@ emptyStatement
     : ';'
     ;
 
+intervalDeclarationStatement
+    : intervalDeclaration
+    ;
+
+intervalDeclaration
+    : 'for' 'every' intervalSteps 'steps' ':' statement
+    ;
+
+intervalSteps
+    : expression
+    ;
+
+delayDeclarationStatement
+    : delayDeclaration
+    ;
+
+delayDeclaration
+    : 'delay' 'for' delaySteps 'steps' ':' statement
+    ;
+
+delaySteps
+    : expression
+    ;
+
+activationDeclarationStatement
+    : activationDeclaration ';'
+    ;
+
+activationDeclaration
+    : ('activate' | 'deactivate') activationList
+    ;
+
+activationList
+    : activationNodeId (',' activationNodeId)*
+    ;
+
+activationNodeId
+    : IDENTIFIER
+    ;
+
 block
 	: '{' blockStatements? '}'
 	;
 
 blockStatements
-	: statementDeclaration+
+	: blockStatement+
 	;
+
+blockStatement
+    : localVariableDeclarationStatement
+    | statement
+    ;
+
+localVariableDeclarationStatement
+    : localVariableDeclaration ';'
+    ;
+
+localVariableDeclaration
+    : 'let' variableDeclaratorList
+    ;
+
+variableDeclaratorList
+	:	variableDeclarator (',' variableDeclarator)*
+	;
+
+variableDeclarator
+	:	variableDeclaratorId ('=' variableInitializer)?
+	;
+
+variableDeclaratorId
+    : IDENTIFIER
+    ;
+
+variableInitializer
+    : expression
+    ;
 
 probabilisticDeclarationStatement
     : probabilisticDeclaration
     ;
 
 probabilisticDeclaration
-    : 'randomly' probabilisticStatementDeclaration+
+    : 'randomly' '{' probabilisticStatementDeclaration+ '}'
     ;
 
 probabilisticStatementDeclaration
-    : probability statement
+    : probability ':' statement
     ;
 
 probability
@@ -73,11 +164,11 @@ probability
     ;
 
 transferDeclarationStatement
-    : transferDeclaration
+    : transferDeclaration ';'
     ;
 
 transferDeclaration
-    :   'transfer' transferModifierList resourceFlowDeclaration (',' resourceFlowDeclaration)*
+    : 'transfer' transferModifierList resourceFlowDeclaration (',' resourceFlowDeclaration)*
     ;
 
 transferModifierList
@@ -90,11 +181,19 @@ transferModifier
     ;
 
 resourceFlowDeclaration
-    : flowRate? connectionDeclaration
+    : flowRate? IDENTIFIER? TO flowRate? IDENTIFIER (':' resourceConnectionId)?
+    ;
+
+resourceConnectionId
+    : IDENTIFIER
     ;
 
 flowRate
-    : expression
+    : expression resourceName?
+    ;
+
+resourceName
+    : '(' IDENTIFIER ')'
     ;
 
 connectionDeclaration
