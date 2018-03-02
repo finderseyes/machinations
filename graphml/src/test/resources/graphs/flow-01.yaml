@@ -1,0 +1,55 @@
+---
+nodes:
+  - type: pool
+    id: p0
+    activationMode: automatic
+    resources: 10
+    connections:
+      - --> p1
+
+  - type: pool
+    id: p1
+
+  - type: pool
+    id: p2
+    resources: 20
+    connections:
+      - --> p3
+
+  - type: pool
+    id: p3
+    activationMode: automatic
+
+  - type: pool
+    id: p4
+    activationMode: automatic
+    resources: 10
+    connections:
+      - --> p5
+
+  - type: pool
+    id: p5
+    connections:
+      - 2 --> p6
+
+  - type: pool
+    id: p6
+    activationMode: automatic
+
+  - type: pool
+    id: p7
+    activationMode: automatic
+    resources: 10
+    connections:
+      - --> p8
+
+  - type: pool
+    id: p8
+    connections:
+      - 2 --> p9
+
+  - type: pool
+    id: p9
+    flowMode: pullAll
+    activationMode: automatic
+

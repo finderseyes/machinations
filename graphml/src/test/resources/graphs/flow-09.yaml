@@ -1,0 +1,17 @@
+# Gate tests
+---
+nodes:
+  - type: pool
+    id: p0
+    resources: 100
+    connections:
+      - --> p1 :e01
+
+  - type: pool
+    id: p1
+
+  - type: gate
+    id: p2
+    activationMode: automatic
+    triggers:
+      - " 30% --> e01"

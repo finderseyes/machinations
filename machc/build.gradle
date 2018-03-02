@@ -1,0 +1,73 @@
+def versionNumber = '0.0.0'
+def versionLabel = 'SNAPSHOT'
+
+// Gradle does not recognize dotted parameters. We let Teamcity does the job of generating build number.
+if (hasProperty('teamcity')) {
+    version = sprintf("%s.%s", versionNumber, teamcity["build.number"])
+} else {
+    version = versionNumber
+}
+
+// Append version label.
+if (versionLabel?.trim()) {
+    version = sprintf("%s-%s", version, versionLabel)
+}
+
+buildscript {
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'antlr'
+
+sourceCompatibility = 1.8
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE'
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.5'
+    compile(
+            'org.springframework.boot:spring-boot-starter',
+            'com.google.guava:guava:21.0',
+            'org.apache.commons:commons-collections4:4.1',
+            'org.apache.commons:commons-lang3:3.4',
+            'org.apache.commons:commons-math3:3.6.1',
+            'commons-io:commons-io:2.5',
+            'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.4',
+            'com.fasterxml.jackson.core:jackson-databind:2.9.4',
+            'com.fasterxml.jackson.core:jackson-core:2.9.4',
+            'com.fasterxml.jackson.core:jackson-annotations:2.9.4',
+    )
+
+
+    testCompile (
+            'org.springframework.boot:spring-boot-starter-test',
+            'org.jbehave:jbehave-core:4.0.5',
+    )
+}
+
+sourceSets.test.resources.srcDir 'src/test/java'
+
+generateGrammarSource {
+    arguments += ["-package", "com.squarebit.machinations.parsers"]
+}
+

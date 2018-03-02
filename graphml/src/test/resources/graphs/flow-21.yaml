@@ -1,0 +1,26 @@
+# delays (and queue)
+---
+nodes:
+  - type: source
+    connections:
+      - --> queue
+
+  - type: queue
+    id: queue
+    activationMode: automatic
+    delay: 2
+    triggers:
+      - " > 0 --> s0 :t_queue_s0"
+    connections:
+      - --> p0
+
+  - type: pool
+    id: p0
+
+  - type: source
+    id: s0
+    connections:
+      - --> p1
+
+  - type: pool
+    id: p1

@@ -1,0 +1,100 @@
+# Sample graph.
+# NOTE: edge-like structures (connections, triggers, activators) are defined by strings in two forms
+# - Relative form: to define edge from a node, will have the form [label] --> target_node_id [(edge_id)]
+# - Absolute form: to define edge from out side a node, having form: source_node_id --> [label -->] target_node_id [edge_id]
+
+# NOTE: identifier names must begin with a lowercase character, due to ambiguity with Dice number (starting with D).
+---
+nodes:
+  - type: pool
+    id: p0
+    name: aaa
+    resources: 125 mana, 30 gold
+    capacity: 200 mana
+    connections:
+      - "--> p1 : p0_p1"
+      - ">= 1, 2D10 --> p2 : p0_p2_0"
+      - "1/4 --> p2 : p0_p2_1"
+      - "50% --> p2 : p0_p2_2"
+      - "3*50% --> p2 : p0_p2_3"
+      - "10 (gold) --> p2 : p0_p2_4"
+      - "2*10 (gold) --> p2 : p0_p2_5"
+      - "2*30% (gold) --> p2 : p0_p2_6"
+      - "all --> p2 : p0_p2_7"
+      - "all (gold) --> p2 : p0_p2_8"
+      - "5*30%, 10/5 (gold) --> p2 : p0_p2_9"
+      - --> p3
+    modifiers:
+      - "+2 --> p1 : m_p0_p1_0"
+      - "-2 --> p1 : m_p0_p1_1"
+      - "+1i --> p0_p2_1 : m_p0_p1_2"
+      - "+5% --> p0_p2_2 : m_p0_p1_3"
+      - "-3m --> p0_p2_5 : m_p0_p1_4"
+    triggers:
+      - "--> p1 : t_p0_0"
+      - " 1 --> p1 : t_p0_1"
+      - " 50% --> p1 : t_p0_2"
+      - " > 3 --> p1 : t_p0_3"
+      - " ==3, 50% --> p1 : t_p0_4"
+      - --> p0_p1
+    activators:
+      - ">= 5 --> p1"
+      - ">= 5 --> p1 : a_p0_0"
+      - ">= 5 && < 10--> p1 : a_p0_1"
+
+  - type: pool
+    id: p1
+    name: bbb
+    activationMode: automatic
+    flowMode: pushAny
+    modifiers:
+      - +3 --> p0_p1
+#    modifiers:
+#      - 1 --> e1
+#    triggers:
+#      - --> n0
+
+  - type: pool
+    name: ccc
+    id: p2
+    activationMode: interactive
+    flowMode: pullAll
+    resources: 100
+
+  - type: pool
+    name: ddd
+    id: p3
+    activationMode: startingAction
+    flowMode: pushAll
+    resources: 100, 100
+
+  - type: pool
+    name: eee
+    id: p4
+    activationMode: passive
+    flowMode: pullAny
+
+  - type: source
+    id: p5
+    activationMode: automatic
+    flowMode: pushAll
+    connections:
+      - --> p6
+
+  - type: pool
+    id: p6
+
+connections:
+  - "p2 --> p3 : p2_p3"
+  - "p2 --> 5D+10 --> p4 :p2_p4"
+
+
+modifiers:
+  - p3 --> +3 --> p4
+
+triggers:
+  - p0 --> p2
+  - p0 --> p2_p3
+
+activators:
+  - p2 --> == 1 --> p3

@@ -1,0 +1,32 @@
+---
+nodes:
+  - type: pool
+    id: p0
+    activationMode: automatic
+    resources: 20
+    connections:
+      - --> p1
+      - --> p2
+
+  - type: pool
+    id: p1
+    activators:
+      - "> 0 --> p3"
+
+  - type: pool
+    id: p2
+
+  - type: pool
+    id: p3
+    activationMode: automatic
+    resources: 10
+    connections:
+      - --> p4
+
+  - type: pool
+    id: p4
+    activators:
+      - " <= 1 --> p3"
+
+
+
