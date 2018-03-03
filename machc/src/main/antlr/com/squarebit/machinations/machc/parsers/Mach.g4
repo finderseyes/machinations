@@ -1,7 +1,15 @@
 grammar Mach;
 
+unitDeclaration
+    : structureDeclaration*
+    ;
+
+structureDeclaration
+    : graphDeclaration
+    ;
+
 graphDeclaration
-    :   GRAPH IDENTIFIER graphBody
+    :   'graph' IDENTIFIER graphBody
     ;
 
 graphBody
@@ -55,11 +63,11 @@ eventHookBody
 statement
     : emptyStatement
     | block
-    | transferDeclarationStatement
-    | probabilisticDeclarationStatement
-    | activationDeclarationStatement
-    | delayDeclarationStatement
-    | intervalDeclarationStatement
+//    | transferDeclarationStatement
+//    | probabilisticDeclarationStatement
+//    | activationDeclarationStatement
+//    | delayDeclarationStatement
+//    | intervalDeclarationStatement
     | expressionStatement
     | ifThenStatement
     | ifThenElseStatement
@@ -346,8 +354,9 @@ primary
 	;
 
 methodInvocation
-	:	methodName '(' argumentList? ')'
-	|	expressionName '.' IDENTIFIER '(' argumentList? ')'
+	: methodName '(' argumentList? ')'
+	| expressionName '.' IDENTIFIER '(' argumentList? ')'
+	| transferDeclaration
 	;
 
 methodName

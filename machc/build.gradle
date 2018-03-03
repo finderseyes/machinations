@@ -68,6 +68,6 @@ dependencies {
 sourceSets.test.resources.srcDir 'src/test/java'
 
 generateGrammarSource {
-    arguments += ["-package", "com.squarebit.machinations.parsers"]
+    arguments += ["-package", "com.squarebit.machinations.machc.parsers"]
 }
 
