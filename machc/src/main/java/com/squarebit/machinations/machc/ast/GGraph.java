@@ -1,25 +1,31 @@
 package com.squarebit.machinations.machc.ast;
 
-public class GGraph {
-    private String id;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * A graph.
+ */
+public class GGraph extends GObject {
+    private Map<String, GGraphElement> elements = new HashMap<>();  // Mapping from id to graph element.
 
     /**
-     * Gets id.
+     * Finds a graph element with given id.
      *
-     * @return the id
+     * @param id the id
+     * @return the graph element
      */
-    public String getId() {
-        return id;
+    public GGraphElement findElement(String id) {
+        return elements.get(id);
     }
 
     /**
-     * Sets id.
+     * Adds a graph element.
      *
-     * @param id the id
-     * @return the id
+     * @param element the element
+     * @return the graph element
      */
-    public GGraph setId(String id) {
-        this.id = id;
-        return this;
+    public GGraphElement addElement(GGraphElement element) {
+        return elements.put(element.getId(), element);
     }
 }
