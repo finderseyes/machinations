@@ -1,3 +1,27 @@
 graph main {
-    node p0, p1=1;
+    // node that stores resources.
+    node
+        p0,                 // Default pool node with zero resources.
+        p1 = source,        // Pool node as source.
+        p2 = drain,         // Pool node as drain.
+        p3 = 1,             // Pool node with 1 default resource.
+        p4 = 2/10,          // Pool node with 2 default resources and capacity of 10.
+        p5 = { 10 gold },   // Pool node with 10 gold resources.
+        p6 = { 10 gold, 1D6 mana}, // Pool node with 10 gold and 100 mana resources.
+
+        // Pool node with 10 gold resources of 20 gold capacity and random mana resources from 1 to 6.
+        p7 = { 10/20 gold, 1D6 mana }
+        ;
+
+    // node that does not store resources. Any resources received will be cleared in the next time step.
+    transitive node
+        gate;
+
+    // An interactive resource storing node.
+    interactive node
+        interactiveNode;
+
+    // An interactive non-storing node.
+    interactive transitive node
+        interactiveTransitNode;
 }

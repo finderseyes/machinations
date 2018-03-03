@@ -1,14 +1,13 @@
 package com.squarebit.machinations.machc;
 
-import com.squarebit.machinations.machc.ast.GGraph;
-import com.squarebit.machinations.machc.ast.GNode;
-import com.squarebit.machinations.machc.ast.GUnit;
+import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -152,29 +151,17 @@ public class MachFrontend {
             ParseTree delc = modifiersContext.getChild(i).getChild(0);
             String value = delc.getText();
 
-            if (value.equals("end")) {
-                if (modifier.getType() != GNode.Type.POOL)
-                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
-                else
-                    modifier.setType(GNode.Type.END);
-            }
-            else if (value.equals("source")) {
-                if (modifier.getType() != GNode.Type.POOL)
-                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
-                else
-                    modifier.setType(GNode.Type.SOURCE);
-            }
-            else if (value.equals("drain")) {
-                if (modifier.getType() != GNode.Type.POOL)
-                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
-                else
-                    modifier.setType(GNode.Type.DRAIN);
-            }
-            else if (value.equals("interactive")) {
+            if (value.equals("interactive")) {
                 if (modifier.isInterative())
                     throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
                 else
                     modifier.setInterative(true);
+            }
+            else if (value.equals("transitive")) {
+                if (modifier.isTransitive())
+                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
+                else
+                    modifier.setTransitive(true);
             }
             else
                 throw new CompilationException(String.format(ErrorMessages.UNKNOWN_NODE_IDENTIFIER, value));
@@ -197,11 +184,82 @@ public class MachFrontend {
     {
         GNode node = new GNode();
 
+        GNodeTransformationContext nodeTransformationContext =
+                new GNodeTransformationContext().setNode(node);
+
         if (nodeModifiersContext != null)
             node.setModifier(transformNodeModifiers(nodeModifiersContext));
 
         node.setId(nodeDeclaratorContext.getChild(0).getText());
 
+        ParseTree decl = nodeDeclaratorContext.getChild(2);
+        if (decl instanceof MachParser.NodeInitializerContext) {
+            node.setInitializer(
+                    transformNodeInitializer(nodeTransformationContext, (MachParser.NodeInitializerContext)decl)
+            );
+        }
+
         return node;
+    }
+
+    private GNode.Initializer transformNodeInitializer(GNodeTransformationContext nodeTransformationContext,
+                                                       MachParser.NodeInitializerContext nodeInitializerContext)
+        throws Exception
+    {
+        ParseTree decl = nodeInitializerContext.getChild(0);
+
+        if (decl instanceof MachParser.SourceNodeInitializerContext)
+            return GNode.SOURCE_INITIALIZER;
+        else if (decl instanceof MachParser.DrainNodeInitializerContext)
+            return GNode.DRAIN_INITIALIZER;
+        else {
+            MachParser.ResourceSetExpressionContext resourceSetExpressionContext =
+                    (MachParser.ResourceSetExpressionContext)decl.getChild(0);
+
+            GResourceSet resourceSet = new GResourceSet();
+
+            if (resourceSetExpressionContext.getChildCount() == 1) {
+                GResourceDescriptor descriptor = transformResourceDescriptor(
+                        nodeTransformationContext,
+                        (MachParser.ResourceDescriptorContext)resourceSetExpressionContext.getChild(0)
+                );
+                resourceSet.addDescriptor(descriptor);
+            }
+            else {
+                for (int i = 1; i < resourceSetExpressionContext.getChildCount() - 1; i += 2) {
+                    GResourceDescriptor descriptor = transformResourceDescriptor(
+                            nodeTransformationContext,
+                            (MachParser.ResourceDescriptorContext)resourceSetExpressionContext.getChild(i)
+                    );
+                    resourceSet.addDescriptor(descriptor);
+                }
+            }
+
+            return new GNode.Initializer().setResourceSet(resourceSet);
+        }
+    }
+
+    private GResourceDescriptor transformResourceDescriptor(
+            GNodeTransformationContext nodeTransformationContext,
+            MachParser.ResourceDescriptorContext resourceDescriptorContext)
+        throws Exception
+    {
+        GResourceDescriptor descriptor = new GResourceDescriptor();
+
+        int next = 1;
+        ParseTree decl = resourceDescriptorContext.getChild(next);
+
+        if (decl instanceof TerminalNode) {
+            int capacity = Integer.parseInt(resourceDescriptorContext.getChild(next + 1).getText());
+            descriptor.setCapacity(capacity);
+
+            next += 2;
+            decl = resourceDescriptorContext.getChild(next);
+        }
+
+        if (decl instanceof MachParser.ResourceNameContext)
+            descriptor.setName(decl.getText());
+
+        return descriptor;
     }
 }

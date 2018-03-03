@@ -18,26 +18,26 @@ public class GNode extends GGraphElement {
      * The modifier.
      */
     public static class Modifier {
-        private Type type = Type.POOL;
+        private boolean transitive = false;
         private boolean interative = false;
 
         /**
-         * Gets type.
+         * Is transitive boolean.
          *
-         * @return the type
+         * @return the boolean
          */
-        public Type getType() {
-            return type;
+        public boolean isTransitive() {
+            return transitive;
         }
 
         /**
-         * Sets type.
+         * Sets transitive.
          *
-         * @param type the type
-         * @return the type
+         * @param transitive the transitive
+         * @return the transitive
          */
-        public Modifier setType(Type type) {
-            this.type = type;
+        public Modifier setTransitive(boolean transitive) {
+            this.transitive = transitive;
             return this;
         }
 
@@ -66,8 +66,31 @@ public class GNode extends GGraphElement {
      * The node initializer.
      */
     public static class Initializer {
+        private GResourceSet resourceSet;
 
+        /**
+         * Gets resource set.
+         *
+         * @return the resource set
+         */
+        public GResourceSet getResourceSet() {
+            return resourceSet;
+        }
+
+        /**
+         * Sets resource set.
+         *
+         * @param resourceSet the resource set
+         * @return the resource set
+         */
+        public Initializer setResourceSet(GResourceSet resourceSet) {
+            this.resourceSet = resourceSet;
+            return this;
+        }
     }
+
+    public static final Initializer SOURCE_INITIALIZER = new Initializer();
+    public static final Initializer DRAIN_INITIALIZER = new Initializer();
 
     private Modifier modifier = new Modifier();
     private Initializer initializer = null;

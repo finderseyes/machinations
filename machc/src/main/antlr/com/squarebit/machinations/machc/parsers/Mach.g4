@@ -13,7 +13,7 @@ graphDeclaration
     ;
 
 graphBody
-    :   LEFT_CURLY_BRACKET graphBodyDeclaration* RIGHT_CURLY_BRACKET
+    :   '{' graphBodyDeclaration* '}'
     ;
 
 graphBodyDeclaration
@@ -30,9 +30,7 @@ nodeModifiers
     ;
 
 nodeModifier
-    : 'end'
-    | 'source'
-    | 'drain'
+    : 'transitive'
     | 'interactive'
     ;
 
@@ -49,7 +47,34 @@ nodeId
     ;
 
 nodeInitializer
-    :   LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET
+    : sourceNodeInitializer
+    | drainNodeInitializer
+    | resourceSetNodeInitializer
+    ;
+
+sourceNodeInitializer
+    : 'source'
+    ;
+
+drainNodeInitializer
+    : 'drain'
+    ;
+
+resourceSetNodeInitializer
+    : resourceSetExpression
+    ;
+
+resourceSetExpression
+    : resourceDescriptor
+    | '{' resourceDescriptor (',' resourceDescriptor)* '}'
+    ;
+
+resourceDescriptor
+    : expression ('/' INTEGRAL_NUMBER)? resourceName?
+    ;
+
+resourceName
+    : IDENTIFIER
     ;
 
 eventHookDeclaration
@@ -198,10 +223,6 @@ resourceConnectionId
 
 flowRate
     : expression resourceName?
-    ;
-
-resourceName
-    : '(' IDENTIFIER ')'
     ;
 
 connectionDeclaration
@@ -372,11 +393,15 @@ expressionName
 	;
 
 literal
-	: INTEGER
+	: INTEGRAL_NUMBER
 	| FLOATING_POINT
 	| PERCENTAGE
 	| RANDOM_NUMBER
 	;
+
+INTEGRAL_NUMBER
+    : INTEGER
+    ;
 
 RANDOM_NUMBER
     : RANDOM_DRAW

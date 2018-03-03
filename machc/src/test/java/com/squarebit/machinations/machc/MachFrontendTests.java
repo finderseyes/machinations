@@ -19,13 +19,27 @@ public class MachFrontendTests {
         {
             GNode node = (GNode)graph.findElement("p0");
             assertThat(node.getId()).isEqualTo("p0");
+            assertThat(node.getModifier().isTransitive()).isFalse();
+            assertThat(node.getModifier().isInterative()).isFalse();
             assertThat(node.getInitializer()).isNull();
         }
 
         {
             GNode node = (GNode)graph.findElement("p1");
             assertThat(node.getId()).isEqualTo("p1");
-            assertThat(node.getInitializer()).isNotNull();
+            assertThat(node.getModifier().isTransitive()).isFalse();
+            assertThat(node.getModifier().isInterative()).isFalse();
+
+            assertThat(node.getInitializer()).isEqualTo(GNode.SOURCE_INITIALIZER);
+        }
+
+        {
+            GNode node = (GNode)graph.findElement("p2");
+            assertThat(node.getId()).isEqualTo("p2");
+            assertThat(node.getModifier().isTransitive()).isFalse();
+            assertThat(node.getModifier().isInterative()).isFalse();
+
+            assertThat(node.getInitializer()).isEqualTo(GNode.DRAIN_INITIALIZER);
         }
     }
 }
