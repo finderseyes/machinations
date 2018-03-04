@@ -4,26 +4,47 @@ package com.squarebit.machinations.machc.ast;
  * The resource descriptor.
  */
 public final class GResourceDescriptor {
-    private String name = "";
+    private String resourceName = "";
+    private GExpression size;
     private int capacity = -1;
 
     /**
-     * Gets name.
+     * Gets resource name.
      *
-     * @return the name
+     * @return the resource name
      */
-    public String getName() {
-        return name;
+    public String getResourceName() {
+        return resourceName;
     }
 
     /**
-     * Sets name.
+     * Sets resource name.
      *
-     * @param name the name
-     * @return the name
+     * @param resourceName the resource name
+     * @return the resource name
      */
-    public GResourceDescriptor setName(String name) {
-        this.name = name;
+    public GResourceDescriptor setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+        return this;
+    }
+
+    /**
+     * Gets size.
+     *
+     * @return the size
+     */
+    public GExpression getSize() {
+        return size;
+    }
+
+    /**
+     * Sets size.
+     *
+     * @param size the size
+     * @return the size
+     */
+    public GResourceDescriptor setSize(GExpression size) {
+        this.size = size;
         return this;
     }
 

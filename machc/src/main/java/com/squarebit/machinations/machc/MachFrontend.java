@@ -202,6 +202,13 @@ public class MachFrontend {
         return node;
     }
 
+    /**
+     *
+     * @param nodeTransformationContext
+     * @param nodeInitializerContext
+     * @return
+     * @throws Exception
+     */
     private GNode.Initializer transformNodeInitializer(GNodeTransformationContext nodeTransformationContext,
                                                        MachParser.NodeInitializerContext nodeInitializerContext)
         throws Exception
@@ -239,6 +246,13 @@ public class MachFrontend {
         }
     }
 
+    /**
+     *
+     * @param nodeTransformationContext
+     * @param resourceDescriptorContext
+     * @return
+     * @throws Exception
+     */
     private GResourceDescriptor transformResourceDescriptor(
             GNodeTransformationContext nodeTransformationContext,
             MachParser.ResourceDescriptorContext resourceDescriptorContext)
@@ -258,8 +272,14 @@ public class MachFrontend {
         }
 
         if (decl instanceof MachParser.ResourceNameContext)
-            descriptor.setName(decl.getText());
+            descriptor.setResourceName(decl.getText());
 
         return descriptor;
+    }
+
+    private GExpression transformExpression(Scope scope,
+                                            MachParser.ExpressionContext expressionContext) throws Exception
+    {
+
     }
 }

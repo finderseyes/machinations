@@ -7,6 +7,6 @@ public class GResourceSet {
     private Map<String, GResourceDescriptor> descriptors = new HashMap<>();
 
     public GResourceDescriptor addDescriptor(GResourceDescriptor descriptor) {
-        return descriptors.put(descriptor.getName(), descriptor);
+        return descriptors.put(descriptor.getResourceName(), descriptor);
     }
 }

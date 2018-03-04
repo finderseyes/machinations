@@ -42,7 +42,7 @@ public abstract class GObject {
      * value of:
      * <blockquote>
      * <pre>
-     * getClass().getName() + '@' + Integer.toHexString(hashCode())
+     * getClass().getResourceName() + '@' + Integer.toHexString(hashCode())
      * </pre></blockquote>
      *
      * @return a string representation of the object.
