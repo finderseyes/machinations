@@ -1,0 +1,71 @@
+/**
+    Test aspects:
+        - Function declaration.
+        - Local variable declaration.
+        - Instructions.
+*/
+graph main {
+    node
+        p0 = 100,
+        p1 = { 10 gold, 100 mana },
+        p2,
+        p3;
+
+    connection
+        e_01 = p0 -> p1,
+        e_02 = p0 -> p2,
+        e_10 = p1 -> p0;
+
+    // Normal function.
+    function aaa() {
+    }
+
+    // Function called when started.
+    start function bbb() {
+    }
+
+    // Automatic function called each time step.
+    automatic function ccc() {
+    }
+
+    // Interactive function called upon request.
+    interactive function ddd() {
+        let
+            x = 1,
+            y = p0 + p1,
+            z = p0.gold + p1;
+
+        // Default transfer, using connection flow rate (1 resource unit).
+        transfer via e_01;
+
+        // Transfer with given resource rate (2 resource unit).
+        transfer 2 via e_10;
+
+        // Transfer with given named resource rate. (1 gold resource unit).
+        transfer { 1 gold } via e_01;
+
+        transfer allornone
+            via e_01 and
+            2 via e_02
+        ;
+
+        // Default distribute: distribute all resources of a node, one by one, through given connections.
+        // The distribution is calculated using connection's default flow rate.
+        distribute p0 via e_01 or e_02;
+
+        // Distribute using given probability.
+        distribute p0 via (2) e_01 or (1) e_02;
+
+        // Distribute via implicit connections.
+        distribute p0 via (20%) p0 -> p1 or (10%) p0 -> p2;
+
+        // Distribute with given amount of resources.
+        distribute { 2 gold } p0 via (2) e_01 or (1) e_02;
+
+        randomly do
+            (10%) transfer via e0
+            or (20%) distribute p0 via e_01 or e_02
+            or (50%) { transfer via e0; }
+            ;
+    }
+}

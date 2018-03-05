@@ -1,27 +1,38 @@
+/**
+    Test aspects:
+        - Node declarations, with initializer.
+        - Node modifiers.
+*/
 graph main {
     // node that stores resources.
     node
         p0,                 // Default pool node with zero resources.
-        p1 = source,        // Pool node as source.
-        p2 = drain,         // Pool node as drain.
-        p3 = 1,             // Pool node with 1 default resource.
-        p4 = 2/10,          // Pool node with 2 default resources and capacity of 10.
-        p5 = { 10 gold },   // Pool node with 10 gold resources.
-        p6 = { 10 gold, 1D6 mana}, // Pool node with 10 gold and 100 mana resources.
+        p1 = 1,             // Pool node with 1 default resource.
+        p2 = 2/10,          // Pool node with 2 default resources and capacity of 10.
+        p3 = { 10 gold },   // Pool node with 10 gold resources.
+        p4 = { 10 gold, 1D6 mana}, // Pool node with 10 gold and 100 mana resources.
 
         // Pool node with 10 gold resources of 20 gold capacity and random mana resources from 1 to 6.
-        p7 = { 10/20 gold, 1D6 mana }
+        p5 = { 10/20 gold, 1D6 mana }
         ;
 
     // node that does not store resources. Any resources received will be cleared in the next time step.
     transitive node
         gate;
 
-    // An interactive resource storing node.
-    interactive node
-        interactiveNode;
+    // node that distributes any requested resources but does not accept incoming resources.
+    source node
+        _source;
 
-    // An interactive non-storing node.
-    interactive transitive node
-        interactiveTransitNode;
+    // node that destroys any incoming resources but does not distributes any resources.
+    drain node
+        _drain;
+
+    // node that behaves like both source and drain node at the same time.
+    converter node
+        _converter;
+
+    // node that signifies to stop/destroy the graph if there is at least a resource transferred to it.
+    end node
+        _end;
 }

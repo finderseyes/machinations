@@ -17,8 +17,59 @@ graphBody
     ;
 
 graphBodyDeclaration
-    :   nodeDeclaration
-    |   eventHookDeclaration
+    : nodeDeclaration
+    | connectionDeclaration
+    | memberVariableDeclaration
+    | functionDeclaration
+    ;
+
+memberVariableDeclaration
+    : variableDeclaration ';'
+    ;
+
+variableDeclaration
+    : 'let' variableDeclarationList
+    ;
+
+variableDeclarationList
+    : variableDeclarator (',' variableDeclarator)*
+    ;
+
+variableDeclarator
+    : registerId ('=' variableInitializer)?
+    ;
+
+variableInitializer
+    : expression
+    ;
+
+registerId
+    : IDENTIFIER
+    ;
+
+
+connectionDeclaration
+    : 'connection' connectionDeclarationList ';'
+    ;
+
+connectionDeclarationList
+    : connectionDeclarator (',' connectionDeclarator)*
+    ;
+
+connectionDeclarator
+    : connectionId '=' connectionDescriptor
+    ;
+
+connectionDescriptor
+    : nodeId resourceFlowExpression? TO nodeId
+    ;
+
+connectionId
+    : IDENTIFIER
+    ;
+
+resourceFlowExpression
+    : ('(' flowRate ')')
     ;
 
 nodeDeclaration
@@ -26,12 +77,15 @@ nodeDeclaration
     ;
 
 nodeModifiers
-    : nodeModifier+
+    : nodeModifier
     ;
 
 nodeModifier
     : 'transitive'
-    | 'interactive'
+    | 'source'
+    | 'drain'
+    | 'converter'
+    | 'end'
     ;
 
 nodeDeclaratorList
@@ -77,11 +131,21 @@ resourceName
     : IDENTIFIER
     ;
 
-eventHookDeclaration
-    :   IDENTIFIER LEFT_PARENTHESIS RIGHT_PARENTHESIS eventHookBody
+functionDeclaration
+    : functionModifier? 'function' functionName LEFT_PARENTHESIS RIGHT_PARENTHESIS functionBody
     ;
 
-eventHookBody
+functionModifier
+    : 'start'
+    | 'automatic'
+    | 'interactive'
+    ;
+
+functionName
+    : IDENTIFIER
+    ;
+
+functionBody
     :   LEFT_CURLY_BRACKET blockStatements* RIGHT_CURLY_BRACKET
     ;
 
@@ -156,27 +220,7 @@ blockStatement
     ;
 
 localVariableDeclarationStatement
-    : localVariableDeclaration ';'
-    ;
-
-localVariableDeclaration
-    : 'let' variableDeclaratorList
-    ;
-
-variableDeclaratorList
-	:	variableDeclarator (',' variableDeclarator)*
-	;
-
-variableDeclarator
-	:	variableDeclaratorId ('=' variableInitializer)?
-	;
-
-variableDeclaratorId
-    : IDENTIFIER
-    ;
-
-variableInitializer
-    : expression
+    : variableDeclaration ';'
     ;
 
 probabilisticDeclarationStatement
@@ -201,20 +245,11 @@ transferDeclarationStatement
     ;
 
 transferDeclaration
-    : 'transfer' transferModifierList resourceFlowDeclaration (',' resourceFlowDeclaration)*
+    : 'transfer' transferModifierList resourceFlowDeclarator (',' resourceFlowDeclarator)*
     ;
 
 transferModifierList
-    : transferModifier*
-    ;
-
-transferModifier
-    : 'all'
-    | 'any'
-    ;
-
-resourceFlowDeclaration
-    : flowRate? IDENTIFIER? TO flowRate? IDENTIFIER (':' resourceConnectionId)?
+    : transferMode*
     ;
 
 resourceConnectionId
@@ -223,10 +258,6 @@ resourceConnectionId
 
 flowRate
     : expression resourceName?
-    ;
-
-connectionDeclaration
-    :   IDENTIFIER TO IDENTIFIER
     ;
 
 ifThenStatement
@@ -369,15 +400,20 @@ postDecrementExpression_lf_postfixExpression
 	;
 
 primary
-	:   literal
-	|   '(' expression ')'
-	|   methodInvocation
+	: literal
+	| '(' expression ')'
+	| methodInvocation
+	| propertyAccess
+	;
+
+propertyAccess
+	: IDENTIFIER '.' IDENTIFIER
 	;
 
 methodInvocation
 	: methodName '(' argumentList? ')'
 	| expressionName '.' IDENTIFIER '(' argumentList? ')'
-	| transferDeclaration
+	| graphicalMethodInvocation
 	;
 
 methodName
@@ -392,11 +428,63 @@ expressionName
 	:	IDENTIFIER
 	;
 
+graphicalMethodInvocation
+    : transferInvocation
+    | distributionInvocation
+    | randomInvocation
+    ;
+
+transferInvocation
+    : 'transfer' transferMode? resourceFlowDeclaratorList
+    ;
+
+resourceFlowDeclaratorList
+    : resourceFlowDeclarator ('and' resourceFlowDeclarator)*
+    ;
+
+resourceFlowDeclarator
+    : resourceSetExpression? 'via' flowDirection
+    ;
+
+transferMode
+    : 'allornone'
+    ;
+
+flowDirection
+    : connectionId
+    | connectionDescriptor
+    ;
+
+distributionInvocation
+    : 'distribute' resourceSetExpression? nodeId 'via' distributionList
+    ;
+
+distributionList
+    : distributionDescriptor ('or' distributionDescriptor)*
+    ;
+
+distributionDescriptor
+    : ('(' expression ')')? flowDirection
+    ;
+
+randomInvocation
+    : 'randomly' 'do' randomInvocationCaseList
+    ;
+
+randomInvocationCaseList
+    : randomInvocationCase ('or' randomInvocationCase)*
+    ;
+
+randomInvocationCase
+    : ('(' expression ')')? (statementExpression | block)
+    ;
+
 literal
 	: INTEGRAL_NUMBER
 	| FLOATING_POINT
 	| PERCENTAGE
 	| RANDOM_INTEGRAL_NUMBER
+	| BOOLEAN_VALUE
 	;
 
 INTEGRAL_NUMBER
@@ -408,8 +496,13 @@ RANDOM_INTEGRAL_NUMBER
     | RANDOM_DICE
     ;
 
+BOOLEAN_VALUE
+    : 'true'
+    | 'false'
+    ;
+
 expressionStatement
-	:	statementExpression
+	:	statementExpression ';'
 	;
 
 statementExpression
@@ -436,6 +529,10 @@ FLOATING_POINT: [0-9]*'.'[0-9]+;
 RANDOM_DRAW: 'draw'[0-9]+;
 RANDOM_DICE: [0-9]*'D'[0-9]*;
 PERCENTAGE: [0-9]+'%';
+
+// Boolean
+TRUE: 'true';
+FALSE: 'false';
 
 // Math operator
 PLUS: '+';

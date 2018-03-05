@@ -280,6 +280,6 @@ public class MachFrontend {
     private GExpression transformExpression(Scope scope,
                                             MachParser.ExpressionContext expressionContext) throws Exception
     {
-
+        return null;
     }
 }

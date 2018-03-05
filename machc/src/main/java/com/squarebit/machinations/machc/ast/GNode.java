@@ -11,6 +11,8 @@ public class GNode extends GGraphElement {
         POOL,
         SOURCE,
         DRAIN,
+        TRASITIVE,
+        CONVERTER,
         END
     }
 

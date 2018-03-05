@@ -1,0 +1,19 @@
+/**
+    Test aspects:
+        - Connections.
+*/
+graph main {
+    source node
+        p0;
+
+    node
+        p1,
+        p2 = 2;
+
+    connection
+        e_01_0 = p0 -> p1,
+        e_01_1 = p0 (1 gold) -> p1,
+        e_01_2 = p0 (p2 * 2) -> p1,
+        e_01_3 = p0 (2D10) -> p1
+        ;
+}
