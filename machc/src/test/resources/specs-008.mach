@@ -1,0 +1,27 @@
+/**
+    Test aspects:
+        - Delay instructions.
+        - Interval instruction.
+*/
+graph main {
+    node
+        p0 = 100,
+        p1 = { 10 gold, 100 mana },
+        p2,
+        p3;
+
+    connection
+        e_01 = p0 -> p1,
+        e_02 = p0 -> p2,
+        e_10 = p1 -> p0;
+    // Interactive function called upon request.
+    function aaa() {
+        // Default delay, for 1 step.
+        delay then transfer via e_01;
+
+        // Delay with given steps.
+        delay 2 steps then transfer via e_01;
+
+        for every 2 steps do transfer via e_01;
+    }
+}

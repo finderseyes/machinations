@@ -1,8 +1,6 @@
 /**
     Test aspects:
-        - Function declaration.
-        - Local variable declaration.
-        - Instructions.
+        - Random instructions.
 */
 graph main {
     node
@@ -35,7 +33,11 @@ graph main {
             y = p0 + p1,
             z = p0.gold + p1;
 
-        // Default transfer, using connection flow rate (1 resource unit).
-        transfer via e_01;
+        // Random execution.
+        randomly do
+            (10%) transfer via e0
+            or (20%) distribute p0 via e_01 or e_02
+            or (50%) { transfer via e0; }
+            ;
     }
 }
