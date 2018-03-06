@@ -3,7 +3,7 @@
         - distribute instruction.
 */
 graph main {
-    node
+    pool
         p0 = 100,
         p1 = { 10 gold, 100 mana },
         p2,
@@ -23,19 +23,15 @@ graph main {
 
         // Default distribute: distribute all resources of a node, one by one, through given connections.
         // The distribution is calculated using connection's default flow rate.
-        distribute p0 via e_01 or e_02;
+        distribute p0 (e_01, e_02);
 
         // Distribute using given probability.
-        distribute p0 via (2) e_01 or (1) e_02;
+        distribute p0 (2:e_01, 1: e_02);
 
         // Distribute via implicit connections.
-        distribute p0 via
-            (20%) p0 -> p1
-            or (10%) p0 -> p2;
+        distribute p0 (20%: p0 -> p1, 10%: p0 -> p2);
 
         // Distribute with given amount of resources.
-        distribute { 2 gold } p0 via
-            (2) e_01
-            or (1) e_02;
+        distribute { 2 gold } p0 (2:e_01, 1:e_02);
     }
 }

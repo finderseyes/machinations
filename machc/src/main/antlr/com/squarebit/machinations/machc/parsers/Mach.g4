@@ -545,15 +545,28 @@ flowDirection
     ;
 
 distributionInvocation
-    : 'distribute' bracketSetDescriptor? nodeId 'via' distributionList
+    : 'distribute' distributionAmount? nodeId '(' distributionList ')'
+    ;
+
+distributionAmount
+    : setDescriptor
     ;
 
 distributionList
-    : distributionDescriptor ('or' distributionDescriptor)*
+    : distributionDescriptor (',' distributionDescriptor)*
     ;
 
 distributionDescriptor
-    : ('(' expression ')')? flowDirection
+    : distributeViaNamedConnection
+    | distributeViaImplicitConnection
+    ;
+
+distributeViaNamedConnection
+    : (expression ':')? connectionId
+    ;
+
+distributeViaImplicitConnection
+    : (expression ':')? flowDirection
     ;
 
 randomInvocation
