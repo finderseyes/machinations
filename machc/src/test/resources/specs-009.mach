@@ -1,0 +1,22 @@
+/**
+    Test aspects:
+        - Set operations.
+        - Element queries.
+*/
+graph main {
+    // Interactive function called upon request.
+    function aaa() {
+        let a = { 10, 20 gold};
+
+        // evaluate to set.
+        let a_gold_subset = select x in a where (x is gold);
+
+        // evaluate to top 1
+        let a_gold_subset_2 = select top 1 x in a_gold_subset where (x is gold);
+
+        // evaluate to a gold instance
+        let a_gold_coin = any of a_gold_subset;
+
+
+    }
+}

@@ -36,6 +36,6 @@ graph main {
             z = p0.gold + p1;
 
         // Default transfer, using connection flow rate (1 resource unit).
-        transfer via e_01;
+        :transfer (e_01);
     }
 }

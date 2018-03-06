@@ -1,0 +1,50 @@
+/**
+Classical paper-rock-scissor.
+- Number of players: 2.
+*/
+
+@player("player 1")
+graph player {
+    token selection = ("rock", "paper", "scissor");
+    node rock, paper, scissor;
+    let has_played = false;
+
+    interactive (!has_played) function play() {
+        if (:interact(selection) == "rock")
+            :transfer(-> rock);
+        else if (:interact(selection) == "paper")
+            transfer(->paper);
+        else
+            :transfer(->scissor);
+
+        has_played = true;
+    }
+
+    function reset() {
+        has_played = false;
+        :transfer(rock->, paper->, scissor->);
+    }
+}
+
+default graph paper_rock_scissor {
+    player player_one, player_two;
+    end _player_one_wins, _player_two_wins, _draw;
+
+    automatic function game_rule() {
+        if (player_one.has_played && player_two.has_played) {
+            if (check_win(player_one, player_two))
+                :transfer(->_player_one_wins);
+            else if (check_win(player_two, player_one))
+                :transfer(->_player_one_wins);
+            else
+                :transfer(->_draw);
+        }
+    }
+
+    function check_win(player_one, player_two) {
+        return (
+            player_one.rock && player_two.scissor ||
+            player_one.scissor && player_two.paper ||
+            player_one.paper && player_two.rock);
+    }
+}

@@ -493,7 +493,7 @@ graphicalMethodInvocation
     ;
 
 transferInvocation
-    : 'transfer' transferMode? '(' transferDescriptorList ')'
+    : ':transfer' transferMode? '(' transferDescriptorList ')'
     ;
 
 transferDescriptorList
@@ -523,7 +523,7 @@ flowDirection
     ;
 
 distributionInvocation
-    : 'distribute' distributionAmount? nodeId '(' distributionList ')'
+    : ':distribute' distributionAmount? nodeId '(' distributionList ')'
     ;
 
 distributionAmount
@@ -548,7 +548,7 @@ distributeViaImplicitConnection
     ;
 
 randomInvocation
-    : 'randomly' 'do' '{' randomInvocationCaseList '}'
+    : ':randomly' 'do' '{' randomInvocationCaseList '}'
     ;
 
 randomInvocationCaseList
@@ -565,7 +565,7 @@ randomInvocationCaseProbability
     ;
 
 intervalInvocation
-    : 'every' intervalSteps 'steps' 'do' (statementExpression | block)
+    : ':every' intervalSteps 'steps' 'do' (statementExpression | block)
     ;
 
 intervalSteps
@@ -573,7 +573,7 @@ intervalSteps
     ;
 
 delayInvocation
-    : 'delay' delaySteps 'steps' 'then' (statementExpression | block)
+    : ':delay' delaySteps 'steps' 'then' (statementExpression | block)
     ;
 
 delaySteps

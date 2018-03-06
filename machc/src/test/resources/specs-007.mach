@@ -11,11 +11,11 @@ graph main {
             z = p0.gold + p1;
 
         // Random execution.
-        randomly do {
-            by 10%: transfer (e0),
-            by 20%: distribute p0 (e_01, e_02),
-            by 50%: { transfer (e0); },
-            else: transfer(x)
+        :randomly do {
+            by 10%: :transfer (e0),
+            by 20%: :distribute p0 (e_01, e_02),
+            by 50%: { :transfer (e0); },
+            else: :transfer(x)
         };
     }
 }
