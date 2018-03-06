@@ -2,17 +2,15 @@
 Classical paper-rock-scissor.
 - Number of players: 2.
 */
-
-@player("player 1")
 graph player {
     token selection = ("rock", "paper", "scissor");
-    node rock, paper, scissor;
+    pool rock, paper, scissor;
     let has_played = false;
 
     interactive (!has_played) function play() {
-        if (:interact(selection) == "rock")
+        if (selection == "rock")
             :transfer(-> rock);
-        else if (:interact(selection) == "paper")
+        else if (selection == "paper")
             transfer(->paper);
         else
             :transfer(->scissor);
@@ -27,7 +25,12 @@ graph player {
 }
 
 default graph paper_rock_scissor {
-    player player_one, player_two;
+    @{owner = "player 1"}
+    player player_one
+
+    @{owner = "player 2"}
+    player player_two;
+
     end _player_one_wins, _player_two_wins, _draw;
 
     automatic function game_rule() {

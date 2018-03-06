@@ -201,9 +201,25 @@ functionDeclaration
     ;
 
 functionModifier
+    : startFunctionModifier
+    | automaticFunctionModifier
+    | interactiveFunctionModifier
+    ;
+
+startFunctionModifier
     : 'start'
-    | 'automatic'
-    | 'interactive'
+    ;
+
+automaticFunctionModifier
+    : 'automatic'
+    ;
+
+interactiveFunctionModifier
+    : 'interactive' ('(' interactionCondition ')')?
+    ;
+
+interactionCondition
+    : expression
     ;
 
 functionName
