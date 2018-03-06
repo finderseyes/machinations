@@ -231,30 +231,6 @@ emptyStatement
     : ';'
     ;
 
-intervalDeclarationStatement
-    : intervalDeclaration
-    ;
-
-intervalDeclaration
-    : 'for' 'every' intervalSteps 'steps' ':' statement
-    ;
-
-intervalSteps
-    : expression
-    ;
-
-delayDeclarationStatement
-    : delayDeclaration
-    ;
-
-delayDeclaration
-    : 'delay' 'for' delaySteps 'steps' ':' statement
-    ;
-
-delaySteps
-    : expression
-    ;
-
 activationDeclarationStatement
     : activationDeclaration ';'
     ;
@@ -512,6 +488,8 @@ graphicalMethodInvocation
     : transferInvocation
     | distributionInvocation
     | randomInvocation
+    | delayInvocation
+    | intervalInvocation
     ;
 
 transferInvocation
@@ -570,15 +548,36 @@ distributeViaImplicitConnection
     ;
 
 randomInvocation
-    : 'randomly' 'do' randomInvocationCaseList
+    : 'randomly' 'do' '{' randomInvocationCaseList '}'
     ;
 
 randomInvocationCaseList
-    : randomInvocationCase ('or' randomInvocationCase)*
+    : randomInvocationCase (',' randomInvocationCase)*
     ;
 
 randomInvocationCase
-    : ('(' expression ')')? (statementExpression | block)
+    : randomInvocationCaseProbability ':' (statementExpression | block)
+    ;
+
+randomInvocationCaseProbability
+    : 'by' expression
+    | 'else'
+    ;
+
+intervalInvocation
+    : 'every' intervalSteps 'steps' 'do' (statementExpression | block)
+    ;
+
+intervalSteps
+    : expression
+    ;
+
+delayInvocation
+    : 'delay' delaySteps 'steps' 'then' (statementExpression | block)
+    ;
+
+delaySteps
+    : expression
     ;
 
 literal

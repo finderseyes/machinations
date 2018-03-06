@@ -4,7 +4,7 @@
         - Interval instruction.
 */
 graph main {
-    node
+    pool
         p0 = 100,
         p1 = { 10 gold, 100 mana },
         p2,
@@ -17,11 +17,17 @@ graph main {
     // Interactive function called upon request.
     function aaa() {
         // Default delay, for 1 step.
-        delay then transfer via e_01;
+        delay 1 steps then {
+            transfer (e_01);
+        };
 
         // Delay with given steps.
-        delay 2 steps then transfer via e_01;
+        delay 2 steps then {
+            transfer (e_01);
+        }
 
-        for every 2 steps do transfer via e_01;
+        every 2 steps do {
+            transfer (e_01);
+        }
     }
 }
