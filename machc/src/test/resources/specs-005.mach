@@ -3,7 +3,7 @@
         - Transfer instruction.
 */
 graph main {
-    node
+    pool
         p0 = 100,
         p1 = { 10 gold, 100 mana },
         p2,
@@ -22,17 +22,18 @@ graph main {
             z = p0.gold + p1;
 
         // Default transfer, using connection flow rate (1 resource unit).
-        transfer via e_01;
+        transfer(e_01);
 
         // Transfer with given resource rate (2 resource unit).
-        transfer 2 via e_10;
+        transfer(2:e_10);
 
         // Transfer with given named resource rate. (1 gold resource unit).
-        transfer { 1 gold } via e_01;
+        transfer({ 1 gold }: e_01);
 
-        transfer allornone
-            via e_01 and
-            2 via e_02
-        ;
+        // Transfer via implicit connection (declared in-place).
+        transfer(p0 -> p3, -> p3, p3 -> );
+
+        // allornon modifier
+        transfer allornone (e_01, 2: e_02);
     }
 }

@@ -310,7 +310,7 @@ transferDeclarationStatement
     ;
 
 transferDeclaration
-    : 'transfer' transferModifierList resourceFlowDeclarator (',' resourceFlowDeclarator)*
+    : 'transfer' transferModifierList transferDescriptor (',' transferDescriptor)*
     ;
 
 transferModifierList
@@ -515,15 +515,24 @@ graphicalMethodInvocation
     ;
 
 transferInvocation
-    : 'transfer' transferMode? resourceFlowDeclaratorList
+    : 'transfer' transferMode? '(' transferDescriptorList ')'
     ;
 
-resourceFlowDeclaratorList
-    : resourceFlowDeclarator ('and' resourceFlowDeclarator)*
+transferDescriptorList
+    : transferDescriptor (',' transferDescriptor)*
     ;
 
-resourceFlowDeclarator
-    : bracketSetDescriptor? 'via' flowDirection
+transferDescriptor
+    : transferViaNamedConnection
+    | transferViaImplicitConnection
+    ;
+
+transferViaNamedConnection
+    : flowDescriptor? connectionId
+    ;
+
+transferViaImplicitConnection
+    : connectionDescriptor
     ;
 
 transferMode
