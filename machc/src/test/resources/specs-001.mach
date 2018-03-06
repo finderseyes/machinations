@@ -1,22 +1,28 @@
 /**
     Test aspects:
+        - Graph declaration.
         - Node declarations, with initializer.
         - Node modifiers.
 */
 graph unit {
+    pool health = 10;
+
     let
-        health = 10,
         damage = 10,
         is_air_unit = false
         ;
 }
 
 graph marine extends unit {
+    pool health = 20;
+
     let
-        health = 30,
-        damage = 5,
+        damage = (health / 2),
         is_air_unit = false
         ;
+
+    drain _drain;
+    end _die;
 }
 
 graph battle_field {

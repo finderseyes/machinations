@@ -3,17 +3,18 @@
         - Connections.
 */
 graph main {
-    source node
-        p0;
+    source p0;
 
-    node
+    pool
         p1,
-        p2 = 2;
+        p2 = {2};
 
     connection
         e_01_0 = p0 -> p1,
-        e_01_1 = p0 (1 gold) -> p1,
-        e_01_2 = p0 (p2 * 2) -> p1,
-        e_01_3 = p0 (2D10) -> p1
+        e_01_1 = {1 gold}: p0 -> p1,
+        e_01_2 = 2 * p2: p0 -> p1,
+        e_01_3 = 2D10: p0 -> p1,
+        e_01_4 = 2 gold: p0 -> ,    // to default drain
+        e_01_5 = 5 soldier: -> p1    // from default source
         ;
 }

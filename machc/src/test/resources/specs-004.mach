@@ -5,7 +5,7 @@
 
 /* solder resource */
 graph soldier {
-    node
+    pool
         health = 10,
         weapon = 1
         ;
@@ -17,5 +17,5 @@ graph soldier {
 }
 
 graph main {
-    node barrack = 10 soldier;
+    pool barrack = 10 soldier;
 }

@@ -9,7 +9,7 @@ unitStructureDeclaration
     ;
 
 graphDeclaration
-    : graphModifier? 'graph' graphTypeName baseGraphDescriptor? graphBody
+    : graphModifier? 'graph' graphType baseGraphDescriptor? graphBody
     ;
 
 graphModifier
@@ -28,7 +28,7 @@ graphBodyDeclaration
     ;
 
 baseGraphDescriptor
-    : 'extends' graphTypeName
+    : 'extends' graphType
     ;
 
 memberVariableDeclaration
@@ -61,7 +61,7 @@ connectionDeclaration
     ;
 
 connectionDeclarationList
-    : connectionDeclarator (',' connectionDeclarator)*
+    : connectionDeclarator (',' connectionDeclarator?)*
     ;
 
 connectionDeclarator
@@ -69,15 +69,33 @@ connectionDeclarator
     ;
 
 connectionDescriptor
-    : nodeId resourceFlowExpression? TO nodeId
+    : flowDescriptor? directionDescriptor
     ;
 
 connectionId
     : IDENTIFIER
     ;
 
-resourceFlowExpression
-    : ('(' flowRate ')')
+flowDescriptor
+    : setDescriptor ':'
+    ;
+
+directionDescriptor
+    : fromDefaultSourceDirectionDescriptor
+    | toDefaultDrainDirectionDescriptor
+    | normalDirectionDescriptor
+    ;
+
+fromDefaultSourceDirectionDescriptor
+    : TO nodeId
+    ;
+
+toDefaultDrainDirectionDescriptor
+    : nodeId TO
+    ;
+
+normalDirectionDescriptor
+    : nodeId TO nodeId
     ;
 
 nodeDeclaration
@@ -89,7 +107,7 @@ builtinNodeDeclaration
     ;
 
 graphNodeDeclaration
-    : nodeModifier? graphTypeName nodeDeclaratorList
+    : nodeModifier? graphType nodeDeclaratorList
     ;
 
 nodeModifiers
@@ -114,7 +132,7 @@ oneDim
     ;
 
 nodeType
-    : builtinNodeTypeName | graphTypeName
+    : builtinNodeTypeName | graphType
     ;
 
 builtinNodeTypeName
@@ -126,12 +144,12 @@ builtinNodeTypeName
     | 'end'
     ;
 
-graphTypeName
+graphType
     : IDENTIFIER
     ;
 
 nodeDeclaratorList
-    : nodeDeclarator (',' nodeDeclarator)*
+    : nodeDeclarator (',' nodeDeclarator?)*
     ;
 
 nodeDeclarator
@@ -143,9 +161,7 @@ nodeId
     ;
 
 nodeInitializer
-    : sourceNodeInitializer
-    | drainNodeInitializer
-    | resourceSetNodeInitializer
+    : resourceSetNodeInitializer
     ;
 
 sourceNodeInitializer
@@ -157,18 +173,26 @@ drainNodeInitializer
     ;
 
 resourceSetNodeInitializer
-    : setExpression
+    : setDescriptor
     ;
 
-setExpression
+setDescriptor
+    : bracketSetDescriptor | implicitSetDescriptor
+    ;
+
+bracketSetDescriptor
     : '{' multipleElementDescriptor (',' multipleElementDescriptor)* '}'
     ;
 
-multipleElementDescriptor
-    : expression ('/' integralLiteral)? setElementTypeName?
+implicitSetDescriptor
+    : expression ('/' integralLiteral)? setElementType?
     ;
 
-setElementTypeName
+multipleElementDescriptor
+    : expression ('/' integralLiteral)? setElementType?
+    ;
+
+setElementType
     : IDENTIFIER
     ;
 
@@ -298,7 +322,7 @@ resourceConnectionId
     ;
 
 flowRate
-    : expression setElementTypeName?
+    : expression setElementType?
     ;
 
 ifThenStatement
@@ -445,7 +469,22 @@ primary
 	| '(' expression ')'
 	| methodInvocation
 	| propertyAccess
+	| arrayAccess
+	| bracketSetDescriptor
+	| setOperations
 	;
+
+setOperations
+    : setCardinality
+    ;
+
+setCardinality
+    : '|' expression '|'
+    ;
+
+arrayAccess
+    : expressionName ('[' expression ']')+
+    ;
 
 propertyAccess
 	: IDENTIFIER '.' IDENTIFIER
@@ -466,7 +505,7 @@ argumentList
 	;
 
 expressionName
-	:	IDENTIFIER
+	:	IDENTIFIER ('.' IDENTIFIER)*
 	;
 
 graphicalMethodInvocation
@@ -484,7 +523,7 @@ resourceFlowDeclaratorList
     ;
 
 resourceFlowDeclarator
-    : setExpression? 'via' flowDirection
+    : bracketSetDescriptor? 'via' flowDirection
     ;
 
 transferMode
@@ -497,7 +536,7 @@ flowDirection
     ;
 
 distributionInvocation
-    : 'distribute' setExpression? nodeId 'via' distributionList
+    : 'distribute' bracketSetDescriptor? nodeId 'via' distributionList
     ;
 
 distributionList
