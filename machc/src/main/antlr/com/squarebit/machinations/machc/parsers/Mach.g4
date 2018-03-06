@@ -1,15 +1,19 @@
 grammar Mach;
 
 unitDeclaration
-    : structureDeclaration*
+    : unitStructureDeclaration*
     ;
 
-structureDeclaration
+unitStructureDeclaration
     : graphDeclaration
     ;
 
 graphDeclaration
-    :   'graph' IDENTIFIER graphBody
+    : graphModifier? 'graph' graphTypeName baseGraphDescriptor? graphBody
+    ;
+
+graphModifier
+    : 'default'
     ;
 
 graphBody
@@ -21,6 +25,10 @@ graphBodyDeclaration
     | connectionDeclaration
     | memberVariableDeclaration
     | functionDeclaration
+    ;
+
+baseGraphDescriptor
+    : 'extends' graphTypeName
     ;
 
 memberVariableDeclaration
@@ -73,7 +81,15 @@ resourceFlowExpression
     ;
 
 nodeDeclaration
-    : nodeModifiers? 'node' nodeDeclaratorList ';'
+    : nodeModifier? (nodeType | nodeArrayType) nodeDeclaratorList ';'
+    ;
+
+builtinNodeDeclaration
+    : nodeModifier? builtinNodeTypeName nodeDeclaratorList
+    ;
+
+graphNodeDeclaration
+    : nodeModifier? graphTypeName nodeDeclaratorList
     ;
 
 nodeModifiers
@@ -81,11 +97,37 @@ nodeModifiers
     ;
 
 nodeModifier
-    : 'transitive'
+    : 'input'
+    | 'output'
+    ;
+
+nodeArrayType
+    : nodeType dims
+    ;
+
+dims
+    : oneDim+
+    ;
+
+oneDim
+    : '[' integralLiteral ']'
+    ;
+
+nodeType
+    : builtinNodeTypeName | graphTypeName
+    ;
+
+builtinNodeTypeName
+    : 'pool'
+    | 'transitive'
     | 'source'
     | 'drain'
     | 'converter'
     | 'end'
+    ;
+
+graphTypeName
+    : IDENTIFIER
     ;
 
 nodeDeclaratorList
@@ -115,19 +157,18 @@ drainNodeInitializer
     ;
 
 resourceSetNodeInitializer
-    : resourceSetExpression
+    : setExpression
     ;
 
-resourceSetExpression
-    : resourceDescriptor
-    | '{' resourceDescriptor (',' resourceDescriptor)* '}'
+setExpression
+    : '{' multipleElementDescriptor (',' multipleElementDescriptor)* '}'
     ;
 
-resourceDescriptor
-    : expression ('/' INTEGRAL_NUMBER)? resourceName?
+multipleElementDescriptor
+    : expression ('/' integralLiteral)? setElementTypeName?
     ;
 
-resourceName
+setElementTypeName
     : IDENTIFIER
     ;
 
@@ -257,7 +298,7 @@ resourceConnectionId
     ;
 
 flowRate
-    : expression resourceName?
+    : expression setElementTypeName?
     ;
 
 ifThenStatement
@@ -443,7 +484,7 @@ resourceFlowDeclaratorList
     ;
 
 resourceFlowDeclarator
-    : resourceSetExpression? 'via' flowDirection
+    : setExpression? 'via' flowDirection
     ;
 
 transferMode
@@ -456,7 +497,7 @@ flowDirection
     ;
 
 distributionInvocation
-    : 'distribute' resourceSetExpression? nodeId 'via' distributionList
+    : 'distribute' setExpression? nodeId 'via' distributionList
     ;
 
 distributionList
@@ -480,23 +521,27 @@ randomInvocationCase
     ;
 
 literal
-	: INTEGRAL_NUMBER
-	| FLOATING_POINT
-	| PERCENTAGE
-	| RANDOM_INTEGRAL_NUMBER
-	| BOOLEAN_VALUE
+	: integralLiteral
+	| floatingPointLiteral
+	| randomIntegralLiteral
+	| booleanLiteral
 	;
 
-INTEGRAL_NUMBER
+integralLiteral
     : INTEGER
     ;
 
-RANDOM_INTEGRAL_NUMBER
+randomIntegralLiteral
     : RANDOM_DRAW
     | RANDOM_DICE
     ;
 
-BOOLEAN_VALUE
+floatingPointLiteral
+    : FLOATING_POINT
+    | PERCENTAGE
+    ;
+
+booleanLiteral
     : 'true'
     | 'false'
     ;

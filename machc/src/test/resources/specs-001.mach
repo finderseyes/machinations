@@ -3,12 +3,39 @@
         - Node declarations, with initializer.
         - Node modifiers.
 */
-graph main {
+graph unit {
+    let
+        health = 10,
+        damage = 10,
+        is_air_unit = false
+        ;
+}
+
+graph marine extends unit {
+    let
+        health = 30,
+        damage = 5,
+        is_air_unit = false
+        ;
+}
+
+graph battle_field {
+    // Default input to the graph.
+    input drain _input;
+
+    // Default ouput from the graph.
+    output source _output;
+
+    // Array of pools.
+    pool[12][12] _cells;
+}
+
+default graph main {
     // node that stores resources.
-    node
+    pool
         p0,                 // Default pool node with zero resources.
-        p1 = 1,             // Pool node with 1 default resource.
-        p2 = 2/10,          // Pool node with 2 default resources and capacity of 10.
+        p1 = {1} ,             // Pool node with 1 default resource.
+        p2 = {2/10},          // Pool node with 2 default resources and capacity of 10.
         p3 = { 10 gold },   // Pool node with 10 gold resources.
         p4 = { 10 gold, 1D6 mana}, // Pool node with 10 gold and 100 mana resources.
 
@@ -17,22 +44,24 @@ graph main {
         ;
 
     // node that does not store resources. Any resources received will be cleared in the next time step.
-    transitive node
+    transitive
         gate;
 
     // node that distributes any requested resources but does not accept incoming resources.
-    source node
+    source
         _source;
 
     // node that destroys any incoming resources but does not distributes any resources.
-    drain node
+    drain
         _drain;
 
     // node that behaves like both source and drain node at the same time.
-    converter node
+    converter
         _converter;
 
     // node that signifies to stop/destroy the graph if there is at least a resource transferred to it.
-    end node
-        _end;
+    end _end;
+
+    // graph node, which instantiates another graph as child of this graph.
+    battle_field battle_field;
 }
