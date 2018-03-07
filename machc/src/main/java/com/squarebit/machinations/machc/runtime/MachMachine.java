@@ -3,6 +3,7 @@ package com.squarebit.machinations.machc.runtime;
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.ast.GProgram;
 import com.squarebit.machinations.machc.ast.GUnit;
+import com.squarebit.machinations.machc.runtime.instructions.Instruction;
 
 public final class MachMachine {
     private final GProgram program;
@@ -40,11 +41,23 @@ public final class MachMachine {
      * Compiles current program.
      */
     private void compile() {
-        for (GUnit unit: program.getUnits()) {
-            for (GGraph graph: unit.getGraphs()) {
+        for (GUnit unit : program.getUnits()) {
+            for (GGraph graph : unit.getGraphs()) {
                 TType<TRuntimeGraph> type = new TType<>(graph.getId(), BuiltinTypes.GRAPH_TYPE, TRuntimeGraph.class);
                 typeRegistry.registerType(type);
             }
         }
+    }
+
+    public void pushScope(Scope scope) {
+
+    }
+
+    public Scope popScope() {
+        return null;
+    }
+
+    public void executeInstruction(Instruction instruction) {
+
     }
 }
