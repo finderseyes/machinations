@@ -9,12 +9,39 @@ import java.util.Map;
 final class TypeRegistry {
     private Map<String, TType> typeByName = new HashMap<>();
 
-    private void registerBuiltinTypes() {
-        registerBuiltinType(BuiltinTypes.OBJECT_TYPE, TObject.class);
-        registerBuiltinType(BuiltinTypes.GRAPH_TYPE, TGraph.class);
+    /**
+     * Instantiates a new type registry.
+     */
+    public TypeRegistry() {
+        this.registerBuiltinTypes();
     }
 
-    private <T extends TObject> void registerBuiltinType(TType type, Class<T> implementation) {
+    /**
+     * Gets a type using its name.
+     *
+     * @param typeName the type name
+     * @return the type
+     */
+    public TType getType(String typeName) {
+        return typeByName.get(typeName);
+    }
 
+
+    /**
+     * Register built-in types.
+     */
+    private void registerBuiltinTypes() {
+        registerType(BuiltinTypes.OBJECT_TYPE);
+        registerType(BuiltinTypes.GRAPH_TYPE);
+    }
+
+    /**
+     * Register a built-in type with given implementing class.
+     *
+     * @param type the type
+     * @param <T> implementing class type
+     */
+    public <T extends TObject> void registerType(TType<T> type) {
+        typeByName.put(type.getName(), type);
     }
 }

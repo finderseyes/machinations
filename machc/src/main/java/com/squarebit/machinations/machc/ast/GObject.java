@@ -1,10 +1,12 @@
 package com.squarebit.machinations.machc.ast;
 
+import java.util.UUID;
+
 /**
  * Base class of an object.
  */
 public abstract class GObject {
-    private String id;
+    private String id = UUID.randomUUID().toString();
 
     /**
      * Gets id.

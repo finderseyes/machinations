@@ -1,5 +1,6 @@
 package com.squarebit.machinations.machc.ast;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,5 +28,14 @@ public final class GUnit extends GObject {
      */
     public GGraph addGraph(GGraph graph) {
         return graphs.put(graph.getId(), graph);
+    }
+
+    /**
+     * Gets graphs declared in this unit.
+     *
+     * @return the graphs declared in this unit.
+     */
+    public Collection<GGraph> getGraphs() {
+        return graphs.values();
     }
 }
