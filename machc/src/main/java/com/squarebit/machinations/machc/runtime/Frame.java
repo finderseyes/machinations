@@ -77,6 +77,33 @@ public final class Frame {
     }
 
     /**
+     * Gets parent.
+     *
+     * @return the parent
+     */
+    public Frame getParent() {
+        return parent;
+    }
+
+    /**
+     * Get variables variable [ ].
+     *
+     * @return the variable [ ]
+     */
+    public Variable[] getVariables() {
+        return variables;
+    }
+
+    /**
+     * Get instructions instruction [ ].
+     *
+     * @return the instruction [ ]
+     */
+    public Instruction[] getInstructions() {
+        return instructions;
+    }
+
+    /**
      * Activates this frame and returns the frame activation object.
      *
      * @return the frame activation

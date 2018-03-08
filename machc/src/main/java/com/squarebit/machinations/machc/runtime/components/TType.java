@@ -124,7 +124,7 @@ public final class TType<T extends TObject> {
      *
      * @return the implementation class.
      */
-    protected Class<T> getImplementation() {
+    public Class<T> getImplementation() {
         return implementation;
     }
 
