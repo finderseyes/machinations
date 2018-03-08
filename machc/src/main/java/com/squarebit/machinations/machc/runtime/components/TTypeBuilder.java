@@ -1,4 +1,6 @@
-package com.squarebit.machinations.machc.runtime;
+package com.squarebit.machinations.machc.runtime.components;
+
+import com.squarebit.machinations.machc.runtime.MachMachine;
 
 import java.util.ArrayList;
 import java.util.List;

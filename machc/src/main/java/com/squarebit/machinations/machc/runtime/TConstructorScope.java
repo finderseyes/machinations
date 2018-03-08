@@ -1,5 +1,7 @@
 package com.squarebit.machinations.machc.runtime;
 
+import com.squarebit.machinations.machc.runtime.components.TObject;
+
 public class TConstructorScope extends Scope {
     TObject thisObject;
 

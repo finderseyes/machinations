@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc.runtime;
+package com.squarebit.machinations.machc.runtime.components;
 
 /**
  * Description of a type in the interpreter.
@@ -47,14 +47,14 @@ public final class TType<T extends TObject> {
      * @param baseType       the base type
      * @param implementation the implementation
      */
-    protected TType(final String name,
+    public TType(final String name,
                     final TType baseType,
                     final Class<T> implementation)
     {
         this(name, baseType, implementation, false, new TField[0], new TMethod[0]);
     }
 
-    protected TType(final TType baseType, final Class<T> implementation) {
+    public TType(final TType baseType, final Class<T> implementation) {
         this(implementation.getSimpleName(), baseType, implementation);
     }
 
@@ -65,7 +65,7 @@ public final class TType<T extends TObject> {
      * @param implementation the implementation
      * @param valueType      the value type
      */
-    protected TType(final TType baseType, final Class<T> implementation, boolean valueType) {
+    public TType(final TType baseType, final Class<T> implementation, boolean valueType) {
         this(implementation.getSimpleName(), baseType, implementation, valueType, new TField[0], new TMethod[0]);
     }
 

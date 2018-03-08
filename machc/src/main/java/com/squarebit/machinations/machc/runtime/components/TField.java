@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc.runtime;
+package com.squarebit.machinations.machc.runtime.components;
 
 /**
  * A field of a type.

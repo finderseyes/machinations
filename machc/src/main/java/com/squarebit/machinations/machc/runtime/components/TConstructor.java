@@ -1,11 +1,15 @@
-package com.squarebit.machinations.machc.runtime;
+package com.squarebit.machinations.machc.runtime.components;
 
-public final class TConstructor<T extends TObject> {
+import com.squarebit.machinations.machc.runtime.TConstructorScope;
+
+public final class TConstructor<T extends TObject> extends TExecutable {
     TType<T> declaringType;
 
     public T newInstance() throws InstantiationException, IllegalAccessException {
         // 1. create a new "raw" instance.
         T instance = declaringType.newInstance();
+
+
 
         TConstructorScope scope = new TConstructorScope().setThisObject(instance);
 

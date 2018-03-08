@@ -3,11 +3,15 @@ package com.squarebit.machinations.machc.runtime;
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.ast.GProgram;
 import com.squarebit.machinations.machc.ast.GUnit;
+import com.squarebit.machinations.machc.runtime.components.TType;
 import com.squarebit.machinations.machc.runtime.instructions.Instruction;
+
+import java.util.Stack;
 
 public final class MachMachine {
     private final GProgram program;
     private final TypeRegistry typeRegistry = new TypeRegistry();
+    private final Stack<FrameActivation> executionContext = new Stack<>();
 
     /**
      * Creates a new machine instance.
@@ -43,8 +47,8 @@ public final class MachMachine {
     private void compile() {
         for (GUnit unit : program.getUnits()) {
             for (GGraph graph : unit.getGraphs()) {
-                TType<TRuntimeGraph> type = new TType<>(graph.getId(), BuiltinTypes.GRAPH_TYPE, TRuntimeGraph.class);
-                typeRegistry.registerType(type);
+//                TType<TRuntimeGraph> type = new TType<>(graph.getId(), BuiltinTypes.GRAPH_TYPE, TRuntimeGraph.class);
+//                typeRegistry.registerType(type);
             }
         }
     }
@@ -58,6 +62,14 @@ public final class MachMachine {
     }
 
     public void executeInstruction(Instruction instruction) {
+
+    }
+
+    public void executeFrame(Frame frame) {
+
+    }
+
+    private void activateFrame(Frame frame) {
 
     }
 }

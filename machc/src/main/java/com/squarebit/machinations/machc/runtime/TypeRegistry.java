@@ -1,5 +1,8 @@
 package com.squarebit.machinations.machc.runtime;
 
+import com.squarebit.machinations.machc.runtime.components.TObject;
+import com.squarebit.machinations.machc.runtime.components.TType;
+
 import java.util.HashMap;
 import java.util.Map;
 
