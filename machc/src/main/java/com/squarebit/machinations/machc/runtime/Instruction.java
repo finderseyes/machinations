@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc.runtime.instructions;
+package com.squarebit.machinations.machc.runtime;
 
 import com.squarebit.machinations.machc.runtime.Frame;
 
@@ -6,7 +6,7 @@ import com.squarebit.machinations.machc.runtime.Frame;
  * Base class of an instruction.
  */
 public abstract class Instruction {
-    private Frame frame;
+    Frame frame;
 
     public Frame getFrame() {
         return frame;
@@ -15,5 +15,5 @@ public abstract class Instruction {
     /**
      * Execute the current instruction.
      */
-    public abstract void execute();
+    public abstract void execute() throws Exception;
 }

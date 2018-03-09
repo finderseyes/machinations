@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.runtime.instructions;
 
 import com.squarebit.machinations.machc.runtime.Frame;
+import com.squarebit.machinations.machc.runtime.Instruction;
 
 public final class Jump extends Instruction {
     final Frame target;

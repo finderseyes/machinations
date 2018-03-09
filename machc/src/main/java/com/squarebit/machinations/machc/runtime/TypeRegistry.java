@@ -34,8 +34,8 @@ final class TypeRegistry {
      * Register built-in types.
      */
     private void registerBuiltinTypes() {
-        registerType(BuiltinTypes.OBJECT_TYPE);
-        registerType(BuiltinTypes.GRAPH_TYPE);
+        registerType(TType.OBJECT_TYPE);
+        registerType(TType.GRAPH_TYPE);
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.squarebit.machinations.machc.runtime.components;
 
 public final class TBoolean extends TObject {
-    private final boolean value;
+    private boolean value;
 
     /**
      * Instantiates a new T boolean.

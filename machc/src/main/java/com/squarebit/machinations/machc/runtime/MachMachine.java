@@ -3,10 +3,12 @@ package com.squarebit.machinations.machc.runtime;
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.ast.GProgram;
 import com.squarebit.machinations.machc.ast.GUnit;
+import com.squarebit.machinations.machc.runtime.components.TInteger;
 import com.squarebit.machinations.machc.runtime.components.TRuntimeGraph;
 import com.squarebit.machinations.machc.runtime.components.TType;
-import com.squarebit.machinations.machc.runtime.expressions.TInternalMethodCall;
-import com.squarebit.machinations.machc.runtime.instructions.Instruction;
+import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
+import com.squarebit.machinations.machc.runtime.instructions.Eval;
+import com.squarebit.machinations.machc.runtime.instructions.Invoke;
 
 import java.util.Stack;
 
@@ -49,12 +51,13 @@ public final class MachMachine {
     private void compile() {
         for (GUnit unit : program.getUnits()) {
             for (GGraph graph : unit.getGraphs()) {
-                TType<TRuntimeGraph> type = new TType<>(graph.getId(), BuiltinTypes.GRAPH_TYPE, TRuntimeGraph.class);
+                TType<TRuntimeGraph> type = new TType<>(graph.getId(), TType.GRAPH_TYPE, TRuntimeGraph.class);
                 typeRegistry.registerType(type);
             }
         }
 
-        buildBootImage();
+        Frame frame = buildBootImage();
+        loadFrame(frame);
     }
 
     /**
@@ -107,7 +110,12 @@ public final class MachMachine {
      * @param instruction the instruction
      */
     private void executeInstruction(Instruction instruction) {
+        try {
+            instruction.execute();
+        }
+        catch (Exception ex) {
 
+        }
     }
 
     /**
@@ -118,9 +126,12 @@ public final class MachMachine {
         try {
             Frame.Builder builder = new Frame.Builder();
 
-            Variable mainGraph = builder.createVariable().setType(BuiltinTypes.GRAPH_TYPE).build();
+            Variable mainGraph = builder.createVariable().setType(TType.INTEGER_TYPE).build();
 
-            TInternalMethodCall isTerminated = new TInternalMethodCall(mainGraph.getType(), "isTerminated");
+            builder.addInstruction(new Eval(new TObjectRef(new TInteger(10)), mainGraph));
+
+            Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new Variable[0]);
+            builder.addInstruction(invoke);
 
             return builder.build();
         }

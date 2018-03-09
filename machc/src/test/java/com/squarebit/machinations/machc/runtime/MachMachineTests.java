@@ -26,7 +26,7 @@ public class MachMachineTests {
         TType graphType = machine.getType("GameGraph");
 
         assertThat(graphType.getName()).isEqualTo("GameGraph");
-        assertThat(graphType.getBaseType()).isEqualTo(BuiltinTypes.GRAPH_TYPE);
+        assertThat(graphType.getBaseType()).isEqualTo(TType.GRAPH_TYPE);
     }
 
     @Test
@@ -42,6 +42,10 @@ public class MachMachineTests {
 
         MachMachine machine = MachMachine.from(program);
 
+        machine.executeNext();
+        machine.executeNext();
+        machine.executeNext();
+
         TType graphType = machine.getType("GameGraph");
 
         TRuntimeGraph runtimeGraph = (TRuntimeGraph)graphType.newInstance();
@@ -52,7 +56,7 @@ public class MachMachineTests {
     @Test
     public void should_execute_frame() throws Exception {
         Frame.Builder frameBuidler = new Frame.Builder();
-        Variable v0 = frameBuidler.createVariable().setType(BuiltinTypes.INTEGER_TYPE).build();
+        Variable v0 = frameBuidler.createVariable().setType(TType.INTEGER_TYPE).build();
         Frame frame = frameBuidler.build();
 
         FrameActivation activation = frame.activate();

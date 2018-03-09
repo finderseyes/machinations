@@ -1,6 +1,5 @@
 package com.squarebit.machinations.machc.runtime.expressions;
 
-import com.squarebit.machinations.machc.runtime.BuiltinTypes;
 import com.squarebit.machinations.machc.runtime.FrameActivation;
 import com.squarebit.machinations.machc.runtime.components.TFloat;
 import com.squarebit.machinations.machc.runtime.components.TInteger;
@@ -33,11 +32,11 @@ public final class TAdd extends TExpression {
      */
     @Override
     public TObject evalTo(TType type, FrameActivation activation) {
-        if (type == BuiltinTypes.INTEGER_TYPE || type == BuiltinTypes.FLOAT_TYPE) {
-            TFloat lhsValue = (TFloat)lhs.evalTo(BuiltinTypes.FLOAT_TYPE, activation);
-            TFloat rhsValue = (TFloat)rhs.evalTo(BuiltinTypes.FLOAT_TYPE, activation);
+        if (type == TType.INTEGER_TYPE || type == TType.FLOAT_TYPE) {
+            TFloat lhsValue = (TFloat)lhs.evalTo(TType.FLOAT_TYPE, activation);
+            TFloat rhsValue = (TFloat)rhs.evalTo(TType.FLOAT_TYPE, activation);
 
-            if (type == BuiltinTypes.INTEGER_TYPE)
+            if (type == TType.INTEGER_TYPE)
                 return new TInteger((int)(lhsValue.getValue() + rhsValue.getValue()));
             else
                 return new TFloat(lhsValue.getValue() + rhsValue.getValue());

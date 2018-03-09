@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.runtime.instructions;
 
 import com.squarebit.machinations.machc.runtime.FrameActivation;
+import com.squarebit.machinations.machc.runtime.Instruction;
 import com.squarebit.machinations.machc.runtime.Variable;
 import com.squarebit.machinations.machc.runtime.components.TObject;
 import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;

@@ -7,7 +7,7 @@ public class TRuntimeGraph extends TGraph {
      * @return true or false
      */
     @Override
-    public TBoolean isTerminated() {
-        return new TBoolean(false);
+    public boolean isTerminated() {
+        return false;
     }
 }

@@ -9,7 +9,7 @@ import com.squarebit.machinations.machc.runtime.components.TType;
 public final class Variable {
     public static class Builder {
         private Frame.Builder frameBuilder;
-        private TType type = BuiltinTypes.OBJECT_TYPE;
+        private TType type = TType.OBJECT_TYPE;
 
         /**
          * Instantiates a new variable builder.

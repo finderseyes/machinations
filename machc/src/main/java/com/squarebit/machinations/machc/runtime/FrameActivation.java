@@ -1,7 +1,6 @@
 package com.squarebit.machinations.machc.runtime;
 
 import com.squarebit.machinations.machc.runtime.components.TObject;
-import com.squarebit.machinations.machc.runtime.instructions.Instruction;
 
 /**
  * Frame execution context, which contains the variable table, containing realization of frame's variables

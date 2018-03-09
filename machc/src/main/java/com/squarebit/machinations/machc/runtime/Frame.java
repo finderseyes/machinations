@@ -1,7 +1,6 @@
 package com.squarebit.machinations.machc.runtime;
 
 import com.squarebit.machinations.machc.runtime.components.TObject;
-import com.squarebit.machinations.machc.runtime.instructions.Instruction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,7 @@ public final class Frame {
         Frame parent;
         List<Variable> variables = new ArrayList<>();
         List<Instruction> instructions = new ArrayList<>();
+        Variable methodReturnValue;
 
         /**
          * Sets the parent frame.
@@ -42,6 +42,17 @@ public final class Frame {
         }
 
         /**
+         * Add instruction builder.
+         *
+         * @param instruction the instruction
+         * @return the builder
+         */
+        public Builder addInstruction(Instruction instruction) {
+            instructions.add(instruction);
+            return this;
+        }
+
+        /**
          * Build the frame.
          *
          * @return the frame
@@ -49,14 +60,27 @@ public final class Frame {
         public Frame build() {
             Frame frame = new Frame();
 
+            // Return value.
+            this.methodReturnValue = new Variable.Builder(this).build();
+
+            // Initializes the variable index.
             for (int i = 0; i < variables.size(); i++) {
                 Variable variable = variables.get(i);
                 variable.frame = frame;
                 variable.index = i;
             }
 
+            // Reinitialize instruction frame.
+            for (int i = 0; i < instructions.size(); i++) {
+                Instruction instruction = instructions.get(i);
+                instruction.frame = frame;
+            }
+
             frame.parent = parent;
             frame.variables = variables.toArray(new Variable[0]);
+            frame.methodReturnValue = methodReturnValue;
+
+            frame.instructions = instructions.toArray(new Instruction[0]);
 
             return frame;
         }
@@ -65,6 +89,9 @@ public final class Frame {
     private Frame parent;
     private Variable[] variables;
     private Instruction[] instructions;
+
+    // Named variable.
+    private Variable methodReturnValue;
 
     private Stack<FrameActivation> activationStack = new Stack<>();
     private FrameActivation currentActivation = null;
@@ -101,6 +128,15 @@ public final class Frame {
      */
     public Instruction[] getInstructions() {
         return instructions;
+    }
+
+    /**
+     * Gets method return value variable.
+     *
+     * @return the method return value
+     */
+    public Variable getMethodReturnValue() {
+        return methodReturnValue;
     }
 
     /**
