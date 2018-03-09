@@ -53,8 +53,12 @@ public final class MachMachine {
     private void compile() {
         for (GUnit unit : program.getUnits()) {
             for (GGraph graph : unit.getGraphs()) {
-                TType<TRuntimeGraph> type = new TType<>(graph.getId(), TType.GRAPH_TYPE, TRuntimeGraph.class);
-                typeRegistry.registerType(type);
+                TType.Builder<TRuntimeGraph> builder = new TType.Builder<TRuntimeGraph>()
+                        .setName(graph.getId())
+                        .setBaseType(TType.GRAPH_TYPE)
+                        .setImplementation(TRuntimeGraph.class);
+
+                typeRegistry.registerType(builder.build());
             }
         }
 

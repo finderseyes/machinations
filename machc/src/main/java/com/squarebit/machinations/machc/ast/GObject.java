@@ -1,12 +1,12 @@
 package com.squarebit.machinations.machc.ast;
 
-import java.util.UUID;
+import org.bson.types.ObjectId;
 
 /**
  * Base class of an object.
  */
 public abstract class GObject {
-    private String id = UUID.randomUUID().toString();
+    private String id = ObjectId.get().toHexString();
 
     /**
      * Gets id.

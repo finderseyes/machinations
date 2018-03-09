@@ -17,7 +17,7 @@ public class MachFrontendTests {
         GGraph graph = unit.findGraph("main");
 
         {
-            GNode node = (GNode)graph.findElement("p0");
+            GNode node = (GNode)graph.findField("p0");
             assertThat(node.getId()).isEqualTo("p0");
             assertThat(node.getModifier().isTransitive()).isFalse();
             assertThat(node.getModifier().isInterative()).isFalse();
@@ -25,7 +25,7 @@ public class MachFrontendTests {
         }
 
         {
-            GNode node = (GNode)graph.findElement("p1");
+            GNode node = (GNode)graph.findField("p1");
             assertThat(node.getId()).isEqualTo("p1");
             assertThat(node.getModifier().isTransitive()).isFalse();
             assertThat(node.getModifier().isInterative()).isFalse();
@@ -34,7 +34,7 @@ public class MachFrontendTests {
         }
 
         {
-            GNode node = (GNode)graph.findElement("p2");
+            GNode node = (GNode)graph.findField("p2");
             assertThat(node.getId()).isEqualTo("p2");
             assertThat(node.getModifier().isTransitive()).isFalse();
             assertThat(node.getModifier().isInterative()).isFalse();

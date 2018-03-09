@@ -21,17 +21,22 @@ graphBody
     ;
 
 graphBodyDeclaration
+    : graphFieldDeclaration
+    | methodDeclaration
+    ;
+
+graphFieldDeclaration
     : nodeDeclaration
     | connectionDeclaration
-    | memberVariableDeclaration
-    | functionDeclaration
+    | fieldDeclaration
     ;
 
 baseGraphDescriptor
     : 'extends' graphType
     ;
 
-memberVariableDeclaration
+// Field declaration shares the same rules with local variable declaration
+fieldDeclaration
     : variableDeclaration ';'
     ;
 
@@ -44,14 +49,14 @@ variableDeclarationList
     ;
 
 variableDeclarator
-    : registerId ('=' variableInitializer)?
+    : variableName ('=' variableInitializer)?
     ;
 
 variableInitializer
     : expression
     ;
 
-registerId
+variableName
     : IDENTIFIER
     ;
 
@@ -100,18 +105,6 @@ normalDirectionDescriptor
 
 nodeDeclaration
     : nodeModifier? (nodeType | nodeArrayType) nodeDeclaratorList ';'
-    ;
-
-builtinNodeDeclaration
-    : nodeModifier? builtinNodeTypeName nodeDeclaratorList
-    ;
-
-graphNodeDeclaration
-    : nodeModifier? graphType nodeDeclaratorList
-    ;
-
-nodeModifiers
-    : nodeModifier
     ;
 
 nodeModifier
@@ -164,14 +157,6 @@ nodeInitializer
     : resourceSetNodeInitializer
     ;
 
-sourceNodeInitializer
-    : 'source'
-    ;
-
-drainNodeInitializer
-    : 'drain'
-    ;
-
 resourceSetNodeInitializer
     : setDescriptor
     ;
@@ -196,25 +181,25 @@ setElementType
     : IDENTIFIER
     ;
 
-functionDeclaration
-    : functionModifier? 'function' functionName LEFT_PARENTHESIS RIGHT_PARENTHESIS functionBody
+methodDeclaration
+    : methodModifier? methodName LEFT_PARENTHESIS RIGHT_PARENTHESIS methodBody
     ;
 
-functionModifier
-    : startFunctionModifier
-    | automaticFunctionModifier
-    | interactiveFunctionModifier
+methodModifier
+    : startMethodModifier
+    | automaticMethodModifier
+    | interactiveMethodModifier
     ;
 
-startFunctionModifier
+startMethodModifier
     : 'start'
     ;
 
-automaticFunctionModifier
+automaticMethodModifier
     : 'automatic'
     ;
 
-interactiveFunctionModifier
+interactiveMethodModifier
     : 'interactive' ('(' interactionCondition ')')?
     ;
 
@@ -222,22 +207,17 @@ interactionCondition
     : expression
     ;
 
-functionName
+methodName
     : IDENTIFIER
     ;
 
-functionBody
+methodBody
     :   LEFT_CURLY_BRACKET blockStatements* RIGHT_CURLY_BRACKET
     ;
 
 statement
     : emptyStatement
     | block
-//    | transferDeclarationStatement
-//    | probabilisticDeclarationStatement
-//    | activationDeclarationStatement
-//    | delayDeclarationStatement
-//    | intervalDeclarationStatement
     | expressionStatement
     | ifThenStatement
     | ifThenElseStatement
@@ -245,22 +225,6 @@ statement
 
 emptyStatement
     : ';'
-    ;
-
-activationDeclarationStatement
-    : activationDeclaration ';'
-    ;
-
-activationDeclaration
-    : ('activate' | 'deactivate') activationList
-    ;
-
-activationList
-    : activationNodeId (',' activationNodeId)*
-    ;
-
-activationNodeId
-    : IDENTIFIER
     ;
 
 block
@@ -278,43 +242,6 @@ blockStatement
 
 localVariableDeclarationStatement
     : variableDeclaration ';'
-    ;
-
-probabilisticDeclarationStatement
-    : probabilisticDeclaration
-    ;
-
-probabilisticDeclaration
-    : 'randomly' '{' probabilisticStatementDeclaration+ '}'
-    ;
-
-probabilisticStatementDeclaration
-    : probability ':' statement
-    ;
-
-probability
-    : expression
-    | 'else'
-    ;
-
-transferDeclarationStatement
-    : transferDeclaration ';'
-    ;
-
-transferDeclaration
-    : 'transfer' transferModifierList transferDescriptor (',' transferDescriptor)*
-    ;
-
-transferModifierList
-    : transferMode*
-    ;
-
-resourceConnectionId
-    : IDENTIFIER
-    ;
-
-flowRate
-    : expression setElementType?
     ;
 
 ifThenStatement
@@ -488,10 +415,6 @@ methodInvocation
 	| graphicalMethodInvocation
 	;
 
-methodName
-	:	IDENTIFIER
-	;
-
 argumentList
 	:	expression (',' expression)*
 	;
@@ -601,6 +524,7 @@ literal
 	| floatingPointLiteral
 	| randomIntegralLiteral
 	| booleanLiteral
+	| stringLiteral
 	;
 
 integralLiteral
@@ -620,6 +544,10 @@ floatingPointLiteral
 booleanLiteral
     : 'true'
     | 'false'
+    ;
+
+stringLiteral
+    : STRING_LITERAL
     ;
 
 expressionStatement
@@ -654,6 +582,22 @@ PERCENTAGE: [0-9]+'%';
 // Boolean
 TRUE: 'true';
 FALSE: 'false';
+
+// String Literals
+STRING_LITERAL
+    : '"' STRING_CHARACTERS? '"'
+    ;
+
+fragment
+STRING_CHARACTERS
+    : STRING_CHARACTER+
+	;
+
+fragment
+STRING_CHARACTER
+	:	~["\\\r\n]
+	;
+
 
 // Math operator
 PLUS: '+';

@@ -3,53 +3,59 @@ package com.squarebit.machinations.machc.runtime.components;
 import com.squarebit.machinations.machc.runtime.components.annotations.NativeMethod;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
  * Description of a type in the interpreter.
  */
 public final class TType<T extends TObject> {
-    public static class Builder<T extends TObject> {
+    /**
+     * The type builder class.
+     * @param <R> type implementing class parameter.
+     */
+    public static class Builder<R extends TObject> {
         private String name;
         private TType baseType;
-        private Class<T> implementation;
+        private Class<R> implementation;
         private boolean valueType;
 
         private List<TField> fields = new ArrayList<>();
         private List<TMethod> methods = new ArrayList<>();
 
-        public Builder<T> setName(String name) {
+        public Builder<R> setName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder<T> setBaseType(TType baseType) {
+        public Builder<R> setBaseType(TType baseType) {
             this.baseType = baseType;
             return this;
         }
 
-        public Builder<T> setImplementation(Class<T> implementation) {
+        public Builder<R> setImplementation(Class<R> implementation) {
             this.implementation = implementation;
             return this;
         }
 
-        public Builder<T> setValueType(boolean valueType) {
+        public Builder<R> setValueType(boolean valueType) {
             this.valueType = valueType;
             return this;
         }
 
-        public Builder<T> addField(TField field) {
+        public Builder<R> addField(TField field) {
             this.fields.add(field);
             return this;
         }
 
-        public Builder<T> addMethod(TMethod method) {
+        public Builder<R> addMethod(TMethod method) {
             this.methods.add(method);
             return this;
         }
 
-        public Builder<T> scanNativeMethods() {
+        public Builder<R> scanNativeMethods() {
             Stream.of(implementation.getDeclaredMethods()).forEach(method -> {
                 NativeMethod[] annotations = method.getAnnotationsByType(NativeMethod.class);
                 if (annotations.length > 0) {
@@ -61,8 +67,8 @@ public final class TType<T extends TObject> {
             return this;
         }
 
-        public TType<T> build() {
-            TType<T> type = new TType<>(
+        public TType<R> build() {
+            TType<R> type = new TType<>(
                     name,
                     baseType,
                     implementation,
@@ -84,6 +90,9 @@ public final class TType<T extends TObject> {
     private final TField[] fields;
     private final TMethod[] methods;
 
+    private Map<String, TField> fieldByName = new HashMap<>();
+    private Map<String, TMethod> methodByName = new HashMap<>();
+
     /**
      * Instantiates a new type.
      *
@@ -94,13 +103,12 @@ public final class TType<T extends TObject> {
      * @param fields         the fields
      * @param methods        the methods
      */
-    protected TType(final String name,
-                    final TType baseType,
-                    final Class<T> implementation,
-                    final boolean valueType,
-                    final TField[] fields,
-                    final TMethod[] methods
-                    )
+    private TType(final String name,
+                  final TType baseType,
+                  final Class<T> implementation,
+                  final boolean valueType,
+                  final TField[] fields,
+                  final TMethod[] methods)
     {
         this.name = name;
         this.baseType = baseType;
@@ -109,37 +117,16 @@ public final class TType<T extends TObject> {
         this.fields = fields;
         this.methods = methods;
 
-        for (int i = 0; i < fields.length; i++)
-            fields[i].fieldTableIndex = i;
-    }
+        for (int i = 0; i < fields.length; i++) {
+            TField field = fields[i];
+            field.fieldTableIndex = i;
+            fieldByName.put(field.getName(), field);
+        }
 
-    /**
-     * Instantiates a new type.
-     *
-     * @param name           the name
-     * @param baseType       the base type
-     * @param implementation the implementation
-     */
-    public TType(final String name,
-                    final TType baseType,
-                    final Class<T> implementation)
-    {
-        this(name, baseType, implementation, false, new TField[0], new TMethod[0]);
-    }
-
-    public TType(final TType baseType, final Class<T> implementation) {
-        this(implementation.getSimpleName(), baseType, implementation);
-    }
-
-    /**
-     * Instantiates a new T type.
-     *
-     * @param baseType       the base type
-     * @param implementation the implementation
-     * @param valueType      the value type
-     */
-    public TType(final TType baseType, final Class<T> implementation, boolean valueType) {
-        this(implementation.getSimpleName(), baseType, implementation, valueType, new TField[0], new TMethod[0]);
+        for (int i = 0; i < methods.length; i++) {
+            TMethod method = methods[i];
+            methodByName.put(method.getName(), method);
+        }
     }
 
     /**
@@ -202,12 +189,41 @@ public final class TType<T extends TObject> {
     }
 
     /**
-     * Get methods
+     * Get the declared fields.
+     *
+     * @return the fields declared by this type.
+     */
+    public TField[] getFields() {
+        return fields;
+    }
+
+    /**
+     * Get the declared methods
      *
      * @return the methods declared by this type.
      */
     public TMethod[] getMethods() {
         return methods;
+    }
+
+    /**
+     * Get a field with given name.
+     *
+     * @param name the field name
+     * @return the field
+     */
+    public TField getField(String name) {
+        return fieldByName.get(name);
+    }
+
+    /**
+     * Gets a method with given name.
+     *
+     * @param name the method name
+     * @return the method
+     */
+    public TMethod getMethod(String name) {
+        return methodByName.get(name);
     }
 
     /**
@@ -223,12 +239,21 @@ public final class TType<T extends TObject> {
      * Built-in types
      */
 
-    public static final TType<TObject> OBJECT_TYPE = new TType<>(null, TObject.class);
-    public static final TType<TVoid> VOID_TYPE = new TType<>(null, TVoid.class);
+    public static final TType<TObject> OBJECT_TYPE =
+            new TType.Builder<>()
+                    .setImplementation(TObject.class)
+                    .build();
+
+    public static final TType<TVoid> VOID_TYPE =
+            new TType.Builder<TVoid>()
+                    .setBaseType(OBJECT_TYPE)
+                    .setImplementation(TVoid.class)
+                    .build();
 
     public static final TType<TInteger> INTEGER_TYPE = registerTInteger();
-    public static final TType<TFloat> FLOAT_TYPE = new TType<>(OBJECT_TYPE, TFloat.class, true);
+    public static final TType<TFloat> FLOAT_TYPE = registerTFloat();
     public static final TType<TBoolean> BOOLEAN_TYPE = registerTBoolean();
+    public static final TType<TString> STRING_TYPE = registerTString();
 
     public static final TType<TGraph> GRAPH_TYPE = registerTGraph();
 
@@ -255,28 +280,52 @@ public final class TType<T extends TObject> {
 
     // TInteger type.
     private static TType<TInteger> registerTInteger() {
-        TType.Builder<TInteger> builder = new TType.Builder<>();
-        builder
+        TType.Builder<TInteger> builder = new TType.Builder<TInteger>()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TInteger.class.getSimpleName())
                 .setImplementation(TInteger.class)
                 .setValueType(true)
                 .scanNativeMethods()
-        ;
+                ;
+
+        return builder.build();
+    }
+
+    // TFloat type.
+    private static TType<TFloat> registerTFloat() {
+        TType.Builder<TFloat> builder = new TType.Builder<TFloat>()
+                .setBaseType(OBJECT_TYPE)
+                .setName(TInteger.class.getSimpleName())
+                .setImplementation(TFloat.class)
+                .setValueType(true)
+                .scanNativeMethods()
+                ;
 
         return builder.build();
     }
 
     // TBoolean
     private static TType<TBoolean> registerTBoolean() {
-        TType.Builder<TBoolean> builder = new TType.Builder<>();
-        builder
+        TType.Builder<TBoolean> builder = new TType.Builder<TBoolean>()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TBoolean.class.getSimpleName())
                 .setImplementation(TBoolean.class)
                 .setValueType(true)
                 .scanNativeMethods()
-        ;
+                ;
+
+        return builder.build();
+    }
+
+    // TString
+    private static TType<TString> registerTString() {
+        TType.Builder<TString> builder = new TType.Builder<TString>()
+                .setBaseType(OBJECT_TYPE)
+                .setName(TString.class.getSimpleName())
+                .setImplementation(TString.class)
+                .setValueType(false)
+                .scanNativeMethods()
+                ;
 
         return builder.build();
     }

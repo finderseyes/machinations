@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast;
 /**
  * A node in the graph.
  */
-public class GNode extends GGraphElement {
+public class GNode extends GGraphField {
     /**
      * The node type.
      */

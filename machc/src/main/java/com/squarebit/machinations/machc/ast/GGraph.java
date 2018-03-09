@@ -7,25 +7,46 @@ import java.util.Map;
  * A graph.
  */
 public class GGraph extends GObject {
-    private Map<String, GGraphElement> elements = new HashMap<>();  // Mapping from id to graph element.
+    private Map<String, GGraphField> fields = new HashMap<>();  // Mapping from id to graph field declaration.
+    private Map<String, GMethod> methods = new HashMap<>(); // Mapping from function name to instance.
 
     /**
-     * Finds a graph element with given id.
+     * Finds a field declared in the graph.
      *
-     * @param id the id
-     * @return the graph element
+     * @param id the field id (name)
+     * @return the graph field, otherwise null.
      */
-    public GGraphElement findElement(String id) {
-        return elements.get(id);
+    public GGraphField findField(String id) {
+        return fields.get(id);
     }
 
     /**
-     * Adds a graph element.
+     * Adds a graph field.
      *
-     * @param element the element
-     * @return the graph element
+     * @param field the field
+     * @return the graph field
      */
-    public GGraphElement addElement(GGraphElement element) {
-        return elements.put(element.getId(), element);
+    public GGraphField addField(GGraphField field) {
+        return fields.put(field.getId(), field);
+    }
+
+    /**
+     * Finds a method with given name.
+     *
+     * @param id the method id (name)
+     * @return the method
+     */
+    public GMethod findMethod(String id) {
+        return methods.get(id);
+    }
+
+    /**
+     * Adds a method to the graph.
+     *
+     * @param method the method
+     * @return the method
+     */
+    public GMethod addMethod(GMethod method) {
+        return methods.put(method.getId(), method);
     }
 }

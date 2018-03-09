@@ -1,0 +1,15 @@
+/**
+Test aspects:
+    - Graph declaration.
+    - Primitive type declaration.
+*/
+
+graph a {
+    let _int = 10;
+    let _float = 1.5;
+}
+
+default graph b {
+    let _boolean = true;
+    let _string = "hello world";
+}
