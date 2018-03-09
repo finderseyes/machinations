@@ -74,6 +74,7 @@ public final class Frame {
             for (int i = 0; i < instructions.size(); i++) {
                 Instruction instruction = instructions.get(i);
                 instruction.frame = frame;
+                instruction.index = i;
             }
 
             frame.parent = parent;

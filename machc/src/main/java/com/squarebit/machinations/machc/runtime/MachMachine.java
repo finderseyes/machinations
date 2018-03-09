@@ -9,6 +9,8 @@ import com.squarebit.machinations.machc.runtime.components.TType;
 import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
 import com.squarebit.machinations.machc.runtime.instructions.Eval;
 import com.squarebit.machinations.machc.runtime.instructions.Invoke;
+import com.squarebit.machinations.machc.runtime.instructions.Jump;
+import com.squarebit.machinations.machc.runtime.instructions.Label;
 
 import java.util.Stack;
 
@@ -111,11 +113,24 @@ public final class MachMachine {
      */
     private void executeInstruction(Instruction instruction) {
         try {
-            instruction.execute();
+            if (instruction instanceof Jump) {
+                executeJump((Jump)instruction);
+            }
+            else {
+                instruction.execute();
+            }
         }
         catch (Exception ex) {
 
         }
+    }
+
+    private void executeJump(Jump jump) {
+        if (jump.getFrame() != jump.getTarget().getFrame())
+            throw new RuntimeException("Jump must be in-frame");
+
+        FrameExecutionContext executionContext = executionStack.peek();
+        executionContext.nextInstruction = jump.getTarget().getIndex();
     }
 
     /**
@@ -130,8 +145,12 @@ public final class MachMachine {
 
             builder.addInstruction(new Eval(new TObjectRef(new TInteger(10)), mainGraph));
 
+            Label label = new Label();
+            builder.addInstruction(label);
+
             Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new Variable[0]);
             builder.addInstruction(invoke);
+            builder.addInstruction(new Jump(label));
 
             return builder.build();
         }

@@ -7,9 +7,14 @@ import com.squarebit.machinations.machc.runtime.Frame;
  */
 public abstract class Instruction {
     Frame frame;
+    int index;
 
     public Frame getFrame() {
         return frame;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     /**

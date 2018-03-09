@@ -5,7 +5,7 @@ package com.squarebit.machinations.machc.runtime;
  */
 final class FrameExecutionContext {
     private FrameActivation activation;
-    private int nextInstruction = 0;
+    int nextInstruction = 0;
 
     public FrameExecutionContext(FrameActivation activation) {
         this.activation = activation;

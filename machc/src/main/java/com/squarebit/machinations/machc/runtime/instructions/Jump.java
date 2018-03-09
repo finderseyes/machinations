@@ -1,24 +1,29 @@
 package com.squarebit.machinations.machc.runtime.instructions;
 
-import com.squarebit.machinations.machc.runtime.Frame;
 import com.squarebit.machinations.machc.runtime.Instruction;
 
+/**
+ * In-frame jump.
+ */
 public final class Jump extends Instruction {
-    final Frame target;
+    private Label target;
 
-    private Jump(final Frame target) {
+    public Jump(Label target) {
         this.target = target;
     }
 
-    public static Jump to(final Frame target) {
-        return new Jump(target);
+    /**
+     * Gets target.
+     *
+     * @return the target
+     */
+    public Label getTarget() {
+        return target;
     }
 
     /**
      * Execute the current instruction.
      */
     @Override
-    public void execute() {
-
-    }
+    public void execute() {}
 }

@@ -45,6 +45,8 @@ public class MachMachineTests {
         machine.executeNext();
         machine.executeNext();
         machine.executeNext();
+        machine.executeNext();
+        machine.executeNext();
 
         TType graphType = machine.getType("GameGraph");
 
