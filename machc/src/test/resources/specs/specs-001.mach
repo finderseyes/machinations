@@ -6,10 +6,10 @@ Test aspects:
 
 graph a {
     let _int = 10;
-    let _float = 1.5;
+//    let _float = 1.5;
 }
 
 default graph b {
-    let _boolean = true;
-    let _string = "hello world";
+//    let _boolean = true;
+//    let _string = "hello world";
 }

@@ -1,12 +1,11 @@
 package com.squarebit.machinations.machc.runtime.components;
 
-import com.squarebit.machinations.machc.runtime.components.annotations.NativeMethod;
+import com.squarebit.machinations.machc.ast.GGraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Description of a type in the interpreter.
@@ -17,37 +16,89 @@ public final class TType<T extends TObject> {
      * @param <R> type implementing class parameter.
      */
     public static class Builder<R extends TObject> {
-        private String name;
-        private TType baseType;
-        private Class<R> implementation;
-        private boolean valueType;
+        private TType<R> target;
 
         private List<TField> fields = new ArrayList<>();
         private List<TMethod> methods = new ArrayList<>();
+        private List<TConstructor> constructors = new ArrayList<>();
+
+        /**
+         * Instantiates a new builder.
+         */
+        public Builder() {
+            target = new TType<>();
+        }
+
+        /**
+         * Gets type.
+         *
+         * @return the type
+         */
+        public TType<R> getTarget() {
+            return target;
+        }
+
+        public GGraph getDeclaration() {
+            return target.declaration;
+        }
+
+        public Builder<R> setDeclaration(GGraph declaration) {
+            target.declaration = declaration;
+            return this;
+        }
+
+        public String getName() {
+            return target.name;
+        }
 
         public Builder<R> setName(String name) {
-            this.name = name;
+            target.name = name;
             return this;
+        }
+
+        public TType getBaseType() {
+            return target.baseType;
         }
 
         public Builder<R> setBaseType(TType baseType) {
-            this.baseType = baseType;
+            target.baseType = baseType;
             return this;
+        }
+
+        public Class<R> getImplementation() {
+            return target.implementation;
         }
 
         public Builder<R> setImplementation(Class<R> implementation) {
-            this.implementation = implementation;
+            target.implementation = implementation;
             return this;
+        }
+
+        public boolean isValueType() {
+            return target.valueType;
         }
 
         public Builder<R> setValueType(boolean valueType) {
-            this.valueType = valueType;
+            target.valueType = valueType;
             return this;
         }
 
-        public Builder<R> addField(TField field) {
-            this.fields.add(field);
-            return this;
+        public List<TField> getFields() {
+            return fields;
+        }
+
+        public List<TMethod> getMethods() {
+            return methods;
+        }
+
+        public List<TConstructor> getConstructors() {
+            return constructors;
+        }
+
+        public TField.Builder createField() {
+            TField.Builder builder = new TField.Builder(this.target);
+            builder.addListener(fields::add);
+            return builder;
         }
 
         public Builder<R> addMethod(TMethod method) {
@@ -55,91 +106,74 @@ public final class TType<T extends TObject> {
             return this;
         }
 
+        public TConstructor.Builder createConstructor() {
+            TConstructor.Builder builder = new TConstructor.Builder(this.target);
+            builder.addListener(constructors::add);
+            return builder;
+        }
+
         public Builder<R> scanNativeMethods() {
-            Stream.of(implementation.getDeclaredMethods()).forEach(method -> {
-                NativeMethod[] annotations = method.getAnnotationsByType(NativeMethod.class);
-                if (annotations.length > 0) {
-                    TMethod.Builder builder = new TMethod.Builder();
-                    builder.setDeclaringType(null).asNativeMethod(method);
-                    this.addMethod(builder.build());
-                }
-            });
+//            Stream.of(type.implementation.getDeclaredMethods()).forEach(method -> {
+//                NativeMethod[] annotations = method.getAnnotationsByType(NativeMethod.class);
+//                if (annotations.length > 0) {
+//                    TMethod.Builder builder = new TMethod.Builder();
+//                    builder.setDeclaringType(null).asNativeMethod(method);
+//                    this.addMethod(builder.build());
+//                }
+//            });
             return this;
         }
 
+        /**
+         * Builds the instance.
+         * @return
+         */
         public TType<R> build() {
-            TType<R> type = new TType<>(
-                    name,
-                    baseType,
-                    implementation,
-                    valueType,
-                    fields.toArray(new TField[0]),
-                    methods.toArray(new TMethod[0])
-            );
-
-            Stream.of(type.methods).forEach(m -> m.declaringType = type);
-
-            return type;
+            target.fields = fields.toArray(new TField[0]);
+            target.methods = methods.toArray(new TMethod[0]);
+            target.constructors = constructors.toArray(new TConstructor[0]);
+            return target;
         }
     }
 
-    private final String name;
-    private final TType baseType;
-    private final Class<T> implementation;
-    private final boolean valueType;
-    private final TField[] fields;
-    private final TMethod[] methods;
+    private GGraph declaration;
+    private String name;
+    private TType baseType;
+    private Class<T> implementation;
+    private boolean valueType;
+    private TField[] fields;
+    private TMethod[] methods;
+    private TConstructor[] constructors;
 
     private Map<String, TField> fieldByName = new HashMap<>();
     private Map<String, TMethod> methodByName = new HashMap<>();
 
     /**
-     * Instantiates a new type.
-     *
-     * @param name           the name
-     * @param baseType       the base type
-     * @param implementation the implementation
-     * @param valueType      the value type
-     * @param fields         the fields
-     * @param methods        the methods
+     * Initializes a new instance of type.
      */
-    private TType(final String name,
-                  final TType baseType,
-                  final Class<T> implementation,
-                  final boolean valueType,
-                  final TField[] fields,
-                  final TMethod[] methods)
-    {
-        this.name = name;
-        this.baseType = baseType;
-        this.implementation = implementation;
-        this.valueType = valueType;
-        this.fields = fields;
-        this.methods = methods;
-
-        for (int i = 0; i < fields.length; i++) {
-            TField field = fields[i];
-            field.fieldTableIndex = i;
-            fieldByName.put(field.getName(), field);
-        }
-
-        for (int i = 0; i < methods.length; i++) {
-            TMethod method = methods[i];
-            methodByName.put(method.getName(), method);
-        }
+    private TType() {
     }
 
     /**
-     * Gets the type name.
+     * Gets declaration.
      *
-     * @return the type name
+     * @return the declaration
+     */
+    public GGraph getDeclaration() {
+        return declaration;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Gets the type's base type.
+     * Gets base type.
      *
      * @return the base type
      */
@@ -148,90 +182,48 @@ public final class TType<T extends TObject> {
     }
 
     /**
-     * Determines if the type is value type.
+     * Gets implementation.
      *
-     * @return the value type.
-     */
-    public boolean isValueType() {
-        return valueType;
-    }
-
-    /**
-     * Creates a new instance of the type.
-     *
-     * @return an instance of this type
-     * @throws InstantiationException the instantiation exception
-     * @throws IllegalAccessException the illegal access exception
-     */
-    public T newInstance() throws InstantiationException, IllegalAccessException {
-        T instance = implementation.newInstance();
-
-        instance.type = this;
-        instance.fieldTable = buildInstanceFieldTable();
-
-        for (TField field: fields) {
-            if (field.getType().isValueType()) {
-                TObject value = field.getType().newInstance();
-                field.set(instance, value);
-            }
-        }
-
-        return instance;
-    }
-
-    /**
-     * Gets implementation class.
-     *
-     * @return the implementation class.
+     * @return the implementation
      */
     public Class<T> getImplementation() {
         return implementation;
     }
 
     /**
-     * Get the declared fields.
+     * Is value type boolean.
      *
-     * @return the fields declared by this type.
+     * @return the boolean
+     */
+    public boolean isValueType() {
+        return valueType;
+    }
+
+    /**
+     * Get fields t field [ ].
+     *
+     * @return the t field [ ]
      */
     public TField[] getFields() {
         return fields;
     }
 
     /**
-     * Get the declared methods
+     * Get methods t method [ ].
      *
-     * @return the methods declared by this type.
+     * @return the t method [ ]
      */
     public TMethod[] getMethods() {
         return methods;
     }
 
     /**
-     * Get a field with given name.
+     * Get constructors t constructor [ ].
      *
-     * @param name the field name
-     * @return the field
+     * @return the t constructor [ ]
      */
-    public TField getField(String name) {
-        return fieldByName.get(name);
-    }
-
-    /**
-     * Gets a method with given name.
-     *
-     * @param name the method name
-     * @return the method
-     */
-    public TMethod getMethod(String name) {
-        return methodByName.get(name);
-    }
-
-    /**
-     * Builds the field table for this type.
-     * @return the field table.
-     */
-    private TObject[] buildInstanceFieldTable() {
-        return new TObject[fields.length];
+    public TConstructor[] getConstructors() {
+        return constructors;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -27,7 +27,7 @@ public final class GUnit extends GObject {
      * @return the graph
      */
     public GGraph addGraph(GGraph graph) {
-        return graphs.put(graph.getId(), graph);
+        return graphs.put(graph.getName(), graph);
     }
 
     /**

@@ -1,10 +1,9 @@
 package com.squarebit.machinations.machc.runtime;
 
-import com.squarebit.machinations.machc.ast.GGraph;
-import com.squarebit.machinations.machc.ast.GProgram;
-import com.squarebit.machinations.machc.ast.GUnit;
+import com.squarebit.machinations.machc.MachCompiler;
+import com.squarebit.machinations.machc.MachExecutable;
+import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.runtime.components.TInteger;
-import com.squarebit.machinations.machc.runtime.components.TRuntimeGraph;
 import com.squarebit.machinations.machc.runtime.components.TType;
 import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
 import com.squarebit.machinations.machc.runtime.instructions.Eval;
@@ -51,19 +50,37 @@ public final class MachMachine {
      * Compiles current program.
      */
     private void compile() {
-        for (GUnit unit : program.getUnits()) {
-            for (GGraph graph : unit.getGraphs()) {
-                TType.Builder<TRuntimeGraph> builder = new TType.Builder<TRuntimeGraph>()
-                        .setName(graph.getId())
-                        .setBaseType(TType.GRAPH_TYPE)
-                        .setImplementation(TRuntimeGraph.class);
-
-                typeRegistry.registerType(builder.build());
-            }
-        }
-
-        Frame frame = buildBootImage();
-        loadFrame(frame);
+        MachExecutable executable = MachCompiler.compile(this.program);
+//        // Build declarations.
+//        for (GUnit unit : program.getUnits()) {
+//            for (GGraph graph : unit.getGraphs()) {
+//                TType.Builder<TRuntimeGraph> builder = new TType.Builder<TRuntimeGraph>()
+//                        .setDeclaration(graph)
+//                        .setName(graph.getName())
+//                        .setBaseType(TType.GRAPH_TYPE)
+//                        .setImplementation(TRuntimeGraph.class);
+//
+//                for (GGraphField field : graph.getFields()) {
+//                    if (field instanceof GField) {
+//                        builder.addField(
+//                                new TField()
+//                                        .setDeclaration(field)
+//                                        .setName(field.getName())
+//                                        .setType(TType.OBJECT_TYPE)
+//                        );
+//                    }
+//                }
+//
+//                typeRegistry.registerType(builder.build());
+//            }
+//        }
+//
+//        // Build code/instructions.
+//
+//
+//
+//        Frame frame = buildBootImage();
+//        loadFrame(frame);
     }
 
     /**

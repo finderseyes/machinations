@@ -139,8 +139,10 @@ public class MachFrontend {
      * @param graphFieldDeclarationContext field declaration context
      * @return a list of declared field
      */
-    private List<GGraphField> transformGraphFieldDeclaration(GGraphTransformationContext graphTransformationContext,
-                                                             MachParser.GraphFieldDeclarationContext graphFieldDeclarationContext)
+    private List<GGraphField> transformGraphFieldDeclaration(
+            GGraphTransformationContext graphTransformationContext,
+            MachParser.GraphFieldDeclarationContext graphFieldDeclarationContext)
+        throws Exception
     {
         ParseTree decl = graphFieldDeclarationContext.getChild(0);
 
@@ -162,6 +164,7 @@ public class MachFrontend {
      */
     private List<GField> transformFieldDeclaration(GGraphTransformationContext graphTransformationContext,
                                                         MachParser.FieldDeclarationContext fieldDeclarationContext)
+        throws Exception
     {
         List<GField> fields = new ArrayList<>();
 
@@ -181,8 +184,14 @@ public class MachFrontend {
                             null
                     ;
 
+            GExpression initializerExpression =
+                    initializer != null ?
+                            transformExpression((MachParser.ExpressionContext)initializer.getChild(0)) :
+                            null;
+
             GField field = new GField();
-            field.setName(name.getText());
+            field.setInitializer(initializerExpression).setName(name.getText());
+            fields.add(field);
         }
 
 
@@ -661,7 +670,7 @@ public class MachFrontend {
             );
 
             if (decl.getText().equals("-")) {
-                return new GNegateExpression().setChild(child);
+                return new GUnaryExpression().setOperator("-").setChild(child);
             }
             else
                 return child;
@@ -688,7 +697,84 @@ public class MachFrontend {
     private GExpression transformUnaryExpressionNotPlusMinus(MachParser.UnaryExpressionNotPlusMinusContext expressionContext)
         throws Exception
     {
+        if (expressionContext.getChildCount() == 1) {
+            return transformPostfixExpression((MachParser.PostfixExpressionContext)expressionContext.getChild(0));
+        }
+        else {
+            GExpression child = transformUnaryExpression((MachParser.UnaryExpressionContext)expressionContext.getChild(1));
+            return new GUnaryExpression().setOperator(expressionContext.getChild(0).getText()).setChild(child);
+        }
+    }
 
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformPostfixExpression(MachParser.PostfixExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree decl = expressionContext.getChild(0);
+        GExpression expression = null;
+
+        if (decl instanceof MachParser.PrimaryContext) {
+            expression = transformPrimary((MachParser.PrimaryContext)decl);
+        }
+        else {
+            expression = new GSymbolRef(decl.getText());
+        }
+
+        for (int i = 1; i < expressionContext.getChildCount(); i++) {
+            decl = expressionContext.getChild(i);
+            expression = new GSuffixExpression().setOperator(decl.getText()).setChild(expression);
+        }
+
+        return expression;
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformPrimary(MachParser.PrimaryContext expressionContext)
+        throws Exception
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof MachParser.LiteralContext) {
+            return transformLiteral((MachParser.LiteralContext)decl);
+        }
+        else
+            return null;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformLiteral(MachParser.LiteralContext context) throws Exception {
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.IntegralLiteralContext) {
+            return GInteger.parse(decl.getText());
+        }
+        else if (decl instanceof MachParser.RandomIntegralLiteralContext) {
+            return null;
+        }
+        else if (decl instanceof MachParser.FloatingPointLiteralContext) {
+            return null;
+        }
+        else if (decl instanceof MachParser.BooleanLiteralContext) {
+            return null;
+        }
+        else {
+            return null;
+        }
     }
 
     /**

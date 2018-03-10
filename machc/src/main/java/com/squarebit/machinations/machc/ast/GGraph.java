@@ -1,5 +1,6 @@
 package com.squarebit.machinations.machc.ast;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,16 @@ public class GGraph extends GSymbol {
      * @return the graph field
      */
     public GGraphField addField(GGraphField field) {
-        return fields.put(field.getId(), field);
+        return fields.put(field.getName(), field);
+    }
+
+    /**
+     * Gets fields.
+     *
+     * @return the fields
+     */
+    public Collection<GGraphField> getFields() {
+        return fields.values();
     }
 
     /**
@@ -47,6 +57,6 @@ public class GGraph extends GSymbol {
      * @return the method
      */
     public GMethod addMethod(GMethod method) {
-        return methods.put(method.getId(), method);
+        return methods.put(method.getName(), method);
     }
 }

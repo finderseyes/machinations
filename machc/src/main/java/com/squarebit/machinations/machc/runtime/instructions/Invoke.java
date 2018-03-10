@@ -8,8 +8,6 @@ import com.squarebit.machinations.machc.runtime.components.TInteger;
 import com.squarebit.machinations.machc.runtime.components.TMethod;
 import com.squarebit.machinations.machc.runtime.components.TObject;
 
-import java.util.stream.Stream;
-
 public final class Invoke extends Instruction {
     private final TMethod method;
     private final Variable instance;
@@ -34,14 +32,14 @@ public final class Invoke extends Instruction {
         Frame frame = this.getFrame();
         FrameActivation activation = frame.currentActivation();
 
-        if (method.isNativeMethod()) {
-            Object[] _parameters = Stream.of(paramenters).map(p -> p.get(activation)).toArray(Object[]::new);
-
-            Object returnValue = method.getNativeMethod().invoke(instance.get(activation), _parameters);
-            TObject wrappedValue = wrapNative(returnValue);
-
-            frame.getMethodReturnValue().set(activation, wrappedValue);
-        }
+//        if (method.isNativeMethod()) {
+//            Object[] _parameters = Stream.of(paramenters).map(p -> p.get(activation)).toArray(Object[]::new);
+//
+//            Object returnValue = method.getNativeMethod().invoke(instance.get(activation), _parameters);
+//            TObject wrappedValue = wrapNative(returnValue);
+//
+//            frame.getMethodReturnValue().set(activation, wrappedValue);
+//        }
     }
 
     private TObject wrapNative(Object value) {

@@ -1,22 +1,36 @@
 package com.squarebit.machinations.machc.runtime.components;
 
-import com.squarebit.machinations.machc.runtime.TConstructorScope;
+import com.squarebit.machinations.machc.MethodBase;
 
-public final class TConstructor<T extends TObject> extends TExecutable {
-    TType<T> declaringType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
-    public T newInstance() throws InstantiationException, IllegalAccessException {
-        // 1. create a new "raw" instance.
-        T instance = declaringType.newInstance();
+public final class TConstructor extends MethodBase {
+    public static class Builder {
+        private TConstructor target;
+        private List<Consumer<TConstructor>> listeners = new ArrayList<>();
 
+        public Builder(TType declaringType) {
+            target = new TConstructor();
+            target.declaringType = declaringType;
+        }
 
+        public Builder setName(String name) {
+            target.name = name;
+            return this;
+        }
 
-        TConstructorScope scope = new TConstructorScope().setThisObject(instance);
+        public Builder addListener(Consumer<TConstructor> listener) {
+            listeners.add(listener);
+            return this;
+        }
 
-
-        // 2. set the current scope of execution.
-        // TScope scope =
-        // 3. execute the instructions in the scope.
-        return null;
+        public TConstructor build() {
+            return target;
+        }
     }
+
+    private TType declaringType;
+    private String name;
 }

@@ -23,4 +23,15 @@ public final class GInteger extends GExpression {
     public int getValue() {
         return value;
     }
+
+    /**
+     * Parse g integer.
+     *
+     * @param text the text
+     * @return the g integer
+     */
+    public static GInteger parse(String text) {
+        int value = Integer.parseInt(text);
+        return new GInteger(value);
+    }
 }
