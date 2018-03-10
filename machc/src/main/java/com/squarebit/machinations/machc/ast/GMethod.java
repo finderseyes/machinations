@@ -1,4 +1,4 @@
 package com.squarebit.machinations.machc.ast;
 
-public class GMethod extends GObject {
+public class GMethod extends GSymbol {
 }

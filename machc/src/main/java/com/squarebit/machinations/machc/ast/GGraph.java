@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * A graph.
  */
-public class GGraph extends GObject {
+public class GGraph extends GSymbol {
     private Map<String, GGraphField> fields = new HashMap<>();  // Mapping from id to graph field declaration.
     private Map<String, GMethod> methods = new HashMap<>(); // Mapping from function name to instance.
 

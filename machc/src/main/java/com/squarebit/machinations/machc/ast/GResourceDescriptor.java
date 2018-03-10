@@ -1,5 +1,7 @@
 package com.squarebit.machinations.machc.ast;
 
+import com.squarebit.machinations.machc.ast.expressions.GExpression;
+
 /**
  * The resource descriptor.
  */

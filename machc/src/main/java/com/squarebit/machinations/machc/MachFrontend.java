@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
+import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -107,7 +108,7 @@ public class MachFrontend {
                 new GGraphTransformationContext().setUnitTransformationContext(unitTransformationContext);
 
         GGraph graph = new GGraph();
-        graph.setId(graphDeclarationContext.getChild(1).getText());
+        graph.setName(graphDeclarationContext.getChild(1).getText());
 
         graphTransformationContext.setGraph(graph);
 
@@ -181,7 +182,7 @@ public class MachFrontend {
                     ;
 
             GField field = new GField();
-            field.setId(name.getText());
+            field.setName(name.getText());
         }
 
 
@@ -371,9 +372,334 @@ public class MachFrontend {
 //        return descriptor;
 //    }
 
-    private GExpression transformExpression(Scope scope,
-                                            MachParser.ExpressionContext expressionContext) throws Exception
+    /**
+     * Transform an expression.
+     * @param expressionContext expression context
+     * @return the expression
+     * @throws Exception any exception found.
+     */
+    private GExpression transformExpression(MachParser.ExpressionContext expressionContext)
+        throws Exception
     {
-        return null;
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof MachParser.ConditionalExpressionContext) {
+            return transformConditionalExpression((MachParser.ConditionalExpressionContext)decl);
+        }
+        else {
+            return transformAssignmentExpression((MachParser.AssignmentContext)decl);
+        }
+    }
+
+    /**
+     * Transform a conditional expression
+     * @param expressionContext expression context
+     * @return the expression
+     * @throws Exception any exception found
+     */
+    private GExpression transformConditionalExpression(MachParser.ConditionalExpressionContext expressionContext)
+        throws Exception
+    {
+        MachParser.ConditionalOrExpressionContext orContext =
+                (MachParser.ConditionalOrExpressionContext)expressionContext.getChild(0);
+
+        GExpression orExpression = transformConditionalOrExpression(orContext);
+        GExpression whenTrueExpression = null;
+        GExpression whenFalseExpression = null;
+
+        if (expressionContext.getChildCount() > 1) {
+            whenTrueExpression = transformExpression(
+                    (MachParser.ExpressionContext)expressionContext.getChild(2)
+            );
+
+            whenFalseExpression = transformConditionalExpression(
+                    (MachParser.ConditionalExpressionContext)expressionContext.getChild(4)
+            );
+        }
+
+        if (whenTrueExpression == null || whenFalseExpression == null)
+            return orExpression;
+
+        return new GTernaryExpression()
+                .setCondition(orExpression)
+                .setFirst(whenTrueExpression)
+                .setSecond(whenFalseExpression);
+    }
+
+    /**
+     * Transform a conditional "or" expression.
+     * @param expressionContext the expression context
+     * @return the expression
+     * @throws Exception any exception found.
+     */
+    private GExpression transformConditionalOrExpression(MachParser.ConditionalOrExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformConditionalAndExpression((MachParser.ConditionalAndExpressionContext)first);
+        }
+        else {
+            GExpression orExpression =
+                    transformConditionalOrExpression((MachParser.ConditionalOrExpressionContext)first);
+            GExpression andExpression =
+                    transformConditionalAndExpression((MachParser.ConditionalAndExpressionContext)second);
+
+            return new GBinaryExpression().setOperator("||").setFirst(orExpression).setSecond(andExpression);
+        }
+    }
+
+    /**
+     * Transform conditional "and" expression.
+     * @param expressionContext the expression context
+     * @return the expression.
+     * @throws Exception
+     */
+    private GExpression transformConditionalAndExpression(MachParser.ConditionalAndExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformInclusiveOrExpression((MachParser.InclusiveOrExpressionContext)first);
+        }
+        else {
+            GExpression andExpression =
+                    transformConditionalAndExpression((MachParser.ConditionalAndExpressionContext)first);
+            GExpression inclusiveOrExpression =
+                    transformInclusiveOrExpression((MachParser.InclusiveOrExpressionContext)second);
+
+            return new GBinaryExpression().setOperator("&&").setFirst(andExpression).setSecond(inclusiveOrExpression);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformInclusiveOrExpression(MachParser.InclusiveOrExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformExclusiveOrExpression((MachParser.ExclusiveOrExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformInclusiveOrExpression((MachParser.InclusiveOrExpressionContext)first);
+            GExpression secondExp = transformExclusiveOrExpression((MachParser.ExclusiveOrExpressionContext)second);
+
+            return new GBinaryExpression().setOperator("|").setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformExclusiveOrExpression(MachParser.ExclusiveOrExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformAndExpression((MachParser.AndExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformExclusiveOrExpression((MachParser.ExclusiveOrExpressionContext)first);
+            GExpression secondExp = transformAndExpression((MachParser.AndExpressionContext)second);
+
+            return new GBinaryExpression().setOperator("^").setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformAndExpression(MachParser.AndExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformEqualityExpression((MachParser.EqualityExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformAndExpression((MachParser.AndExpressionContext)first);
+            GExpression secondExp = transformEqualityExpression((MachParser.EqualityExpressionContext)second);
+
+            return new GBinaryExpression().setOperator("&").setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformEqualityExpression(MachParser.EqualityExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformRelationalExpression((MachParser.RelationalExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformEqualityExpression((MachParser.EqualityExpressionContext)first);
+            GExpression secondExp = transformRelationalExpression((MachParser.RelationalExpressionContext)second);
+            String operator = expressionContext.getChild(1).getText();
+
+            return new GBinaryExpression().setOperator(operator).setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformRelationalExpression(MachParser.RelationalExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformAdditiveExpression((MachParser.AdditiveExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformRelationalExpression((MachParser.RelationalExpressionContext)first);
+            GExpression secondExp = transformAdditiveExpression((MachParser.AdditiveExpressionContext)second);
+            String operator = expressionContext.getChild(1).getText();
+
+            return new GBinaryExpression().setOperator(operator).setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformAdditiveExpression(MachParser.AdditiveExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformMultiplicativeExpression((MachParser.MultiplicativeExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformAdditiveExpression((MachParser.AdditiveExpressionContext)first);
+            GExpression secondExp = transformMultiplicativeExpression((MachParser.MultiplicativeExpressionContext)second);
+            String operator = expressionContext.getChild(1).getText();
+
+            return new GBinaryExpression().setOperator(operator).setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    private GExpression transformMultiplicativeExpression(MachParser.MultiplicativeExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree first = expressionContext.getChild(0);
+        ParseTree second = expressionContext.getChild(2);
+
+        if (second == null) {
+            return transformUnaryExpression((MachParser.UnaryExpressionContext)first);
+        }
+        else {
+            GExpression firstExp = transformMultiplicativeExpression((MachParser.MultiplicativeExpressionContext)first);
+            GExpression secondExp = transformUnaryExpression((MachParser.UnaryExpressionContext)second);
+            String operator = expressionContext.getChild(1).getText();
+
+            return new GBinaryExpression().setOperator(operator).setFirst(firstExp).setSecond(secondExp);
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformUnaryExpression(MachParser.UnaryExpressionContext expressionContext)
+        throws Exception
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof MachParser.PreIncrementExpressionContext ||
+                decl instanceof MachParser.PreDecrementExpressionContext) {
+            return transformPrefixExpression(decl);
+        }
+        else if (decl instanceof MachParser.UnaryExpressionNotPlusMinusContext) {
+            return transformUnaryExpressionNotPlusMinus(
+                    (MachParser.UnaryExpressionNotPlusMinusContext)decl
+            );
+        }
+        else {
+            GExpression child = transformUnaryExpression(
+                    (MachParser.UnaryExpressionContext)expressionContext.getChild(1)
+            );
+
+            if (decl.getText().equals("-")) {
+                return new GNegateExpression().setChild(child);
+            }
+            else
+                return child;
+        }
+    }
+
+    /**
+     *
+     * @param decl
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformPrefixExpression(ParseTree decl) throws Exception {
+        GExpression child = transformUnaryExpression((MachParser.UnaryExpressionContext)decl.getChild(1));
+        return new GPrefixExpression().setOperator(decl.getChild(0).getText()).setChild(child);
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformUnaryExpressionNotPlusMinus(MachParser.UnaryExpressionNotPlusMinusContext expressionContext)
+        throws Exception
+    {
+
+    }
+
+    /**
+     * Transform a conditional expression
+     * @param expressionContext expression context
+     * @return the expression
+     * @throws Exception any exception found
+     */
+    private GExpression transformAssignmentExpression(MachParser.AssignmentContext expressionContext)
+        throws Exception
+    {
+        return  null;
     }
 }
