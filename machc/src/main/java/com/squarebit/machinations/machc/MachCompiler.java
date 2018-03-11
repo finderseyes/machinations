@@ -4,6 +4,10 @@ import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.GExpression;
 import com.squarebit.machinations.machc.runtime.components.*;
 import com.squarebit.machinations.machc.runtime.expressions.TExpression;
+import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
+import com.squarebit.machinations.machc.runtime.instructions.Evaluate;
+import com.squarebit.machinations.machc.runtime.instructions.Load;
+import com.squarebit.machinations.machc.runtime.instructions.StoreField;
 
 import java.util.*;
 
@@ -27,7 +31,39 @@ public final class MachCompiler {
         private MethodBase method;
         private TypeBuildContext typeBuildContext;
 
+        private Block block;
+        private Stack<Block> blocks = new Stack<>();
+
         private Map<Object, Scope> scopes = new HashMap<>();
+
+        /**
+         * Push block.
+         *
+         * @param block the block
+         */
+        public void pushBlock(Block block) {
+            blocks.push(block);
+        }
+
+        /**
+         * Pop the last block.
+         *
+         * @return the block
+         */
+        public Block popBlock() {
+            if (blocks.isEmpty())
+                return null;
+            return blocks.pop();
+        }
+
+        /**
+         * Current block.
+         *
+         * @return the block
+         */
+        public Block currentBlock() {
+            return blocks.peek();
+        }
 
         /**
          * Gets scope.
@@ -136,7 +172,6 @@ public final class MachCompiler {
         // Field declaration.
         for (TypeBuildContext context: typeBuildContexts) {
             compilationContext.typeBuildContext = context;
-            compilationContext.pushTypeScope(context.builder.getTarget());
 
             GGraph graph = context.builder.getDeclaration();
 
@@ -149,8 +184,6 @@ public final class MachCompiler {
                             .build();
                 }
             }
-
-            compilationContext.popScope();
         }
 
         // Compile internal constructor.
@@ -163,21 +196,43 @@ public final class MachCompiler {
     }
 
     /**
+     * Begin a method.
+     * @param method
+     */
+    private void beginMethod(MethodBase method) {
+        compilationContext.pushMethodScope(method);
+        compilationContext.block = new Block();
+    }
+
+    /**
+     * End a method.
+     */
+    private void endMethod() {
+        compilationContext.method.instructions = compilationContext.block.flatten();
+
+        compilationContext.popScope();
+        compilationContext.block = null;
+    }
+
+    /**
      * Compiles the internal constructor.
      * @param context type build context
      */
     private void compileInternalConstructor(TypeBuildContext context) {
-        compilationContext.pushMethodScope(context.internalConstructor);
+        beginMethod(context.internalConstructor);
 
         List<TField> fields = context.builder.getFields();
 
         fields.forEach(f -> buildGraphFieldInitializer(context, f));
 
-        compilationContext.popScope();
+        endMethod();
     }
 
     private void buildGraphFieldInitializer(TypeBuildContext context, TField field) {
         GGraphField declaration = field.getDeclaration();
+
+        Block block = compilationContext.currentBlock();
+        // Variable thisObjectRef = compilationContext.getMethod().variables.get(0);
 
         if (declaration instanceof GField) {
             GField fieldDeclaration = (GField)declaration;
@@ -185,7 +240,9 @@ public final class MachCompiler {
                 return;
 
 
-            // compileExpression(fieldDeclaration.getInitializer());
+            block.add(new Load(0));
+            block.add(new Evaluate(compileExpression(fieldDeclaration.getInitializer())));
+            block.add(new StoreField(0));
         }
     }
 
@@ -194,6 +251,6 @@ public final class MachCompiler {
     }
 
     private TExpression compileExpression(GExpression expression) {
-        return null;
+        return new TObjectRef(new TInteger(10));
     }
 }

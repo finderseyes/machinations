@@ -16,7 +16,7 @@ public final class FrameActivation {
      *
      * @return the instructions
      */
-    public Instruction[] getInstructions() {
+    public MachInstruction[] getInstructions() {
         return frame.getInstructions();
     }
 

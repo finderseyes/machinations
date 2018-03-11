@@ -2,14 +2,8 @@ package com.squarebit.machinations.machc.runtime;
 
 import com.squarebit.machinations.machc.MachCompiler;
 import com.squarebit.machinations.machc.MachExecutable;
-import com.squarebit.machinations.machc.ast.*;
-import com.squarebit.machinations.machc.runtime.components.TInteger;
+import com.squarebit.machinations.machc.ast.GProgram;
 import com.squarebit.machinations.machc.runtime.components.TType;
-import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
-import com.squarebit.machinations.machc.runtime.instructions.legacy.Eval;
-import com.squarebit.machinations.machc.runtime.instructions.legacy.Invoke;
-import com.squarebit.machinations.machc.runtime.instructions.legacy.Jump;
-import com.squarebit.machinations.machc.runtime.instructions.legacy.Label;
 
 import java.util.Stack;
 
@@ -104,9 +98,9 @@ public final class MachMachine {
         FrameExecutionContext executionContext = null;
         FrameActivation activation = null;
         int nextInstruction = 0;
-        Instruction[] instructions;
+        MachInstruction[] instructions;
 
-        Instruction instruction = null;
+        MachInstruction instruction = null;
 
         while (!this.executionStack.isEmpty() && instruction == null) {
             executionContext = executionStack.peek();
@@ -122,61 +116,61 @@ public final class MachMachine {
             }
         }
 
-        if (instruction != null) {
-            executeInstruction(instruction);
-            executionContext.next();
-        }
+//        if (instruction != null) {
+//            executeInstruction(instruction);
+//            executionContext.next();
+//        }
     }
-
-    /**
-     * Execute one instruction.
-     * @param instruction the instruction
-     */
-    private void executeInstruction(Instruction instruction) {
-        try {
-            if (instruction instanceof Jump) {
-                executeJump((Jump)instruction);
-            }
-            else {
-                instruction.execute();
-            }
-        }
-        catch (Exception ex) {
-
-        }
-    }
-
-    private void executeJump(Jump jump) {
-        if (jump.getFrame() != jump.getTarget().getFrame())
-            throw new RuntimeException("Jump must be in-frame");
-
-        FrameExecutionContext executionContext = executionStack.peek();
-        executionContext.nextInstruction = jump.getTarget().getIndex();
-    }
-
-    /**
-     * Builds the frame that responsible for the main routine.
-     * @return the boot frame
-     */
-    private Frame buildBootImage() {
-        try {
-            Frame.Builder builder = new Frame.Builder();
-
-            Variable mainGraph = builder.createVariable().setType(TType.INTEGER_TYPE).build();
-
-            builder.addInstruction(new Eval(new TObjectRef(new TInteger(10)), mainGraph));
-
-            Label label = new Label();
-            builder.addInstruction(label);
-
-            Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new Variable[0]);
-            builder.addInstruction(invoke);
-            builder.addInstruction(new Jump(label));
-
-            return builder.build();
-        }
-        catch (Exception ex) {
-            return null;
-        }
-    }
+//
+//    /**
+//     * Execute one instruction.
+//     * @param instruction the instruction
+//     */
+//    private void executeInstruction(MachInstruction instruction) {
+//        try {
+//            if (instruction instanceof Jump) {
+//                executeJump((Jump)instruction);
+//            }
+//            else {
+//                instruction.execute();
+//            }
+//        }
+//        catch (Exception ex) {
+//
+//        }
+//    }
+//
+//    private void executeJump(Jump jump) {
+//        if (jump.getFrame() != jump.getTarget().getFrame())
+//            throw new RuntimeException("Jump must be in-frame");
+//
+//        FrameExecutionContext executionContext = executionStack.peek();
+//        executionContext.nextInstruction = jump.getTarget().getIndex();
+//    }
+//
+//    /**
+//     * Builds the frame that responsible for the main routine.
+//     * @return the boot frame
+//     */
+//    private Frame buildBootImage() {
+//        try {
+//            Frame.Builder builder = new Frame.Builder();
+//
+//            Variable mainGraph = builder.createVariable().setType(TType.INTEGER_TYPE).build();
+//
+//            builder.addInstruction(new Eval(new TObjectRef(new TInteger(10)), mainGraph));
+//
+//            Label label = new Label();
+//            builder.addInstruction(label);
+//
+//            Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new Variable[0]);
+//            builder.addInstruction(invoke);
+//            builder.addInstruction(new Jump(label));
+//
+//            return builder.build();
+//        }
+//        catch (Exception ex) {
+//            return null;
+//        }
+//    }
 }

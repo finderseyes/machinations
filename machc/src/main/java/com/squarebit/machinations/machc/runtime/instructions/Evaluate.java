@@ -1,12 +1,13 @@
 package com.squarebit.machinations.machc.runtime.instructions;
 
+import com.squarebit.machinations.machc.runtime.MachInstruction;
 import com.squarebit.machinations.machc.runtime.expressions.TExpression;
 
 /**
  * Evaluates an expression and push its result onto the stack.
  */
-public final class Evaluate {
-    private TExpression expression;
+public final class Evaluate extends MachInstruction {
+    private final TExpression expression;
 
     /**
      * Instantiates a new instance.

@@ -16,7 +16,7 @@ public final class Frame {
     public static class Builder {
         Frame parent;
         List<Variable> variables = new ArrayList<>();
-        List<Instruction> instructions = new ArrayList<>();
+        List<MachInstruction> instructions = new ArrayList<>();
         Variable methodReturnValue;
 
         /**
@@ -47,7 +47,7 @@ public final class Frame {
          * @param instruction the instruction
          * @return the builder
          */
-        public Builder addInstruction(Instruction instruction) {
+        public Builder addInstruction(MachInstruction instruction) {
             instructions.add(instruction);
             return this;
         }
@@ -72,16 +72,16 @@ public final class Frame {
 
             // Reinitialize instruction frame.
             for (int i = 0; i < instructions.size(); i++) {
-                Instruction instruction = instructions.get(i);
-                instruction.frame = frame;
-                instruction.index = i;
+                MachInstruction instruction = instructions.get(i);
+//                instruction.frame = frame;
+//                instruction.index = i;
             }
 
             frame.parent = parent;
             frame.variables = variables.toArray(new Variable[0]);
             frame.methodReturnValue = methodReturnValue;
 
-            frame.instructions = instructions.toArray(new Instruction[0]);
+            frame.instructions = instructions.toArray(new MachInstruction[0]);
 
             return frame;
         }
@@ -89,7 +89,7 @@ public final class Frame {
 
     private Frame parent;
     private Variable[] variables;
-    private Instruction[] instructions;
+    private MachInstruction[] instructions;
 
     // Named variable.
     private Variable methodReturnValue;
@@ -127,7 +127,7 @@ public final class Frame {
      *
      * @return the instruction [ ]
      */
-    public Instruction[] getInstructions() {
+    public MachInstruction[] getInstructions() {
         return instructions;
     }
 

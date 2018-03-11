@@ -1,6 +1,5 @@
 package com.squarebit.machinations.machc.runtime;
 
-import com.squarebit.machinations.machc.runtime.components.TObject;
 import com.squarebit.machinations.machc.runtime.components.TType;
 
 import java.util.HashMap;
@@ -42,9 +41,8 @@ final class TypeRegistry {
      * Register a built-in type with given implementing class.
      *
      * @param type the type
-     * @param <T> implementing class type
      */
-    public <T extends TObject> void registerType(TType<T> type) {
+    public void registerType(TType type) {
         typeByName.put(type.getName(), type);
     }
 }
