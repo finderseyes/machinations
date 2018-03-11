@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc.runtime.instructions;
+package com.squarebit.machinations.machc.runtime.instructions.legacy;
 
 import com.squarebit.machinations.machc.runtime.FrameActivation;
 import com.squarebit.machinations.machc.runtime.Instruction;

@@ -7,11 +7,20 @@ import com.squarebit.machinations.machc.runtime.components.TType;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The scope when declaring a type.
+ */
 public class TypeScope extends Scope {
     private TType type;
     private Map<String, TField> fieldByName = new HashMap<>();
     private Map<String, TMethod> methodByName = new HashMap<>();
 
+    /**
+     * Instantiates a new type scope.
+     *
+     * @param parent the parent
+     * @param type   the type
+     */
     public TypeScope(Scope parent, TType type) {
         super(parent);
         this.type = type;
@@ -23,10 +32,21 @@ public class TypeScope extends Scope {
             methodByName.put(method.getName(), method);
     }
 
+    /**
+     * Gets type.
+     *
+     * @return the type
+     */
     public TType getType() {
         return type;
     }
 
+    /**
+     * Finds a symbol with given name within this scope.
+     *
+     * @param name the synmbol name
+     * @return the symbol or null.
+     */
     @Override
     protected Object findLocalSymbol(String name) {
         Object result = fieldByName.getOrDefault(name, null);

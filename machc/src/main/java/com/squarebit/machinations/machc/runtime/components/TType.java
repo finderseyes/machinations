@@ -10,13 +10,12 @@ import java.util.Map;
 /**
  * Description of a type in the interpreter.
  */
-public final class TType<T extends TObject> {
+public final class TType {
     /**
      * The type builder class.
-     * @param <R> type implementing class parameter.
      */
-    public static class Builder<R extends TObject> {
-        private TType<R> target;
+    public static class Builder {
+        private TType target;
 
         private List<TField> fields = new ArrayList<>();
         private List<TMethod> methods = new ArrayList<>();
@@ -26,7 +25,7 @@ public final class TType<T extends TObject> {
          * Instantiates a new builder.
          */
         public Builder() {
-            target = new TType<>();
+            target = new TType();
         }
 
         /**
@@ -34,7 +33,7 @@ public final class TType<T extends TObject> {
          *
          * @return the type
          */
-        public TType<R> getTarget() {
+        public TType getTarget() {
             return target;
         }
 
@@ -42,7 +41,7 @@ public final class TType<T extends TObject> {
             return target.declaration;
         }
 
-        public Builder<R> setDeclaration(GGraph declaration) {
+        public Builder setDeclaration(GGraph declaration) {
             target.declaration = declaration;
             return this;
         }
@@ -51,7 +50,7 @@ public final class TType<T extends TObject> {
             return target.name;
         }
 
-        public Builder<R> setName(String name) {
+        public Builder setName(String name) {
             target.name = name;
             return this;
         }
@@ -60,16 +59,16 @@ public final class TType<T extends TObject> {
             return target.baseType;
         }
 
-        public Builder<R> setBaseType(TType baseType) {
+        public Builder setBaseType(TType baseType) {
             target.baseType = baseType;
             return this;
         }
 
-        public Class<R> getImplementation() {
+        public Class getImplementation() {
             return target.implementation;
         }
 
-        public Builder<R> setImplementation(Class<R> implementation) {
+        public Builder setImplementation(Class implementation) {
             target.implementation = implementation;
             return this;
         }
@@ -78,7 +77,7 @@ public final class TType<T extends TObject> {
             return target.valueType;
         }
 
-        public Builder<R> setValueType(boolean valueType) {
+        public Builder setValueType(boolean valueType) {
             target.valueType = valueType;
             return this;
         }
@@ -101,7 +100,7 @@ public final class TType<T extends TObject> {
             return builder;
         }
 
-        public Builder<R> addMethod(TMethod method) {
+        public Builder addMethod(TMethod method) {
             this.methods.add(method);
             return this;
         }
@@ -112,7 +111,7 @@ public final class TType<T extends TObject> {
             return builder;
         }
 
-        public Builder<R> scanNativeMethods() {
+        public Builder scanNativeMethods() {
 //            Stream.of(type.implementation.getDeclaredMethods()).forEach(method -> {
 //                NativeMethod[] annotations = method.getAnnotationsByType(NativeMethod.class);
 //                if (annotations.length > 0) {
@@ -128,7 +127,7 @@ public final class TType<T extends TObject> {
          * Builds the instance.
          * @return
          */
-        public TType<R> build() {
+        public TType build() {
             target.fields = fields.toArray(new TField[0]);
             target.methods = methods.toArray(new TMethod[0]);
             target.constructors = constructors.toArray(new TConstructor[0]);
@@ -139,7 +138,7 @@ public final class TType<T extends TObject> {
     private GGraph declaration;
     private String name;
     private TType baseType;
-    private Class<T> implementation;
+    private Class implementation;
     private boolean valueType;
     private TField[] fields;
     private TMethod[] methods;
@@ -186,7 +185,7 @@ public final class TType<T extends TObject> {
      *
      * @return the implementation
      */
-    public Class<T> getImplementation() {
+    public Class getImplementation() {
         return implementation;
     }
 
@@ -231,23 +230,23 @@ public final class TType<T extends TObject> {
      * Built-in types
      */
 
-    public static final TType<TObject> OBJECT_TYPE =
-            new TType.Builder<>()
+    public static final TType OBJECT_TYPE =
+            new TType.Builder()
                     .setImplementation(TObject.class)
                     .build();
 
-    public static final TType<TVoid> VOID_TYPE =
-            new TType.Builder<TVoid>()
+    public static final TType VOID_TYPE =
+            new TType.Builder()
                     .setBaseType(OBJECT_TYPE)
                     .setImplementation(TVoid.class)
                     .build();
 
-    public static final TType<TInteger> INTEGER_TYPE = registerTInteger();
-    public static final TType<TFloat> FLOAT_TYPE = registerTFloat();
-    public static final TType<TBoolean> BOOLEAN_TYPE = registerTBoolean();
-    public static final TType<TString> STRING_TYPE = registerTString();
+    public static final TType INTEGER_TYPE = registerTInteger();
+    public static final TType FLOAT_TYPE = registerTFloat();
+    public static final TType BOOLEAN_TYPE = registerTBoolean();
+    public static final TType STRING_TYPE = registerTString();
 
-    public static final TType<TGraph> GRAPH_TYPE = registerTGraph();
+    public static final TType GRAPH_TYPE = registerTGraph();
 
     /**
      * Determines the type from native type..
@@ -271,8 +270,8 @@ public final class TType<T extends TObject> {
     }
 
     // TInteger type.
-    private static TType<TInteger> registerTInteger() {
-        TType.Builder<TInteger> builder = new TType.Builder<TInteger>()
+    private static TType registerTInteger() {
+        TType.Builder builder = new TType.Builder()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TInteger.class.getSimpleName())
                 .setImplementation(TInteger.class)
@@ -284,8 +283,8 @@ public final class TType<T extends TObject> {
     }
 
     // TFloat type.
-    private static TType<TFloat> registerTFloat() {
-        TType.Builder<TFloat> builder = new TType.Builder<TFloat>()
+    private static TType registerTFloat() {
+        TType.Builder builder = new TType.Builder()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TInteger.class.getSimpleName())
                 .setImplementation(TFloat.class)
@@ -297,8 +296,8 @@ public final class TType<T extends TObject> {
     }
 
     // TBoolean
-    private static TType<TBoolean> registerTBoolean() {
-        TType.Builder<TBoolean> builder = new TType.Builder<TBoolean>()
+    private static TType registerTBoolean() {
+        TType.Builder builder = new TType.Builder()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TBoolean.class.getSimpleName())
                 .setImplementation(TBoolean.class)
@@ -310,8 +309,8 @@ public final class TType<T extends TObject> {
     }
 
     // TString
-    private static TType<TString> registerTString() {
-        TType.Builder<TString> builder = new TType.Builder<TString>()
+    private static TType registerTString() {
+        TType.Builder builder = new TType.Builder()
                 .setBaseType(OBJECT_TYPE)
                 .setName(TString.class.getSimpleName())
                 .setImplementation(TString.class)
@@ -323,8 +322,8 @@ public final class TType<T extends TObject> {
     }
 
     // TGraph
-    private static TType<TGraph> registerTGraph() {
-        TType.Builder<TGraph> builder = new TType.Builder<>();
+    private static TType registerTGraph() {
+        TType.Builder builder = new TType.Builder();
         builder
                 .setBaseType(OBJECT_TYPE)
                 .setName(TGraph.class.getSimpleName())

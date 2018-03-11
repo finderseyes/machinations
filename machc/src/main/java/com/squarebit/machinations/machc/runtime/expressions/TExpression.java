@@ -5,7 +5,7 @@ import com.squarebit.machinations.machc.runtime.components.TObject;
 import com.squarebit.machinations.machc.runtime.components.TType;
 
 /**
- * The type T expression.
+ * An Mach-machine expression, whose operands include literals and stack direct access.
  */
 public abstract class TExpression {
 

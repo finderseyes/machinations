@@ -1,46 +1,20 @@
 package com.squarebit.machinations.machc.runtime.instructions;
 
-import com.squarebit.machinations.machc.runtime.Frame;
-import com.squarebit.machinations.machc.runtime.FrameActivation;
-import com.squarebit.machinations.machc.runtime.Instruction;
-import com.squarebit.machinations.machc.runtime.components.TObject;
-import com.squarebit.machinations.machc.runtime.components.TVoid;
-
-public final class Return extends Instruction {
-    private final TObject value;
+/**
+ * Returns from current method, and push its return value onto stack if yet.
+ */
+public class Return {
+    private boolean haveReturnValue;
 
     /**
      * Instantiates a new return instruction.
      *
-     * @param value the value to return
+     * @param haveReturnValue if true, the current value on operand stack is popped and push onto caller stack before
+     *                        returning, or simply returns to the caller otherwise.
      */
-    public Return(TObject value) {
-        this.value = value;
+    public Return(boolean haveReturnValue) {
+        this.haveReturnValue = haveReturnValue;
     }
 
-    /**
-     * Instantiates a new Return.
-     */
-    public Return() {
-        this.value = TVoid.INSTANCE;
-    }
 
-    /**
-     * Gets value.
-     *
-     * @return the value
-     */
-    public TObject getValue() {
-        return value;
-    }
-
-    /**
-     * Execute the current instruction.
-     */
-    @Override
-    public void execute() {
-        Frame frame = getFrame();
-        FrameActivation activation = getFrame().currentActivation();
-        frame.getMethodReturnValue().set(activation, this.value);
-    }
 }

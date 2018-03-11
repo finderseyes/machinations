@@ -20,5 +20,5 @@ public abstract class Instruction {
     /**
      * Execute the current instruction.
      */
-    public abstract void execute() throws Exception;
+    public void execute() throws Exception {}
 }

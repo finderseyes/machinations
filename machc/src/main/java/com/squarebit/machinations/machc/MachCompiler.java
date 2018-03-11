@@ -11,35 +11,65 @@ import java.util.*;
  * Compiler for Mach machine.
  */
 public final class MachCompiler {
+    /**
+     * Contains data when building a type.
+     */
     private static class TypeBuildContext {
         private TType.Builder builder;
         private TConstructor internalConstructor;
     }
 
+    /**
+     * Contains data when compiling.
+     */
     private static class CompilationContext {
         private Scope scope;
         private MethodBase method;
+        private TypeBuildContext typeBuildContext;
 
         private Map<Object, Scope> scopes = new HashMap<>();
 
+        /**
+         * Gets scope.
+         *
+         * @return the scope
+         */
         public Scope getScope() {
             return scope;
         }
 
+        /**
+         * Gets method.
+         *
+         * @return the method
+         */
         public MethodBase getMethod() {
             return method;
         }
 
+        /**
+         * Push type scope.
+         *
+         * @param type the type
+         */
         public void pushTypeScope(TType type) {
             this.scope = scopes.computeIfAbsent(type, (k) -> new TypeScope(this.scope, type));
             this.method = null;
         }
 
+        /**
+         * Push method scope.
+         *
+         * @param method the method
+         */
         public void pushMethodScope(MethodBase method) {
             this.scope = scopes.computeIfAbsent(method, (k) -> new MethodScope(this.scope, method));
             this.method = method;
         }
 
+        /**
+         * Pop scope.
+         */
         public void popScope() {
             if (scope != null) {
                 scope = scope.getParent();
@@ -85,7 +115,7 @@ public final class MachCompiler {
         // Type declaration.
         for (GUnit unit : program.getUnits()) {
             for (GGraph graph : unit.getGraphs()) {
-                TType.Builder<TRuntimeGraph> graphBuilder = new TType.Builder<TRuntimeGraph>()
+                TType.Builder graphBuilder = new TType.Builder()
                         .setDeclaration(graph)
                         .setName(graph.getName())
                         .setBaseType(TType.GRAPH_TYPE)
@@ -94,7 +124,10 @@ public final class MachCompiler {
                 // Add type build context.
                 TypeBuildContext context = new TypeBuildContext();
                 context.builder = graphBuilder;
-                context.internalConstructor = buildInternalConstructor(graphBuilder);
+
+                // Creates internal constructor.
+                context.internalConstructor =
+                        graphBuilder.createConstructor().setName("__internal_ctor__").build();
 
                 typeBuildContexts.add(context);
             }
@@ -102,9 +135,10 @@ public final class MachCompiler {
 
         // Field declaration.
         for (TypeBuildContext context: typeBuildContexts) {
-            GGraph graph = context.builder.getDeclaration();
-
+            compilationContext.typeBuildContext = context;
             compilationContext.pushTypeScope(context.builder.getTarget());
+
+            GGraph graph = context.builder.getDeclaration();
 
             for (GGraphField field: graph.getFields()) {
                 if (field instanceof GField) {
@@ -119,15 +153,9 @@ public final class MachCompiler {
             compilationContext.popScope();
         }
 
-        // Compile field initializers.
-        for (TypeBuildContext context: typeBuildContexts) {
-            compilationContext.pushTypeScope(context.builder.getTarget());
-            List<TField> fields = context.builder.getFields();
-
-            fields.forEach(f -> buildGraphFieldInitializer(context, f));
-
-            compilationContext.popScope();
-        }
+        // Compile internal constructor.
+        for (TypeBuildContext context: typeBuildContexts)
+            compileInternalConstructor(context);
 
         typeBuildContexts.forEach(c -> types.add(c.builder.build()));
 
@@ -135,28 +163,21 @@ public final class MachCompiler {
     }
 
     /**
-     * Adds a type to known types.
-     * @param type type.
+     * Compiles the internal constructor.
+     * @param context type build context
      */
-    private void addType(TType type) {
+    private void compileInternalConstructor(TypeBuildContext context) {
+        compilationContext.pushMethodScope(context.internalConstructor);
 
-        this.types.add(type);
-    }
+        List<TField> fields = context.builder.getFields();
 
-    /**
-     * Build the internal constructor.
-     * @param graphBuilder graph builder.
-     */
-    private TConstructor buildInternalConstructor(TType.Builder graphBuilder) {
-        return graphBuilder.createConstructor()
-                .setName("__internal_ctor__")
-                .build();
+        fields.forEach(f -> buildGraphFieldInitializer(context, f));
+
+        compilationContext.popScope();
     }
 
     private void buildGraphFieldInitializer(TypeBuildContext context, TField field) {
         GGraphField declaration = field.getDeclaration();
-
-        compilationContext.pushMethodScope(context.internalConstructor);
 
         if (declaration instanceof GField) {
             GField fieldDeclaration = (GField)declaration;
@@ -164,10 +185,8 @@ public final class MachCompiler {
                 return;
 
 
-            compileExpression(fieldDeclaration.getInitializer());
+            // compileExpression(fieldDeclaration.getInitializer());
         }
-
-        compilationContext.popScope();
     }
 
     private void compileAssign(TField lhs, GExpression rhs) {

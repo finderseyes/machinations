@@ -6,10 +6,10 @@ import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.runtime.components.TInteger;
 import com.squarebit.machinations.machc.runtime.components.TType;
 import com.squarebit.machinations.machc.runtime.expressions.TObjectRef;
-import com.squarebit.machinations.machc.runtime.instructions.Eval;
-import com.squarebit.machinations.machc.runtime.instructions.Invoke;
-import com.squarebit.machinations.machc.runtime.instructions.Jump;
-import com.squarebit.machinations.machc.runtime.instructions.Label;
+import com.squarebit.machinations.machc.runtime.instructions.legacy.Eval;
+import com.squarebit.machinations.machc.runtime.instructions.legacy.Invoke;
+import com.squarebit.machinations.machc.runtime.instructions.legacy.Jump;
+import com.squarebit.machinations.machc.runtime.instructions.legacy.Label;
 
 import java.util.Stack;
 
