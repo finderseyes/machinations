@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * A Mach code unit, which corresponds to a source code file.
  */
-public final class GUnit extends GObject {
+public final class GUnit extends GSymbol {
     private Map<String, GGraph> graphs = new HashMap<>(); // Mapping from graph id to graph instance.
 
     /**

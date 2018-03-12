@@ -1,61 +1,20 @@
 package com.squarebit.machinations.machc;
 
-import com.squarebit.machinations.machc.runtime.components.TObject;
-
 /**
- * The scope.
+ * Scope, providing information regarding to parent scope and local symbols.
  */
-public abstract class Scope {
-    private Scope parent;
-
+interface Scope {
     /**
-     * Instantiates a new scope.
-     *
-     * @param parent the parent
+     * Gets the parent scope.
+     * @return parent scope.
      */
-    protected Scope(Scope parent) {
-        this.parent = parent;
-    }
+    Scope getParent();
 
     /**
-     * Sets parent.
-     *
-     * @param parent the parent
-     * @return the scope
-     */
-    public Scope setParent(Scope parent) {
-        this.parent = parent;
-        return this;
-    }
-
-    /**
-     * Gets parent.
-     *
-     * @return the parent
-     */
-    public Scope getParent() {
-        return parent;
-    }
-
-    /**
-     * Find the closest symbol with given name in this scope or its parents.
+     * Finds a local symbol with given name in this scope.
      *
      * @param name the symbol name
-     * @return the symbol or null
-     */
-    public final Object findSymbol(String name) {
-        Object result = findLocalSymbol(name);
-
-        if (result == null && parent != null)
-            return parent.findSymbol(name);
-        return result;
-    }
-
-    /**
-     * Finds a symbol with given name within this scope.
-     *
-     * @param name the synmbol name
      * @return the symbol or null.
      */
-    protected abstract Object findLocalSymbol(String name);
+    SymbolInfo findSymbol(String name);
 }

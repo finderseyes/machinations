@@ -59,4 +59,13 @@ public class GGraph extends GSymbol {
     public GMethod addMethod(GMethod method) {
         return methods.put(method.getName(), method);
     }
+
+    /**
+     * Gets methods.
+     *
+     * @return the methods
+     */
+    public Collection<GMethod> getMethods() {
+        return methods.values();
+    }
 }
