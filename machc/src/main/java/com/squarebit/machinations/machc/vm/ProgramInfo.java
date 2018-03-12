@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Information about a program.
  */
-final class ProgramInfo implements Scope {
+public final class ProgramInfo implements Scope {
     private Map<String, UnitInfo> unitByName = new HashMap<>();
 
     /**

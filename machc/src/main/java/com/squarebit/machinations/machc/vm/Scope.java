@@ -1,9 +1,9 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 /**
  * Scope, providing information regarding to parent scope and local symbols.
  */
-interface Scope {
+public interface Scope {
     /**
      * Gets the parent scope.
      * @return parent scope.

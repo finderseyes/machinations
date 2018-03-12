@@ -81,7 +81,7 @@ public final class Variable {
      */
     public TObject get(FrameActivation activation) {
         if (activation == null)
-            throw new RuntimeException("Variable not found under given activation.");
+            throw new RuntimeException("VariableInfo not found under given activation.");
 
         if (activation.frame == frame)
             return activation.variableTable[index];
@@ -97,7 +97,7 @@ public final class Variable {
      */
     public void set(FrameActivation activation, TObject value) {
         if (activation == null)
-            throw new RuntimeException("Variable not found under given activation.");
+            throw new RuntimeException("VariableInfo not found under given activation.");
 
         if (activation.frame == frame)
             activation.variableTable[index] = value;

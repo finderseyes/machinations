@@ -1,6 +1,5 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
-import com.squarebit.machinations.machc.ast.GSymbol;
 import com.squarebit.machinations.machc.ast.GUnit;
 
 import java.util.Collection;
@@ -10,7 +9,7 @@ import java.util.Map;
 /**
  * Information about a unit.
  */
-final class UnitInfo extends SymbolInfo implements Scope {
+public final class UnitInfo extends SymbolInfo implements Scope {
     private ProgramInfo program;
     private Map<String, TypeInfo> typeByName = new HashMap<>();
 

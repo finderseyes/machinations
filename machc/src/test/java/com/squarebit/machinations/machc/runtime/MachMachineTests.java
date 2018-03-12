@@ -74,7 +74,7 @@ public class MachMachineTests {
 //    @Test
 //    public void should_execute_frame() throws Exception {
 //        Frame.Builder frameBuidler = new Frame.Builder();
-//        Variable v0 = frameBuidler.createVariable().setType(TType.INTEGER_TYPE).build();
+//        VariableInfo v0 = frameBuidler.declareVariable().setType(TType.INTEGER_TYPE).build();
 //        Frame frame = frameBuidler.build();
 //
 //        FrameActivation activation = frame.activate();

@@ -1,11 +1,11 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 import com.squarebit.machinations.machc.ast.GGraphField;
 
 /**
  * Information about a TField during compilation.
  */
-final class FieldInfo extends SymbolInfo {
+public final class FieldInfo extends SymbolInfo {
     private TypeInfo type;
 
     /**

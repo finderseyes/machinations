@@ -1,11 +1,11 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 import com.squarebit.machinations.machc.ast.GSymbol;
 
 /**
  * A symbol.
  */
-abstract class SymbolInfo {
+public abstract class SymbolInfo {
     GSymbol declaration;
     String name;
 

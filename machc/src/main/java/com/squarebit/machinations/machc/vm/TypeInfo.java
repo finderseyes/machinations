@@ -1,6 +1,7 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 import com.squarebit.machinations.machc.ast.GGraph;
+import com.squarebit.machinations.machc.vm.components.TType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,11 +9,13 @@ import java.util.Map;
 /**
  * Information about a TType object during compilation.
  */
-final class TypeInfo extends SymbolInfo implements Scope
+public final class TypeInfo extends SymbolInfo implements Scope
 {
-    static final String INTERNAL_CONSTRUCTOR_NAME = "$__intctor__$";
+    public static final String INTERNAL_CONSTRUCTOR_NAME = "$__intctor__$";
 
+    private TType type;
     private UnitInfo unit;
+    private TypeInfo baseTypeInfo;
     private MethodInfo internalConstructor;
 
     private Map<String, FieldInfo> fieldByName = new HashMap<>();
@@ -24,11 +27,42 @@ final class TypeInfo extends SymbolInfo implements Scope
      * @param unit the unit
      */
     public TypeInfo(UnitInfo unit) {
+        this.type = new TType(this);
+
         this.unit = unit;
 
         internalConstructor = new MethodInfo(this);
         internalConstructor.setName(TypeInfo.INTERNAL_CONSTRUCTOR_NAME);
         this.addMethod(internalConstructor);
+    }
+
+    /**
+     * Gets type.
+     *
+     * @return the type
+     */
+    public TType getType() {
+        return type;
+    }
+
+    /**
+     * Gets base type info.
+     *
+     * @return the base type info
+     */
+    public TypeInfo getBaseTypeInfo() {
+        return baseTypeInfo;
+    }
+
+    /**
+     * Sets base type info.
+     *
+     * @param baseTypeInfo the base type info
+     * @return the base type info
+     */
+    public TypeInfo setBaseTypeInfo(TypeInfo baseTypeInfo) {
+        this.baseTypeInfo = baseTypeInfo;
+        return this;
     }
 
     /**

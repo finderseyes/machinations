@@ -2,7 +2,10 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.GExpression;
-import com.squarebit.machinations.machc.runtime.expressions.TExpression;
+import com.squarebit.machinations.machc.vm.*;
+import com.squarebit.machinations.machc.vm.expressions.Expression;
+import com.squarebit.machinations.machc.vm.instructions.Load;
+import com.squarebit.machinations.machc.vm.instructions.PutField;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -14,8 +17,8 @@ public final class MachCompiler {
      * Expression compilation result.
      */
     private class ExpressionCompilation {
-        private TExpression expression;
-        private int numVariables = 0;
+        private Expression expression;
+        private int variableCount = 0;
     }
 //    /**
 //     * Contains data when building a type.
@@ -191,30 +194,6 @@ public final class MachCompiler {
             }
         }
 
-//
-//        // Field declaration.
-//        for (TypeBuildContext context: typeBuildContexts) {
-//            compilationContext.typeBuildContext = context;
-//
-//            GGraph graph = context.builder.getDeclaration();
-//
-//            for (GGraphField field: graph.getFields()) {
-//                if (field instanceof GField) {
-//                    context.builder.createField()
-//                            .setDeclaration(field)
-//                            .setName(field.getName())
-//                            .setType(TType.OBJECT_TYPE)
-//                            .build();
-//                }
-//            }
-//        }
-//
-//        // Compile internal constructor.
-//        for (TypeBuildContext context: typeBuildContexts)
-//            compileInternalConstructor(context);
-//
-//        typeBuildContexts.forEach(c -> types.add(c.builder.build()));
-
         return executable;
     }
 
@@ -225,15 +204,16 @@ public final class MachCompiler {
     private void initializeField(FieldInfo field) {
         GGraphField declaration = field.getDeclaration();
         this.currentScope = field.getType().getInternalConstructor().getCode();
+        MethodInfo constructor = field.getType().getInternalConstructor();
 
         if (declaration instanceof GField) {
             GField fieldDeclaration = (GField)declaration;
             if (fieldDeclaration.getInitializer() == null)
                 return;
 
-            __load(0);
+            __load(constructor.getThisVariable());
             __evaluate(fieldDeclaration.getInitializer());
-            // __putField(fi);
+            __putField(field);
         }
     }
 
@@ -241,15 +221,20 @@ public final class MachCompiler {
     // Machine instructions.
 
     /**
-     * Loads a local variable on to the stack
-     * @param varIndex variable index.
+     * Loads a local variable on to the stack.
      */
-    private void __load(int varIndex) {
-
+    private void __load(VariableInfo variable) {
+        checkArgument(this.currentScope instanceof Block);
+        ((Block)this.currentScope).add(new Load(variable.getIndex()));
     }
 
-    private void __putField(int fieldIndex) {
-
+    /**
+     *
+     * @param field
+     */
+    private void __putField(FieldInfo field) {
+        checkArgument(this.currentScope instanceof Block);
+        ((Block)this.currentScope).add(new PutField(field));
     }
 
     /**
@@ -260,65 +245,12 @@ public final class MachCompiler {
         checkArgument(this.currentScope instanceof Block);
 
         Block block = (Block)currentScope;
-
     }
 
-//    /**
-//     * Begin a method.
-//     * @param method
-//     */
-//    private void beginMethod(MethodBase method) {
-//        compilationContext.pushMethodScope(method);
-//        compilationContext.block = new Block();
-//    }
-//
-//    /**
-//     * End a method.
-//     */
-//    private void endMethod() {
-//        compilationContext.method.instructions = compilationContext.block.flatten();
-//
-//        compilationContext.popScope();
-//        compilationContext.block = null;
-//    }
-//
-//    /**
-//     * Compiles the internal constructor.
-//     * @param context type build context
-//     */
-//    private void compileInternalConstructor(TypeBuildContext context) {
-//        beginMethod(context.internalConstructor);
-//
-//        List<TField> fields = context.builder.getFields();
-//
-//        fields.forEach(f -> buildGraphFieldInitializer(context, f));
-//
-//        endMethod();
-//    }
-//
-//    private void buildGraphFieldInitializer(TypeBuildContext context, TField field) {
-//        GGraphField declaration = field.getDeclaration();
-//
-//        Block block = compilationContext.currentBlock();
-//        // Variable thisObjectRef = compilationContext.getMethod().variables.get(0);
-//
-//        if (declaration instanceof GField) {
-//            GField fieldDeclaration = (GField)declaration;
-//            if (fieldDeclaration.getInitializer() == null)
-//                return;
-//
-//
-//            block.add(new Load(0));
-//            block.add(new Evaluate(compileExpression(fieldDeclaration.getInitializer())));
-//            block.add(new StoreField(0));
-//        }
-//    }
-//
-//    private void compileAssign(TField lhs, GExpression rhs) {
-//        // MethodScope scope =
-//    }
-//
-//    private TExpression compileExpression(GExpression expression) {
-//        return new TObjectRef(new TInteger(10));
-//    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Expression compilation.
+    //
+
+
 }

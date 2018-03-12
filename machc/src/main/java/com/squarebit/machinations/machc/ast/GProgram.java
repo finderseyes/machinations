@@ -17,7 +17,7 @@ public final class GProgram extends GObject {
      * @return the g unit
      */
     public GUnit addUnit(GUnit unit) {
-        return units.put(unit.getId(), unit);
+        return units.put(unit.getName(), unit);
     }
 
     /**

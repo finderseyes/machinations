@@ -156,14 +156,14 @@ public final class MachMachine {
 //        try {
 //            Frame.Builder builder = new Frame.Builder();
 //
-//            Variable mainGraph = builder.createVariable().setType(TType.INTEGER_TYPE).build();
+//            VariableInfo mainGraph = builder.declareVariable().setType(TType.INTEGER_TYPE).build();
 //
 //            builder.addInstruction(new Eval(new TObjectRef(new TInteger(10)), mainGraph));
 //
 //            Label label = new Label();
 //            builder.addInstruction(label);
 //
-//            Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new Variable[0]);
+//            Invoke invoke = new Invoke(TType.INTEGER_TYPE.getMethods()[0], mainGraph, new VariableInfo[0]);
 //            builder.addInstruction(invoke);
 //            builder.addInstruction(new Jump(label));
 //

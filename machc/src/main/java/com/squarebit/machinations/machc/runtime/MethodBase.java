@@ -1,6 +1,6 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.runtime;
 
-import com.squarebit.machinations.machc.runtime.MachInstruction;
+import com.squarebit.machinations.machc.vm.VariableInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,6 @@ import java.util.List;
  *
  */
 public abstract class MethodBase {
-    List<Variable> variables = new ArrayList<>();
+    List<VariableInfo> variables = new ArrayList<>();
     List<MachInstruction> instructions = new ArrayList<>();
 }

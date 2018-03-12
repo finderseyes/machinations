@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.runtime.components;
 
-import com.squarebit.machinations.machc.MethodBase;
+import com.squarebit.machinations.machc.runtime.MethodBase;
 
 import java.util.ArrayList;
 import java.util.List;
