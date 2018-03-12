@@ -1,7 +1,6 @@
 package com.squarebit.machinations.machc.vm.instructions;
 
-import com.squarebit.machinations.machc.vm.FieldInfo;
-import com.squarebit.machinations.machc.vm.Instruction;
+import com.squarebit.machinations.machc.vm.*;
 
 /**
  * Puts a value to an object's field.
@@ -25,5 +24,19 @@ public final class PutField extends Instruction {
      */
     public FieldInfo getField() {
         return field;
+    }
+
+    /**
+     * Execute the instruction given machine instruction context.
+     *
+     * @param context the instruction context
+     */
+    @Override
+    public void execute(InstructionContext context) {
+        MachineContext machineContext = context.getMachineContext();
+
+        TObject value = machineContext.popStack();
+        TObject instance = machineContext.popStack();
+        field.set(instance, value);
     }
 }

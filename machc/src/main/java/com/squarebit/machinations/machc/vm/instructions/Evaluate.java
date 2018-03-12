@@ -1,6 +1,10 @@
 package com.squarebit.machinations.machc.vm.instructions;
 
 import com.squarebit.machinations.machc.vm.Instruction;
+import com.squarebit.machinations.machc.vm.InstructionContext;
+import com.squarebit.machinations.machc.vm.MachineContext;
+import com.squarebit.machinations.machc.vm.TObject;
+import com.squarebit.machinations.machc.vm.components.TInteger;
 import com.squarebit.machinations.machc.vm.expressions.Expression;
 
 /**
@@ -46,5 +50,24 @@ public class Evaluate extends Instruction {
      */
     public int getVariableCount() {
         return variableCount;
+    }
+
+    /**
+     * Execute the instruction given machine instruction context.
+     *
+     * @param context the instruction context
+     */
+    @Override
+    public void execute(InstructionContext context) {
+        TObject[] args = new TObject[variableCount];
+        MachineContext machineContext = context.getMachineContext();
+
+        for (int i = variableCount - 1; i >= 0; i--) {
+            args[i] = machineContext.popStack();
+        }
+
+        // FAKE
+        TObject result = new TInteger(100);
+        machineContext.pushStack(result);
     }
 }

@@ -22,7 +22,7 @@ public final class TVariableRef extends TExpression {
      *
      * @param type       the requested type
      * @param activation the current frame activation
-     * @return TObject corresponding to the result.
+     * @return TObjectImpl corresponding to the result.
      */
     @Override
     public TObject evalTo(TType type, FrameActivation activation) {

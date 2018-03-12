@@ -3,8 +3,11 @@ package com.squarebit.machinations.machc.vm;
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.vm.components.TType;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Information about a TType object during compilation.
@@ -14,6 +17,7 @@ public final class TypeInfo extends SymbolInfo implements Scope
     public static final String INTERNAL_CONSTRUCTOR_NAME = "$__intctor__$";
 
     private TType type;
+    private Class implementation;
     private UnitInfo unit;
     private TypeInfo baseTypeInfo;
     private MethodInfo internalConstructor;
@@ -43,6 +47,26 @@ public final class TypeInfo extends SymbolInfo implements Scope
      */
     public TType getType() {
         return type;
+    }
+
+    /**
+     * Gets implementation.
+     *
+     * @return the implementation
+     */
+    public Class getImplementation() {
+        return implementation != null ? implementation : baseTypeInfo.getImplementation();
+    }
+
+    /**
+     * Sets implementation.
+     *
+     * @param implementation the implementation
+     * @return the implementation
+     */
+    public<T extends TObject> TypeInfo setImplementation(Class<T> implementation) {
+        this.implementation = implementation;
+        return this;
     }
 
     /**
@@ -92,6 +116,15 @@ public final class TypeInfo extends SymbolInfo implements Scope
      */
     public MethodInfo getInternalConstructor() {
         return internalConstructor;
+    }
+
+    /**
+     * Gets fields.
+     *
+     * @return the fields
+     */
+    public Collection<FieldInfo> getFields() {
+        return this.fieldByName.values();
     }
 
     /**

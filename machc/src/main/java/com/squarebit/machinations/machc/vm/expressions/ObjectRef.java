@@ -1,16 +1,16 @@
 package com.squarebit.machinations.machc.vm.expressions;
 
-import com.squarebit.machinations.machc.vm.components.TObjectBase;
+import com.squarebit.machinations.machc.vm.TObject;
 
-public final class ObjectRef {
-    private final TObjectBase ref;
+public final class ObjectRef extends Expression {
+    private final TObject ref;
 
     /**
      * Instantiates a new Object ref.
      *
      * @param ref the ref
      */
-    public ObjectRef(TObjectBase ref) {
+    public ObjectRef(TObject ref) {
         this.ref = ref;
     }
 
@@ -19,7 +19,7 @@ public final class ObjectRef {
      *
      * @return the ref
      */
-    public TObjectBase getRef() {
+    public TObject getRef() {
         return ref;
     }
 }

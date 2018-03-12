@@ -2,8 +2,14 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.GExpression;
+import com.squarebit.machinations.machc.ast.expressions.GInteger;
 import com.squarebit.machinations.machc.vm.*;
+import com.squarebit.machinations.machc.vm.components.TGraph;
+import com.squarebit.machinations.machc.vm.components.TInteger;
+import com.squarebit.machinations.machc.vm.components.Types;
 import com.squarebit.machinations.machc.vm.expressions.Expression;
+import com.squarebit.machinations.machc.vm.expressions.ObjectRef;
+import com.squarebit.machinations.machc.vm.instructions.Evaluate;
 import com.squarebit.machinations.machc.vm.instructions.Load;
 import com.squarebit.machinations.machc.vm.instructions.PutField;
 
@@ -141,10 +147,10 @@ public final class MachCompiler {
      * Compile a program declaration to a mach executable.
      *
      * @param program the program
-     * @return the mach executable
+     * @return the mach program
      * @throws Exception the exception
      */
-    public static MachExecutable compile(GProgram program) {
+    public static ProgramInfo compile(GProgram program) {
         return new MachCompiler().doCompile(program);
     }
 
@@ -153,9 +159,7 @@ public final class MachCompiler {
      * @param program the program to compile
      * @return a mach executable
      */
-    private MachExecutable doCompile(GProgram program) {
-        MachExecutable executable = new MachExecutable();
-
+    private ProgramInfo doCompile(GProgram program) {
         this.rootScope = new ProgramInfo();
 
         // Build type declarations, including their functions.
@@ -165,7 +169,9 @@ public final class MachCompiler {
 
             for (GGraph graph : unit.getGraphs()) {
                 TypeInfo typeInfo = new TypeInfo(unitInfo);
-                typeInfo.setDeclaration(graph).setName(graph.getName());
+                typeInfo.setBaseTypeInfo(Types.Internal.GRAPH_TYPE_INFO)
+                        .setImplementation(TGraph.class)
+                        .setDeclaration(graph).setName(graph.getName());
                 unitInfo.addType(typeInfo);
 
                 for (GMethod method: graph.getMethods()) {
@@ -194,7 +200,9 @@ public final class MachCompiler {
             }
         }
 
-        return executable;
+        //
+
+        return this.rootScope;
     }
 
     /**
@@ -244,7 +252,13 @@ public final class MachCompiler {
     private void __evaluate(GExpression expression) {
         checkArgument(this.currentScope instanceof Block);
 
+        ExpressionCompilation expressionCompilation = new ExpressionCompilation();
+
+        if (expression instanceof GInteger)
+            compileInteger(expressionCompilation, (GInteger)expression);
+
         Block block = (Block)currentScope;
+        block.add(new Evaluate(expressionCompilation.expression, expressionCompilation.variableCount));
     }
 
 
@@ -252,5 +266,8 @@ public final class MachCompiler {
     // Expression compilation.
     //
 
-
+    private void compileInteger(ExpressionCompilation compilation, GInteger expression) {
+        compilation.expression = new ObjectRef(new TInteger(expression.getValue()));
+        compilation.variableCount = 0;
+    }
 }

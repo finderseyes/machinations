@@ -60,6 +60,15 @@ public final class Block extends NoOp implements Scope {
     }
 
     /**
+     * Gets instructions.
+     *
+     * @return the instructions
+     */
+    public List<InstructionBase> getInstructions() {
+        return instructions;
+    }
+
+    /**
      * Gets the parent scope.
      *
      * @return parent scope.

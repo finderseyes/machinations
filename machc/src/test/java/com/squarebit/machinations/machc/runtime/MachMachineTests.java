@@ -1,29 +1,55 @@
 package com.squarebit.machinations.machc.runtime;
 
+import com.squarebit.machinations.machc.MachCompiler;
 import com.squarebit.machinations.machc.Utils;
-import com.squarebit.machinations.machc.runtime.components.TField;
-import com.squarebit.machinations.machc.runtime.components.TRuntimeGraph;
-import com.squarebit.machinations.machc.runtime.components.TType;
+import com.squarebit.machinations.machc.ast.GProgram;
+import com.squarebit.machinations.machc.vm.MachMachine;
+import com.squarebit.machinations.machc.vm.ProgramInfo;
+import com.squarebit.machinations.machc.vm.TObject;
+import com.squarebit.machinations.machc.vm.TypeInfo;
+import com.squarebit.machinations.machc.vm.components.TGraph;
 import org.junit.Test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 
 public class MachMachineTests {
     @Test
     public void specs_001() throws Exception {
-        MachMachine machine = Utils.compileToMachine("specs/specs-001.mach");
+        GProgram program = Utils.compile("specs/specs-001.mach");
+        ProgramInfo info = MachCompiler.compile(program);
+        TypeInfo typeInfo = info.getUnits().stream().findFirst().get().getTypes().stream().findFirst().get();
 
-        {
-            TType typeA = machine.getType("a");
+        MachMachine machine = new MachMachine();
+        CompletableFuture<TObject> graph = machine.newInstance(typeInfo);
 
-            assertThat(typeA.getName()).isEqualTo("a");
-            assertThat(typeA.getBaseType()).isEqualTo(TType.GRAPH_TYPE);
-            assertThat(typeA.getImplementation()).isEqualTo(TRuntimeGraph.class);
+        graph.thenAccept(g -> {
+            int x = 100;
+        });
 
-//            TField _int = typeA.getField("_int");
-//            assertThat(_int.getName()).isEqualTo("_int");
-//            assertThat(_int.getType()).isEqualTo(TType.OBJECT_TYPE);
-        }
+        machine.runOneStep();
+        machine.runOneStep();
+        machine.runOneStep();
+        machine.runOneStep();
+        int k = 10;
+
+
+//        MachMachine machine = Utils.compileToMachine("specs/specs-001.mach");
+//
+//        {
+//            TType typeA = machine.getType("a");
+//
+//            assertThat(typeA.getName()).isEqualTo("a");
+//            assertThat(typeA.getBaseType()).isEqualTo(TType.GRAPH_TYPE);
+//            assertThat(typeA.getImplementation()).isEqualTo(TRuntimeGraph.class);
+//
+////            TField _int = typeA.getField("_int");
+////            assertThat(_int.getName()).isEqualTo("_int");
+////            assertThat(_int.getType()).isEqualTo(TType.OBJECT_TYPE);
+//        }
     }
 
 //    @Test

@@ -118,6 +118,16 @@ public final class MethodInfo extends SymbolInfo implements Scope {
     }
 
     /**
+     * Gets variables of this method.
+     *
+     * @return the variables
+     */
+    public List<VariableInfo> getVariables() {
+        return variables;
+    }
+
+
+    /**
      * Gets the parent scope.
      *
      * @return parent scope.

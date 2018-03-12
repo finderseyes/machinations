@@ -6,7 +6,7 @@ import com.squarebit.machinations.machc.runtime.expressions.TExpression;
 /**
  * Evaluates an expression and push its result onto the stack.
  */
-public final class Evaluate extends MachInstruction {
+public final class Evaluate {
     private final TExpression expression;
 
     /**

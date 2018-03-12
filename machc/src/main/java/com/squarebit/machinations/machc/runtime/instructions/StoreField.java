@@ -8,7 +8,7 @@ import com.squarebit.machinations.machc.runtime.MachInstruction;
  * - Pops the object reference from the operand stack.
  * - Puts the value to the field of an object.
  */
-public final class StoreField extends MachInstruction {
+public final class StoreField {
     private int fieldIndex;
 
     /**

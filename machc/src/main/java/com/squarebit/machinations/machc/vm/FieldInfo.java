@@ -7,6 +7,7 @@ import com.squarebit.machinations.machc.ast.GGraphField;
  */
 public final class FieldInfo extends SymbolInfo {
     private TypeInfo type;
+    private int index;
 
     /**
      * Instantiates a new Field info.
@@ -44,5 +45,25 @@ public final class FieldInfo extends SymbolInfo {
      */
     public TypeInfo getType() {
         return type;
+    }
+
+    /**
+     * Get field.
+     *
+     * @param instance the instance
+     * @return the t object
+     */
+    public TObject get(TObject instance) {
+        return instance.__fields__[index];
+    }
+
+    /**
+     * Set.
+     *
+     * @param instance the instance
+     * @param value    the value
+     */
+    public void set(TObject instance, TObject value) {
+        instance.__fields__[index] = value;
     }
 }

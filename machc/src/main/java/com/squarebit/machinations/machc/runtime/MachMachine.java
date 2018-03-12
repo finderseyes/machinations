@@ -44,7 +44,7 @@ public final class MachMachine {
      * Compiles current program.
      */
     private void compile() {
-        MachExecutable executable = MachCompiler.compile(this.program);
+        // MachExecutable executable = MachCompiler.compile(this.program);
 //        // Build declarations.
 //        for (GUnit unit : program.getUnits()) {
 //            for (GGraph graph : unit.getGraphs()) {

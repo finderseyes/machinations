@@ -5,7 +5,7 @@ import com.squarebit.machinations.machc.runtime.components.TObject;
 import com.squarebit.machinations.machc.runtime.components.TType;
 
 /**
- * An expression evaluates by referencing to a TObject.
+ * An expression evaluates by referencing to a TObjectImpl.
  */
 public final class TObjectRef extends TExpression {
     private final TObject value;
@@ -24,7 +24,7 @@ public final class TObjectRef extends TExpression {
      *
      * @param type       the requested type
      * @param activation the current frame activation
-     * @return TObject corresponding to the result.
+     * @return TObjectImpl corresponding to the result.
      */
     @Override
     public TObject evalTo(TType type, FrameActivation activation) {

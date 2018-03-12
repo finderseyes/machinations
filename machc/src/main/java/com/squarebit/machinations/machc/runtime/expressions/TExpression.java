@@ -14,12 +14,12 @@ public abstract class TExpression {
      *
      * @param type       the requested type
      * @param activation the current frame activation
-     * @return TObject corresponding to the result.
+     * @return TObjectImpl corresponding to the result.
      */
     public abstract TObject evalTo(TType type, FrameActivation activation);
 
     /**
-     * Evaluates a TObject to given type.
+     * Evaluates a TObjectImpl to given type.
      *
      * @param type  the requested type
      * @param value the value to evaluated

@@ -5,7 +5,7 @@ import com.squarebit.machinations.machc.runtime.MachInstruction;
 /**
  * Marks a position in the instruction set.
  */
-public final class Label extends MachInstruction {
+public final class Label {
     private final String name;
 
     /**

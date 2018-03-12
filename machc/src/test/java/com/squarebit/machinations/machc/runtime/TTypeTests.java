@@ -37,7 +37,7 @@ public class TTypeTests {
 //                new TField[]{ nameField, ageField},
 //                new TMethod[]{});
 //
-//        TObject value = BuiltinTypes.OBJECT_TYPE.newInstance();
+//        TObjectImpl value = BuiltinTypes.OBJECT_TYPE.newInstance();
 //        RuntimeClass obj = type.newInstance();
 //
 //        assertThat(nameField.get(obj)).isNull();
