@@ -16,5 +16,5 @@ public interface Scope {
      * @param name the symbol name
      * @return the symbol or null.
      */
-    SymbolInfo findSymbol(String name);
+    SymbolInfo findLocalSymbol(String name);
 }

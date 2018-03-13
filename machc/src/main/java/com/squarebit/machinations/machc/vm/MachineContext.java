@@ -1,25 +1,21 @@
 package com.squarebit.machinations.machc.vm;
 
-import com.squarebit.machinations.machc.vm.components.TVoid;
-
 import java.util.Stack;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * The type Execution data.
  */
 public final class MachineContext {
-    Stack<TObject> dataStack = new Stack<>();
-    Stack<Frame> callStack = new Stack<>();
+    private Stack<TObject> dataStack = new Stack<>();
+    private Stack<Frame> callStack = new Stack<>();
 
     /**
-     *
-     * @param index
-     * @return
+     * Gets a local variable within current stack frame.
+     * @param index index of the local variable
+     * @return local variable value.
      */
     public TObject getLocalVar(int index) {
-        return dataStack.get(index);
+        return dataStack.get(index + getCurrentFrame().getStackOffset());
     }
 
     /**
@@ -58,19 +54,18 @@ public final class MachineContext {
      * @param method the method
      * @return the frame
      */
-    public Frame pushFrame(MethodInfo method, boolean methodArgsAreInStack) {
-        Frame frame = new Frame();
-        int stackOffset;
+    public Frame pushFrame(MethodInfo method) {
+        int argumentVariableCount = method.argumentVariableCount();
+        int localVariableCount = method.variableCount() - argumentVariableCount;
+        int stackOffset = dataStack.size() - argumentVariableCount;
 
-        if (methodArgsAreInStack)
-            stackOffset = dataStack.size() - method.getVariables().size();
-        else
-            stackOffset = dataStack.size();
+        // Push stack frame for local variables.
+        for (int i = 0; i < localVariableCount; i++)
+            dataStack.push(null);
 
-        frame.setParent(getCurrentFrame())
-                .setStackOffset(stackOffset)
-                .setMethod(method);
+        Frame frame = new Frame().setStackOffset(stackOffset).setMethod(method);
 
+        // Push the frame to the call stack.
         callStack.push(frame);
 
         return frame;
@@ -79,22 +74,33 @@ public final class MachineContext {
     /**
      * Pop frame.
      */
-    public void popFrame(boolean alsoPopMethodArgs) {
+    public void popFrame() {
         Frame frame = getCurrentFrame();
         if (frame == null)
             return;
 
-        if (alsoPopMethodArgs) {
-            int variableCount = frame.getMethod().getVariables().size();
-            for (int i = 0; i < variableCount; i++)
-                dataStack.pop();
+        MethodInfo method = frame.getMethod();
+        int variableCount = method.variableCount();
+
+        // Pop method's local variables.
+        for (int i = 0; i < variableCount; i++) {
+            dataStack.pop();
         }
 
+        if (method.doesReturnValue())
+            pushStack(frame.getReturnValue());
+
+        frame.getFrameReturn().complete(frame.getReturnValue());
+
         callStack.pop();
+    }
 
-        CompletableFuture<TObject> returnValue = frame.getReturnValue();
-
-        if (!returnValue.isDone())
-            returnValue.complete(TVoid.INSTANCE);
+    /**
+     * Determins if the call stack is empty.
+     *
+     * @return true or false.
+     */
+    public boolean isCallStackEmpty() {
+        return callStack.isEmpty();
     }
 }

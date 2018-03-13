@@ -85,7 +85,7 @@ public final class Block extends NoOp implements Scope {
      * @return the symbol or null.
      */
     @Override
-    public SymbolInfo findSymbol(String name) {
+    public SymbolInfo findLocalSymbol(String name) {
         return null;
     }
 }

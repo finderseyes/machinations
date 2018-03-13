@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc;
 
-import com.squarebit.machinations.machc.runtime.components.TType;
+import com.squarebit.machinations.machc.vm.components.TType;
 
 import java.util.ArrayList;
 import java.util.List;

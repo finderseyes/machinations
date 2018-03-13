@@ -1,24 +1,20 @@
 package com.squarebit.machinations.machc.vm;
 
+import com.squarebit.machinations.machc.vm.components.TVoid;
+
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
-public class Frame {
-    private Frame parent;
+/**
+ * A call stack frame.
+ */
+public final class Frame {
     private MethodInfo method;
-    private CompletableFuture<TObject> returnValue = new CompletableFuture<>();
 
-    private int stackOffset;
+    private TObject returnValue = TVoid.INSTANCE;
+    private CompletableFuture<TObject> frameReturn = new CompletableFuture<>();
+
+    private int stackOffset = 0;
     private int instructionCounter = 0;
-
-    public Frame getParent() {
-        return parent;
-    }
-
-    public Frame setParent(Frame parent) {
-        this.parent = parent;
-        return this;
-    }
 
     public MethodInfo getMethod() {
         return method;
@@ -47,12 +43,21 @@ public class Frame {
         return this;
     }
 
-    public CompletableFuture<TObject> getReturnValue() {
+    public TObject getReturnValue() {
         return returnValue;
     }
 
-    public Frame setReturnValue(CompletableFuture<TObject> returnValue) {
+    public Frame setReturnValue(TObject returnValue) {
         this.returnValue = returnValue;
         return this;
+    }
+
+    /**
+     * Gets frame return.
+     *
+     * @return the frame return
+     */
+    public CompletableFuture<TObject> getFrameReturn() {
+        return frameReturn;
     }
 }

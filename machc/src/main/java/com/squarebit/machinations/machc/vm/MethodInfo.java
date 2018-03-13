@@ -3,6 +3,7 @@ package com.squarebit.machinations.machc.vm;
 import com.squarebit.machinations.machc.ast.GMethod;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +14,9 @@ public final class MethodInfo extends SymbolInfo implements Scope {
     private TypeInfo type;
 
     private boolean staticMethod = false;
+    private boolean returnValue = true;
 
-    private Map<String, ArgumentInfo> argumentByName;
+    private Map<String, ArgumentInfo> argumentByName = new HashMap<>();
     private Block code;
     private List<VariableInfo> variables;
 
@@ -27,7 +29,7 @@ public final class MethodInfo extends SymbolInfo implements Scope {
      * @param type the type
      */
     public MethodInfo(TypeInfo type) {
-        this(type, false);
+        this(type, false, true);
     }
 
     /**
@@ -37,7 +39,19 @@ public final class MethodInfo extends SymbolInfo implements Scope {
      * @param staticMethod is static method
      */
     public MethodInfo(TypeInfo type, boolean staticMethod) {
+        this(type, staticMethod, true);
+    }
+
+    /**
+     * Instantiates a new Method info.
+     *
+     * @param type           the type
+     * @param staticMethod   the static method
+     * @param returnValue the has return value
+     */
+    public MethodInfo(TypeInfo type, boolean staticMethod, boolean returnValue) {
         this.staticMethod = staticMethod;
+        this.returnValue = returnValue;
         this.type = type;
         this.variables = new ArrayList<>();
         this.code = new Block(this);
@@ -45,6 +59,66 @@ public final class MethodInfo extends SymbolInfo implements Scope {
         if (!staticMethod) {
             thisVariable = declareVariable();
         }
+    }
+
+    /**
+     * Gets type.
+     *
+     * @return the type
+     */
+    public TypeInfo getType() {
+        return type;
+    }
+
+    /**
+     * Sets type.
+     *
+     * @param type the type
+     * @return the type
+     */
+    public MethodInfo setType(TypeInfo type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
+     * Is static method boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isStaticMethod() {
+        return staticMethod;
+    }
+
+    /**
+     * Sets static method.
+     *
+     * @param staticMethod the static method
+     * @return the static method
+     */
+    public MethodInfo setStaticMethod(boolean staticMethod) {
+        this.staticMethod = staticMethod;
+        return this;
+    }
+
+    /**
+     * Is has return value boolean.
+     *
+     * @return the boolean
+     */
+    public boolean doesReturnValue() {
+        return returnValue;
+    }
+
+    /**
+     * Sets has return value.
+     *
+     * @param returnValue the has return value
+     * @return the has return value
+     */
+    public MethodInfo doesReturnValue(boolean returnValue) {
+        this.returnValue = returnValue;
+        return this;
     }
 
     /**
@@ -126,6 +200,26 @@ public final class MethodInfo extends SymbolInfo implements Scope {
         return variables;
     }
 
+    /**
+     * Gets the number of variables declared in this method, including argument variables.
+     *
+     * @return the number of variables.
+     */
+    public int variableCount() {
+        return this.variables.size();
+    }
+
+    /**
+     * Gets the number of variables used by method arguments, including "this" argument.
+     *
+     * @return the number of argument variable count
+     */
+    public int argumentVariableCount() {
+        if (staticMethod)
+            return this.argumentByName.size();
+        else
+            return this.argumentByName.size() + 1;
+    }
 
     /**
      * Gets the parent scope.
@@ -144,7 +238,7 @@ public final class MethodInfo extends SymbolInfo implements Scope {
      * @return the symbol or null.
      */
     @Override
-    public SymbolInfo findSymbol(String name) {
+    public SymbolInfo findLocalSymbol(String name) {
         return null;
     }
 }

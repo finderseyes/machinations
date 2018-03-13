@@ -77,7 +77,17 @@ public final class UnitInfo extends SymbolInfo implements Scope {
      * @return the symbol or null.
      */
     @Override
-    public SymbolInfo findSymbol(String name) {
-        return null;
+    public SymbolInfo findLocalSymbol(String name) {
+        return findType(name);
+    }
+
+    /**
+     * Finds a type declared in this unit with given name.
+     *
+     * @param name the name
+     * @return the type info
+     */
+    public TypeInfo findType(String name) {
+        return typeByName.getOrDefault(name, null);
     }
 }

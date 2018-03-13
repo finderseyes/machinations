@@ -35,7 +35,7 @@ public final class TypeInfo extends SymbolInfo implements Scope
 
         this.unit = unit;
 
-        internalConstructor = new MethodInfo(this);
+        internalConstructor = new MethodInfo(this).setStaticMethod(false).doesReturnValue(false);
         internalConstructor.setName(TypeInfo.INTERNAL_CONSTRUCTOR_NAME);
         this.addMethod(internalConstructor);
     }
@@ -181,7 +181,7 @@ public final class TypeInfo extends SymbolInfo implements Scope
      * @return the symbol or null.
      */
     @Override
-    public SymbolInfo findSymbol(String name) {
+    public SymbolInfo findLocalSymbol(String name) {
         return null;
     }
 }
