@@ -22,4 +22,15 @@ public final class ObjectRef extends Expression {
     public TObject getRef() {
         return ref;
     }
+
+    /**
+     * Evalutes the expression under given context.
+     *
+     * @param context the evaluation context
+     * @return result.
+     */
+    @Override
+    public TObject evaluate(EvaluationContext context) {
+        return ref;
+    }
 }

@@ -2,7 +2,10 @@ package com.squarebit.machinations.machc.vm.components;
 
 import com.squarebit.machinations.machc.vm.TObject;
 
-public class TGraph extends TObject {
+/**
+ * The base graph type.
+ */
+public abstract class TGraph extends TObject {
     /**
      * Gets the type of this object.
      *

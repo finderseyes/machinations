@@ -48,6 +48,26 @@ public final class FieldInfo extends SymbolInfo {
     }
 
     /**
+     * Gets index.
+     *
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * Sets index.
+     *
+     * @param index the index
+     * @return the index
+     */
+    public FieldInfo setIndex(int index) {
+        this.index = index;
+        return this;
+    }
+
+    /**
      * Get field.
      *
      * @param instance the instance

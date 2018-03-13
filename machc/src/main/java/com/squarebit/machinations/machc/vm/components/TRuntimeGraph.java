@@ -1,11 +1,6 @@
 package com.squarebit.machinations.machc.vm.components;
 
-import com.squarebit.machinations.machc.vm.TObject;
-
-/**
- * The type T object.
- */
-public class TObjectImpl extends TObject {
+public class TRuntimeGraph extends TGraph {
     /**
      * Gets the type of this object.
      *
@@ -13,6 +8,6 @@ public class TObjectImpl extends TObject {
      */
     @Override
     public TType getType() {
-        return Types.OBJECT_TYPE;
+        return Types.RUNTIME_GRAPH_TYPE;
     }
 }

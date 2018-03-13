@@ -41,6 +41,22 @@ public final class TypeInfo extends SymbolInfo implements Scope
     }
 
     /**
+     * Determines if this type is the same or a super type of given type.
+     *
+     * @param typeInfo the type info
+     * @return the boolean
+     */
+    public boolean isAssignableFrom(TypeInfo typeInfo) {
+        if (typeInfo == null)
+            return false;
+
+        if (typeInfo == this)
+            return true;
+
+        return isAssignableFrom(typeInfo.baseTypeInfo);
+    }
+
+    /**
      * Gets type.
      *
      * @return the type

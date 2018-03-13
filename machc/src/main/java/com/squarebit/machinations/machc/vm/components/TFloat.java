@@ -2,15 +2,16 @@ package com.squarebit.machinations.machc.vm.components;
 
 import com.squarebit.machinations.machc.vm.TObject;
 
-public class TInteger extends TObject {
-    private final int value;
+public final class TFloat extends TObject {
+
+    private final float value;
 
     /**
-     * Instantiates a new T integer.
+     * Instantiates a new T float.
      *
      * @param value the value
      */
-    public TInteger(int value) {
+    public TFloat(float value) {
         this.value = value;
     }
 
@@ -21,7 +22,7 @@ public class TInteger extends TObject {
      */
     @Override
     public TType getType() {
-        return Types.INTEGER_TYPE;
+        return Types.FLOAT_TYPE;
     }
 
     /**
@@ -29,7 +30,7 @@ public class TInteger extends TObject {
      *
      * @return the value
      */
-    public int getValue() {
+    public float getValue() {
         return value;
     }
 }

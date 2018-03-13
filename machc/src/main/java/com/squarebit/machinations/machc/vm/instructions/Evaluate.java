@@ -5,6 +5,7 @@ import com.squarebit.machinations.machc.vm.InstructionContext;
 import com.squarebit.machinations.machc.vm.MachineContext;
 import com.squarebit.machinations.machc.vm.TObject;
 import com.squarebit.machinations.machc.vm.components.TInteger;
+import com.squarebit.machinations.machc.vm.expressions.EvaluationContext;
 import com.squarebit.machinations.machc.vm.expressions.Expression;
 
 /**
@@ -66,8 +67,8 @@ public class Evaluate extends Instruction {
             args[i] = machineContext.popStack();
         }
 
-        // FAKE
-        TObject result = new TInteger(100);
+        EvaluationContext evaluationContext = new EvaluationContext();
+        TObject result = expression.evaluate(evaluationContext);
         machineContext.pushStack(result);
     }
 }

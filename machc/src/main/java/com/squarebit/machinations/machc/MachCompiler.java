@@ -1,12 +1,9 @@
 package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
-import com.squarebit.machinations.machc.ast.expressions.GExpression;
-import com.squarebit.machinations.machc.ast.expressions.GInteger;
+import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.vm.*;
-import com.squarebit.machinations.machc.vm.components.TGraph;
-import com.squarebit.machinations.machc.vm.components.TInteger;
-import com.squarebit.machinations.machc.vm.components.Types;
+import com.squarebit.machinations.machc.vm.components.*;
 import com.squarebit.machinations.machc.vm.expressions.Expression;
 import com.squarebit.machinations.machc.vm.expressions.ObjectRef;
 import com.squarebit.machinations.machc.vm.instructions.Evaluate;
@@ -169,8 +166,8 @@ public final class MachCompiler {
 
             for (GGraph graph : unit.getGraphs()) {
                 TypeInfo typeInfo = new TypeInfo(unitInfo);
-                typeInfo.setBaseTypeInfo(Types.Internal.GRAPH_TYPE_INFO)
-                        .setImplementation(TGraph.class)
+                typeInfo.setBaseTypeInfo(Types.Internal.RUNTIME_GRAPH_TYPE_INFO)
+                        .setImplementation(TRuntimeGraph.class)
                         .setDeclaration(graph).setName(graph.getName());
                 unitInfo.addType(typeInfo);
 
@@ -189,7 +186,7 @@ public final class MachCompiler {
 
                 for (GGraphField graphField: graph.getFields()) {
                     FieldInfo field = new FieldInfo(type);
-                    field.setDeclaration(graphField).setName(graphField.getName());
+                    field.setIndex(type.getFields().size()).setDeclaration(graphField).setName(graphField.getName());
 
                     // Initialize field in internal constructor.
                     initializeField(field);
@@ -256,6 +253,12 @@ public final class MachCompiler {
 
         if (expression instanceof GInteger)
             compileInteger(expressionCompilation, (GInteger)expression);
+        else if (expression instanceof GFloat)
+            compileFloat(expressionCompilation, (GFloat)expression);
+        else if (expression instanceof GBoolean)
+            compileBoolean(expressionCompilation, (GBoolean)expression);
+        else if (expression instanceof GString)
+            compileString(expressionCompilation, (GString)expression);
 
         Block block = (Block)currentScope;
         block.add(new Evaluate(expressionCompilation.expression, expressionCompilation.variableCount));
@@ -268,6 +271,17 @@ public final class MachCompiler {
 
     private void compileInteger(ExpressionCompilation compilation, GInteger expression) {
         compilation.expression = new ObjectRef(new TInteger(expression.getValue()));
-        compilation.variableCount = 0;
+    }
+
+    private void compileFloat(ExpressionCompilation compilation, GFloat expression) {
+        compilation.expression = new ObjectRef(new TFloat(expression.getValue()));
+    }
+
+    private void compileBoolean(ExpressionCompilation compilation, GBoolean expression) {
+        compilation.expression = new ObjectRef(TBoolean.from(expression == GBoolean.TRUE));
+    }
+
+    private void compileString(ExpressionCompilation compilation, GString expression) {
+        compilation.expression = new ObjectRef(new TString(expression.getValue()));
     }
 }

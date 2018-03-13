@@ -767,13 +767,14 @@ public class MachFrontend {
             return null;
         }
         else if (decl instanceof MachParser.FloatingPointLiteralContext) {
-            return null;
+            return GFloat.parse(decl.getText());
         }
         else if (decl instanceof MachParser.BooleanLiteralContext) {
-            return null;
+            return GBoolean.parse(decl.getText());
         }
         else {
-            return null;
+            String text = decl.getText();
+            return new GString(text.substring(1, text.length() - 1));
         }
     }
 

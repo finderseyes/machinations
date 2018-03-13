@@ -73,7 +73,8 @@ public final class MachMachine {
         TObject instance = (TObject)type.getImplementation().newInstance();
         instance.__fields__ = new TObject[type.getFields().size()];
 
-        return nativeToMachInvoke(this.machineContext, type.getInternalConstructor(), instance);
+        return nativeToMachInvoke(this.machineContext, type.getInternalConstructor(), instance)
+                .thenApply(v -> instance);
     }
 
     /**
