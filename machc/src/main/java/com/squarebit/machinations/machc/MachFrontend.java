@@ -764,7 +764,7 @@ public class MachFrontend {
             return GInteger.parse(decl.getText());
         }
         else if (decl instanceof MachParser.RandomIntegralLiteralContext) {
-            return null;
+            return GRandomDice.parse(decl.getText());
         }
         else if (decl instanceof MachParser.FloatingPointLiteralContext) {
             return GFloat.parse(decl.getText());

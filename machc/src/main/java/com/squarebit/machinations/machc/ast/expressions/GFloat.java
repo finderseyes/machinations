@@ -28,6 +28,11 @@ public final class GFloat extends GExpression {
      * @return the g float
      */
     public static GFloat parse(String text) {
-        return new GFloat(Float.parseFloat(text));
+        if (text.endsWith("%")) {
+            int percentage = Integer.parseInt(text.substring(0, text.length() - 1));
+            return new GFloat(percentage * 1e-2f);
+        }
+        else
+            return new GFloat(Float.parseFloat(text));
     }
 }

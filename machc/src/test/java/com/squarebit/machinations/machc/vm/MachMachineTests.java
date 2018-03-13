@@ -30,6 +30,18 @@ public class MachMachineTests {
                 assertThat(typeInfo.findField("_float").get(graph).getClass()).isEqualTo(TFloat.class);
                 assertThat(((TFloat)typeInfo.findField("_float").get(graph)).getValue()).isEqualTo(1.5f);
             }
+
+            {
+                assertThat(typeInfo.findField("_dice").get(graph).getClass()).isEqualTo(TRandomDice.class);
+                assertThat(((TRandomDice)typeInfo.findField("_dice").get(graph)).getTimes()).isEqualTo(2);
+                assertThat(((TRandomDice)typeInfo.findField("_dice").get(graph)).getFaces()).isEqualTo(10);
+            }
+
+            {
+                assertThat(typeInfo.findField("_draw").get(graph).getClass()).isEqualTo(TRandomDice.class);
+                assertThat(((TRandomDice)typeInfo.findField("_draw").get(graph)).getTimes()).isEqualTo(1);
+                assertThat(((TRandomDice)typeInfo.findField("_draw").get(graph)).getFaces()).isEqualTo(20);
+            }
         }
 
         {

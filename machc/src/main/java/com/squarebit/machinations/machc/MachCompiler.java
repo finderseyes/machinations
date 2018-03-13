@@ -253,6 +253,8 @@ public final class MachCompiler {
 
         if (expression instanceof GInteger)
             compileInteger(expressionCompilation, (GInteger)expression);
+        else if (expression instanceof GRandomDice)
+            compileRandomDice(expressionCompilation, (GRandomDice)expression);
         else if (expression instanceof GFloat)
             compileFloat(expressionCompilation, (GFloat)expression);
         else if (expression instanceof GBoolean)
@@ -271,6 +273,10 @@ public final class MachCompiler {
 
     private void compileInteger(ExpressionCompilation compilation, GInteger expression) {
         compilation.expression = new ObjectRef(new TInteger(expression.getValue()));
+    }
+
+    private void compileRandomDice(ExpressionCompilation compilation, GRandomDice expression) {
+        compilation.expression = new ObjectRef(new TRandomDice(expression.getTimes(), expression.getFaces()));
     }
 
     private void compileFloat(ExpressionCompilation compilation, GFloat expression) {

@@ -16,6 +16,7 @@ public final class Types {
 
         public static TypeInfo INTEGER_TYPE_INFO = createIntegerTypeInfo();
         public static TypeInfo FLOAT_TYPE_INFO = createFloatTypeInfo();
+        public static TypeInfo RANDOM_DICE_TYPE_INFO = createRandomDiceTypeInfo();
         public static TypeInfo BOOLEAN_TYPE_INFO = createBooleanTypeInfo();
         public static TypeInfo STRING_TYPE_INFO = createStringTypeInfo();
 
@@ -51,6 +52,15 @@ public final class Types {
                     .setBaseTypeInfo(OBJECT_TYPE_INFO)
                     .setImplementation(TInteger.class)
                     .setName("Integer");
+            return typeInfo;
+        }
+
+        private static TypeInfo createRandomDiceTypeInfo() {
+            TypeInfo typeInfo = new TypeInfo(CORE_UNIT);
+            typeInfo
+                    .setBaseTypeInfo(OBJECT_TYPE_INFO)
+                    .setImplementation(TRandomDice.class)
+                    .setName("RandomDice");
             return typeInfo;
         }
 
@@ -106,6 +116,7 @@ public final class Types {
 
     public static TType INTEGER_TYPE = Internal.INTEGER_TYPE_INFO.getType();
     public static TType FLOAT_TYPE = Internal.FLOAT_TYPE_INFO.getType();
+    public static TType RANDOM_DICE_TYPE = Internal.RANDOM_DICE_TYPE_INFO.getType();
     public static TType BOOLEAN_TYPE = Internal.BOOLEAN_TYPE_INFO.getType();
     public static TType STRING_TYPE = Internal.STRING_TYPE_INFO.getType();
 
