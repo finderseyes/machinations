@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc.vm;
 
 import com.squarebit.machinations.machc.Utils;
 import com.squarebit.machinations.machc.vm.components.*;
+import org.assertj.core.data.Offset;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,15 +33,19 @@ public class MachMachineTests {
             }
 
             {
-                assertThat(typeInfo.findField("_dice").get(graph).getClass()).isEqualTo(TRandomDice.class);
-                assertThat(((TRandomDice)typeInfo.findField("_dice").get(graph)).getTimes()).isEqualTo(2);
-                assertThat(((TRandomDice)typeInfo.findField("_dice").get(graph)).getFaces()).isEqualTo(10);
+                assertThat(typeInfo.findField("_float_as_percentage").get(graph).getClass()).isEqualTo(TFloat.class);
+                assertThat(((TFloat)typeInfo.findField("_float_as_percentage").get(graph)).getValue())
+                        .isCloseTo(0.1f, Offset.offset(1e-3f));
             }
 
             {
-                assertThat(typeInfo.findField("_draw").get(graph).getClass()).isEqualTo(TRandomDice.class);
-                assertThat(((TRandomDice)typeInfo.findField("_draw").get(graph)).getTimes()).isEqualTo(1);
-                assertThat(((TRandomDice)typeInfo.findField("_draw").get(graph)).getFaces()).isEqualTo(20);
+                assertThat(typeInfo.findField("_dice").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(((TInteger)typeInfo.findField("_dice").get(graph)).getValue()).isBetween(1, 20);
+            }
+
+            {
+                assertThat(typeInfo.findField("_draw").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(((TInteger)typeInfo.findField("_draw").get(graph)).getValue()).isBetween(1, 2);
             }
         }
 

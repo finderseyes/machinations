@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.vm.expressions;
 
 import com.squarebit.machinations.machc.vm.TObject;
+import com.squarebit.machinations.machc.vm.components.TIntegerGenerator;
 
 public final class ObjectRef extends Expression {
     private final TObject ref;
@@ -31,6 +32,9 @@ public final class ObjectRef extends Expression {
      */
     @Override
     public TObject evaluate(EvaluationContext context) {
+        if (ref instanceof TIntegerGenerator)
+            return ((TIntegerGenerator)ref).generate();
+
         return ref;
     }
 }

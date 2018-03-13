@@ -9,7 +9,7 @@ graph a {
     let _float = 1.5;
     let _float_as_percentage = 10%;
     let _dice = 2D10;
-    let _draw = draw20;
+    let _draw = draw2;
 }
 
 graph b {
