@@ -4,10 +4,13 @@ import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.vm.*;
 import com.squarebit.machinations.machc.vm.components.*;
+import com.squarebit.machinations.machc.vm.expressions.Add;
 import com.squarebit.machinations.machc.vm.expressions.Expression;
+import com.squarebit.machinations.machc.vm.expressions.ExpressionVariable;
 import com.squarebit.machinations.machc.vm.expressions.ObjectRef;
 import com.squarebit.machinations.machc.vm.instructions.Evaluate;
 import com.squarebit.machinations.machc.vm.instructions.Load;
+import com.squarebit.machinations.machc.vm.instructions.LoadField;
 import com.squarebit.machinations.machc.vm.instructions.PutField;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -22,6 +25,24 @@ public final class MachCompiler {
     private class ExpressionCompilation {
         private Expression expression;
         private int variableCount = 0;
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public ExpressionCompilation setExpression(Expression expression) {
+            this.expression = expression;
+            return this;
+        }
+
+        public int getVariableCount() {
+            return variableCount;
+        }
+
+        public ExpressionCompilation setVariableCount(int variableCount) {
+            this.variableCount = variableCount;
+            return this;
+        }
     }
 //    /**
 //     * Contains data when building a type.
@@ -242,6 +263,11 @@ public final class MachCompiler {
         ((Block)this.currentScope).add(new PutField(field));
     }
 
+    private void __loadField(FieldInfo field) {
+        checkArgument(this.currentScope instanceof Block);
+        ((Block)this.currentScope).add(new LoadField(field));
+    }
+
     /**
      * Evaluates an expression in current scope, push value to current stack.
      * @param expression expression.
@@ -249,18 +275,7 @@ public final class MachCompiler {
     private void __evaluate(GExpression expression) {
         checkArgument(this.currentScope instanceof Block);
 
-        ExpressionCompilation expressionCompilation = new ExpressionCompilation();
-
-        if (expression instanceof GInteger)
-            compileInteger(expressionCompilation, (GInteger)expression);
-        else if (expression instanceof GRandomDice)
-            compileRandomDice(expressionCompilation, (GRandomDice)expression);
-        else if (expression instanceof GFloat)
-            compileFloat(expressionCompilation, (GFloat)expression);
-        else if (expression instanceof GBoolean)
-            compileBoolean(expressionCompilation, (GBoolean)expression);
-        else if (expression instanceof GString)
-            compileString(expressionCompilation, (GString)expression);
+        ExpressionCompilation expressionCompilation = compileExpression(0, expression);
 
         Block block = (Block)currentScope;
         block.add(new Evaluate(expressionCompilation.expression, expressionCompilation.variableCount));
@@ -270,24 +285,107 @@ public final class MachCompiler {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Expression compilation.
     //
+    private SymbolInfo findNearestFieldOrVariable(Scope scope, String name) {
+        if (scope instanceof Block || scope instanceof MethodInfo) {
+            SymbolInfo symbolInfo = scope.findLocalSymbol(name);
+            if (symbolInfo == null)
+                return findNearestFieldOrVariable(scope.getParent(), name);
+            else
+                return symbolInfo;
+        }
 
-    private void compileInteger(ExpressionCompilation compilation, GInteger expression) {
-        compilation.expression = new ObjectRef(new TInteger(expression.getValue()));
+        if (scope instanceof TypeInfo) {
+            TypeInfo typeInfo = (TypeInfo)scope;
+            return typeInfo.findField(name);
+        }
+
+        return null;
     }
 
-    private void compileRandomDice(ExpressionCompilation compilation, GRandomDice expression) {
-        compilation.expression = new ObjectRef(new TRandomDice(expression.getTimes(), expression.getFaces()));
+    private ExpressionCompilation compileExpression(int nextVarIndex, GExpression expression) {
+        ExpressionCompilation expressionCompilation = null;
+
+        if (expression instanceof GInteger)
+            expressionCompilation = compileInteger(nextVarIndex, (GInteger)expression);
+        else if (expression instanceof GRandomDice)
+            expressionCompilation = compileRandomDice(nextVarIndex, (GRandomDice)expression);
+        else if (expression instanceof GFloat)
+            expressionCompilation = compileFloat(nextVarIndex, (GFloat)expression);
+        else if (expression instanceof GBoolean)
+            expressionCompilation = compileBoolean(nextVarIndex, (GBoolean)expression);
+        else if (expression instanceof GString)
+            expressionCompilation = compileString(nextVarIndex, (GString)expression);
+        else if (expression instanceof GSymbolRef)
+            expressionCompilation = compileSymbolRef(nextVarIndex, (GSymbolRef)expression);
+        else if (expression instanceof GBinaryExpression)
+            expressionCompilation = compileBinaryExpression(nextVarIndex, (GBinaryExpression)expression);
+        else
+            throw new RuntimeException("Should not reach here");
+
+        return expressionCompilation;
     }
 
-    private void compileFloat(ExpressionCompilation compilation, GFloat expression) {
-        compilation.expression = new ObjectRef(new TFloat(expression.getValue()));
+    private ExpressionCompilation compileInteger(int nextVarIndex, GInteger expression) {
+        return new ExpressionCompilation()
+                .setExpression(new ObjectRef(new TInteger(expression.getValue())))
+                .setVariableCount(nextVarIndex);
     }
 
-    private void compileBoolean(ExpressionCompilation compilation, GBoolean expression) {
-        compilation.expression = new ObjectRef(TBoolean.from(expression == GBoolean.TRUE));
+    private ExpressionCompilation compileRandomDice(int nextVarIndex, GRandomDice expression) {
+        return new ExpressionCompilation()
+                .setExpression(new ObjectRef(new TRandomDice(expression.getTimes(), expression.getFaces())))
+                .setVariableCount(nextVarIndex)
+                ;
     }
 
-    private void compileString(ExpressionCompilation compilation, GString expression) {
-        compilation.expression = new ObjectRef(new TString(expression.getValue()));
+    private ExpressionCompilation compileFloat(int nextVarIndex, GFloat expression) {
+        return new ExpressionCompilation()
+                .setExpression(new ObjectRef(new TFloat(expression.getValue())))
+                .setVariableCount(nextVarIndex)
+                ;
+    }
+
+    private ExpressionCompilation compileBoolean(int nextVarIndex, GBoolean expression) {
+        return new ExpressionCompilation()
+                .setExpression(new ObjectRef(TBoolean.from(expression == GBoolean.TRUE)))
+                .setVariableCount(nextVarIndex);
+    }
+
+    private ExpressionCompilation compileString(int nextVarIndex, GString expression) {
+        return new ExpressionCompilation()
+                .setExpression(new ObjectRef(new TString(expression.getValue())))
+                .setVariableCount(nextVarIndex)
+                ;
+    }
+
+    private ExpressionCompilation compileSymbolRef(int nextVarIndex, GSymbolRef expression) {
+        SymbolInfo symbol = findNearestFieldOrVariable(this.currentScope, expression.getSymbolName());
+
+        if (symbol == null)
+            throw new RuntimeException("Symbol not found");
+
+        Block block = (Block)currentScope;
+        if (symbol instanceof FieldInfo) {
+            __load(block.getMethod().getThisVariable());
+            __loadField((FieldInfo)symbol);
+
+            return new ExpressionCompilation()
+                    .setExpression(new ExpressionVariable(nextVarIndex))
+                    .setVariableCount(nextVarIndex + 1);
+        }
+            return null;
+    }
+
+    private ExpressionCompilation compileBinaryExpression(int nextVarIndex, GBinaryExpression expression) {
+        ExpressionCompilation lhs = compileExpression(nextVarIndex, expression.getFirst());
+        ExpressionCompilation rhs = compileExpression(lhs.getVariableCount(), expression.getSecond());
+
+        if (expression.getOperator().equals("+")) {
+            return new ExpressionCompilation()
+                    .setExpression(new Add(lhs.getExpression(), rhs.getExpression()))
+                    .setVariableCount(rhs.getVariableCount());
+        }
+        else
+            return null;
     }
 }

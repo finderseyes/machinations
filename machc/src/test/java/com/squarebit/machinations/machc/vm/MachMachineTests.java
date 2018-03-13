@@ -67,6 +67,19 @@ public class MachMachineTests {
             }
         }
 
+        {
+            TypeInfo typeInfo = program.findType("c").get(0);
+            TObject graph = machine.newInstance(typeInfo).get();
+
+            assertThat(graph.getClass()).isEqualTo(TRuntimeGraph.class);
+            assertThat(Types.RUNTIME_GRAPH_TYPE.isAssignableFrom(graph.getType())).isTrue();
+
+            {
+                assertThat(typeInfo.findField("b").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(((TInteger)typeInfo.findField("b").get(graph)).getValue()).isEqualTo(3);
+            }
+        }
+
         machine.shutdown();
     }
 }

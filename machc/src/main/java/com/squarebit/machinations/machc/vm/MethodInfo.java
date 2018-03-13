@@ -18,6 +18,8 @@ public final class MethodInfo extends SymbolInfo implements Scope {
 
     private Map<String, ArgumentInfo> argumentByName = new HashMap<>();
     private Block code;
+
+    private Map<String, VariableInfo> variableByName = new HashMap<>();
     private List<VariableInfo> variables;
 
     //
@@ -57,7 +59,7 @@ public final class MethodInfo extends SymbolInfo implements Scope {
         this.code = new Block(this);
 
         if (!staticMethod) {
-            thisVariable = declareVariable();
+            thisVariable = declareVariable("$__this_obj__$");
         }
     }
 
@@ -151,7 +153,7 @@ public final class MethodInfo extends SymbolInfo implements Scope {
         ArgumentInfo argument = new ArgumentInfo();
         argument.setName(name);
 
-        VariableInfo argVar = declareVariable();
+        VariableInfo argVar = declareVariable(name);
         argVar.setName(String.format("__arg_%s__", name));
 
         argument.setVariable(argVar);
@@ -175,10 +177,13 @@ public final class MethodInfo extends SymbolInfo implements Scope {
      *
      * @return the variable info
      */
-    public VariableInfo declareVariable() {
+    public VariableInfo declareVariable(String name) {
         VariableInfo variable = new VariableInfo();
-        variable.setIndex(variables.size());
+        variable.setIndex(variables.size()).setName(name);
+
+        variableByName.put(name, variable);
         variables.add(variable);
+
         return variable;
     }
 
@@ -239,6 +244,16 @@ public final class MethodInfo extends SymbolInfo implements Scope {
      */
     @Override
     public SymbolInfo findLocalSymbol(String name) {
-        return null;
+        return variableByName.getOrDefault(name, null);
+    }
+
+    /**
+     * Find variable variable info.
+     *
+     * @param name the name
+     * @return the variable info
+     */
+    public VariableInfo findVariable(String name) {
+        return variableByName.getOrDefault(name, null);
     }
 }

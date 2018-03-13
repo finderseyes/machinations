@@ -8,8 +8,29 @@ import java.util.Map;
  * A graph.
  */
 public class GGraph extends GSymbol {
+    private boolean defaultGraph = false;
     private Map<String, GGraphField> fields = new HashMap<>();  // Mapping from id to graph field declaration.
     private Map<String, GMethod> methods = new HashMap<>(); // Mapping from function name to instance.
+
+    /**
+     * Is default graph boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isDefaultGraph() {
+        return defaultGraph;
+    }
+
+    /**
+     * Sets default graph.
+     *
+     * @param defaultGraph the default graph
+     * @return the default graph
+     */
+    public GGraph setDefaultGraph(boolean defaultGraph) {
+        this.defaultGraph = defaultGraph;
+        return this;
+    }
 
     /**
      * Finds a field declared in the graph.

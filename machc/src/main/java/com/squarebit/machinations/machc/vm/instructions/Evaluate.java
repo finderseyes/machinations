@@ -67,7 +67,7 @@ public class Evaluate extends Instruction {
             args[i] = machineContext.popStack();
         }
 
-        EvaluationContext evaluationContext = new EvaluationContext();
+        EvaluationContext evaluationContext = new EvaluationContext(args);
         TObject result = expression.evaluate(evaluationContext);
         machineContext.pushStack(result);
     }

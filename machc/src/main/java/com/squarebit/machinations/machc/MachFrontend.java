@@ -108,11 +108,34 @@ public class MachFrontend {
                 new GGraphTransformationContext().setUnitTransformationContext(unitTransformationContext);
 
         GGraph graph = new GGraph();
-        graph.setName(graphDeclarationContext.getChild(1).getText());
 
+        int next = 0;
+        ParseTree graphDecl = graphDeclarationContext.getChild(0);
+
+        if (graphDecl instanceof MachParser.GraphModifierContext) {
+            if (graphDecl.getText().equals("default"))
+                graph.setDefaultGraph(true);
+
+            next += 2;
+            graphDecl = graphDeclarationContext.getChild(next);
+        }
+        else {
+            next += 1;
+            graphDecl = graphDeclarationContext.getChild(next);
+        }
+
+        graph.setName(graphDecl.getText());
         graphTransformationContext.setGraph(graph);
 
-        ParseTree graphBodyContext = graphDeclarationContext.getChild(2);
+        next += 1;
+        graphDecl = graphDeclarationContext.getChild(next);
+
+        if (graphDecl instanceof MachParser.BaseGraphDescriptorContext) {
+            next += 1;
+            graphDecl = graphDeclarationContext.getChild(next);
+        }
+
+        ParseTree graphBodyContext = graphDecl;
         for (int i = 1; i < graphBodyContext.getChildCount() - 1; i++) {
             ParseTree decl = graphBodyContext.getChild(i).getChild(0);
 

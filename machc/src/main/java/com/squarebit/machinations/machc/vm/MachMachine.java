@@ -13,6 +13,7 @@ public final class MachMachine {
     private final Dispatcher dispatcher = Dispatcher.createSingleThreadDispatcher("@mach_machine");
     private boolean running = false;
     private final ConcurrentLinkedQueue<Runnable> machineThreadTasks = new ConcurrentLinkedQueue<>();
+    private Exception lastException;
 
     /**
      * Instantiates a new Mach machine.
@@ -160,6 +161,12 @@ public final class MachMachine {
     }
 
     private void executeInstruction(InstructionBase instruction) {
-        instruction.execute(new InstructionContext().setMachineContext(machineContext));
+        try {
+            instruction.execute(new InstructionContext().setMachineContext(machineContext));
+        }
+        catch (Exception ex) {
+            running = false;
+            lastException = ex;
+        }
     }
 }
