@@ -1,0 +1,26 @@
+# named resource flow
+---
+nodes:
+  - type: source
+    id: p0
+    connections:
+      - --> p1
+
+  - type: converter
+    activationMode: automatic
+    id: p1
+    connections:
+      - 2 (gold) --> p2
+
+  - type: pool
+    id: p2
+
+  - type: pool
+    id: p3
+    resources: 10 mana, 1 gold
+    connections:
+      - "1 (gold)--> p4"
+
+  - type: pool
+    id: p4
+    activationMode: automatic

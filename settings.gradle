@@ -1,3 +1,6 @@
+include 'machc'
+include 'graphml'
 
-rootProject.name = 'Squarebit Machinations'
-
+rootProject.name = 'Machinations'
+project(':machc').name = 'machc'
+project(':graphml').name = 'graphml'

@@ -1,0 +1,37 @@
+/**
+    Test aspects:
+        - distribute instruction.
+*/
+graph main {
+    pool
+        p0 = 100,
+        p1 = { 10 gold, 100 mana },
+        p2,
+        p3;
+
+    connection
+        e_01 = p0 -> p1,
+        e_02 = p0 -> p2,
+        e_10 = p1 -> p0;
+
+    // Interactive function called upon request.
+    interactive function aaa() {
+        let
+            x = 1,
+            y = p0 + p1,
+            z = p0.gold + p1;
+
+        // Default distribute: distribute all resources of a node, one by one, through given connections.
+        // The distribution is calculated using connection's default flow rate.
+        :distribute p0 (e_01, e_02);
+
+        // Distribute using given probability.
+        :distribute p0 (2:e_01, 1: e_02);
+
+        // Distribute via implicit connections.
+        :distribute p0 (20%: p0 -> p1, 10%: p0 -> p2);
+
+        // Distribute with given amount of resources.
+        :distribute { 2 gold } p0 (2:e_01, 1:e_02);
+    }
+}

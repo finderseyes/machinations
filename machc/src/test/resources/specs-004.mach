@@ -1,0 +1,21 @@
+/**
+    Test aspects:
+        - Resource declaration as graph.
+*/
+
+/* solder resource */
+graph soldier {
+    pool
+        health = 10,
+        weapon = 1
+        ;
+
+    let
+        is_stealthy = true,
+        fire_power = 10
+        ;
+}
+
+graph main {
+    pool barrack = 10 soldier;
+}

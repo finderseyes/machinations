@@ -1,0 +1,8 @@
+---
+nodes:
+  - type: pool
+    id: p0
+
+  - type: pool
+    id: p0
+

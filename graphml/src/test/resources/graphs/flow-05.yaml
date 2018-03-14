@@ -1,0 +1,21 @@
+# Gate tests
+---
+nodes:
+  - type: pool
+    id: p0
+    resources: 1000
+    connections:
+      - --> p1
+
+  - type: gate
+    id: p1
+    activationMode: automatic
+    connections:
+      - 30% --> p2
+      - 30% --> p3
+
+  - type: pool
+    id: p2
+
+  - type: pool
+    id: p3

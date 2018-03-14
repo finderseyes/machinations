@@ -1,0 +1,25 @@
+# Registers.
+# NOTE: we modify the spec such that register would use expression instead of connection to calculate its value.
+---
+nodes:
+  - type: source
+    id: p0
+    activationMode: automatic
+    connections:
+      - --> p1
+      - 2 --> p2
+
+  - type: pool
+    id: p1
+
+  - type: pool
+    id: p2
+
+  - type: register
+    id: p3
+    value: p1*2 + p2
+    activators:
+      - " > 4 && p1 > 1 --> end"
+
+  - type: end
+    id: end

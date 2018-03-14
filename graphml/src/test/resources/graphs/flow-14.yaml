@@ -1,0 +1,16 @@
+# end condition.
+---
+nodes:
+  - type: source
+    id: p0
+    connections:
+      - --> p1
+
+  - type: pool
+    activationMode: automatic
+    id: p1
+    activators:
+      - ">= 5 --> p2"
+
+  - type: end
+    id: p2
