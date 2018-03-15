@@ -1,5 +1,6 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.avm.exceptions.FieldAlreadyExistedException;
 import com.squarebit.machinations.machc.avm.exceptions.MethodAlreadyExistedException;
 
@@ -12,6 +13,7 @@ import java.util.Map;
  * A type declared in a {@link ModuleInfo}.
  */
 public final class TypeInfo {
+    private GGraph declaration;
     private ModuleInfo module;
     private String name;
 
@@ -34,6 +36,26 @@ public final class TypeInfo {
 
         this.methods = new ArrayList<>();
         this.methodByName = new HashMap<>();
+    }
+
+    /**
+     * Gets declaration.
+     *
+     * @return the declaration
+     */
+    public GGraph getDeclaration() {
+        return declaration;
+    }
+
+    /**
+     * Sets declaration.
+     *
+     * @param declaration the declaration
+     * @return the declaration
+     */
+    public TypeInfo setDeclaration(GGraph declaration) {
+        this.declaration = declaration;
+        return this;
     }
 
     /**

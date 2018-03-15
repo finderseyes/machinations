@@ -1,9 +1,12 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.ast.GGraphField;
+
 /**
  * A field declared in a {@link TypeInfo}.
  */
 public final class FieldInfo {
+    private GGraphField declaration;
     private TypeInfo declaringType;
     private TypeInfo type;
     private String name;
@@ -12,6 +15,26 @@ public final class FieldInfo {
      * Instantiates a new object.
      */
     public FieldInfo() {
+    }
+
+    /**
+     * Gets declaration.
+     *
+     * @return the declaration
+     */
+    public GGraphField getDeclaration() {
+        return declaration;
+    }
+
+    /**
+     * Sets declaration.
+     *
+     * @param declaration the declaration
+     * @return the declaration
+     */
+    public FieldInfo setDeclaration(GGraphField declaration) {
+        this.declaration = declaration;
+        return this;
     }
 
     /**

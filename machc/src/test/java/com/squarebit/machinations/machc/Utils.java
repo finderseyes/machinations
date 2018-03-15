@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.GProgram;
+import com.squarebit.machinations.machc.vm.MachCompiler;
 import com.squarebit.machinations.machc.vm.ProgramInfo;
 
 import java.io.File;

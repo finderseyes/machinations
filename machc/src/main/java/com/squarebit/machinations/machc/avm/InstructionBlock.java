@@ -101,4 +101,14 @@ public final class InstructionBlock implements Scope {
         int parentVariableCount = parentScope == null ? 0 : parentScope.getVariableCount();
         return (parentVariableCount + variables.size());
     }
+
+    /**
+     * Adds an instruction to this block.
+     *
+     * @param instruction the {@link Instruction} instance
+     */
+    public void addInstruction(Instruction instruction) {
+        instruction.setScope(this).setIndex(instructions.size());
+        instructions.add(instruction);
+    }
 }

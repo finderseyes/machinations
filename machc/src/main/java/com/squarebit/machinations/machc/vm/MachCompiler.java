@@ -1,8 +1,7 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
-import com.squarebit.machinations.machc.vm.*;
 import com.squarebit.machinations.machc.vm.components.*;
 import com.squarebit.machinations.machc.vm.expressions.Add;
 import com.squarebit.machinations.machc.vm.expressions.Expression;

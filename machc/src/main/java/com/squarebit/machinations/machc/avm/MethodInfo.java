@@ -1,5 +1,6 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.ast.GMethod;
 import com.squarebit.machinations.machc.avm.exceptions.ParameterAlreadyExistedException;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Map;
  * A method declared in a {@link TypeInfo}.
  */
 public final class MethodInfo implements Scope {
+    private GMethod declaration;
     private TypeInfo declaringType;
     private String name;
 
@@ -40,6 +42,26 @@ public final class MethodInfo implements Scope {
                 .setDeclaringScope(this)
                 .setIndex(0)
                 .setName("$this");
+    }
+
+    /**
+     * Gets declaration.
+     *
+     * @return the declaration
+     */
+    public GMethod getDeclaration() {
+        return declaration;
+    }
+
+    /**
+     * Sets declaration.
+     *
+     * @param declaration the declaration
+     * @return the declaration
+     */
+    public MethodInfo setDeclaration(GMethod declaration) {
+        this.declaration = declaration;
+        return this;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc;
+package com.squarebit.machinations.machc.vm;
 
 /**
  * The compilation exception.
