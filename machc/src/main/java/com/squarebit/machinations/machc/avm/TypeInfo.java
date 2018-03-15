@@ -3,6 +3,8 @@ package com.squarebit.machinations.machc.avm;
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.avm.exceptions.FieldAlreadyExistedException;
 import com.squarebit.machinations.machc.avm.exceptions.MethodAlreadyExistedException;
+import com.squarebit.machinations.machc.avm.runtime.TObject;
+import com.squarebit.machinations.machc.vm.components.TObjectImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ public final class TypeInfo {
     private GGraph declaration;
     private ModuleInfo module;
     private String name;
+    private Class implementingClass;
 
     //////////////////////
     // Fields
@@ -35,6 +38,8 @@ public final class TypeInfo {
      * Instantiates a new object.
      */
     public TypeInfo() {
+        this.implementingClass = TObjectImpl.class;
+
         this.fields = new ArrayList<>();
         this.fieldByName = new HashMap<>();
 
@@ -109,6 +114,26 @@ public final class TypeInfo {
      */
     public TypeInfo setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets implementing class.
+     *
+     * @return the implementing class
+     */
+    public Class getImplementingClass() {
+        return implementingClass;
+    }
+
+    /**
+     * Sets implementing class.
+     *
+     * @param implementingClass the implementing class
+     * @return the implementing class
+     */
+    public TypeInfo setImplementingClass(Class implementingClass) {
+        this.implementingClass = implementingClass;
         return this;
     }
 

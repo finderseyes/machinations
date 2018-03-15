@@ -1,0 +1,50 @@
+package com.squarebit.machinations.machc.avm;
+
+/**
+ * Call frame of an instruction block.
+ */
+public final class InstructionBlockFrame extends Frame {
+    private InstructionBlock block;
+    private int counter = 0;
+
+    /**
+     * Instantiates a new Instruction block frame.
+     *
+     * @param caller the caller frame
+     * @param offset the frame data offset
+     * @param block  the instruction block
+     */
+    public InstructionBlockFrame(Frame caller, int offset, InstructionBlock block) {
+        super(caller, offset);
+        this.block = block;
+    }
+
+    /**
+     * Gets block.
+     *
+     * @return the block
+     */
+    public InstructionBlock getBlock() {
+        return block;
+    }
+
+    /**
+     * Gets counter.
+     *
+     * @return the counter
+     */
+    public int getCounter() {
+        return counter;
+    }
+
+    /**
+     * Sets counter.
+     *
+     * @param counter the counter
+     * @return the counter
+     */
+    public InstructionBlockFrame setCounter(int counter) {
+        this.counter = counter;
+        return this;
+    }
+}
