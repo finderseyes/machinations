@@ -27,6 +27,10 @@ public final class TypeInfo {
     private List<MethodInfo> methods;
     private Map<String, MethodInfo> methodByName;
 
+    ////////////////////
+    // Constructors
+    private MethodInfo internalInstanceConstructor;
+
     /**
      * Instantiates a new object.
      */
@@ -36,6 +40,11 @@ public final class TypeInfo {
 
         this.methods = new ArrayList<>();
         this.methodByName = new HashMap<>();
+
+        // Internal instance constructor.
+        this.internalInstanceConstructor = new MethodInfo()
+                .setDeclaringType(this).setName("$__ctor__$")
+                .setStatic(false).setConstructor(true);
     }
 
     /**
@@ -175,5 +184,14 @@ public final class TypeInfo {
         methodInfo.setDeclaringType(this);
         methods.add(methodInfo);
         methodByName.put(methodInfo.getName(), methodInfo);
+    }
+
+    /**
+     * Gets internal instance constructor.
+     *
+     * @return the internal instance constructor.
+     */
+    public MethodInfo getInternalInstanceConstructor() {
+        return internalInstanceConstructor;
     }
 }

@@ -5,6 +5,10 @@ import com.squarebit.machinations.machc.avm.expressions.Expression;
 
 public class Evaluate extends Instruction {
     private Expression expression;
-    private VariableInfo[] arguments;
     private VariableInfo result;
+
+    public Evaluate(Expression expression, VariableInfo result) {
+        this.expression = expression;
+        this.result = result;
+    }
 }

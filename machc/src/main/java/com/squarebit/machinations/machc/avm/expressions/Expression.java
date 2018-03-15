@@ -1,4 +1,6 @@
 package com.squarebit.machinations.machc.avm.expressions;
 
-public class Expression {
+import com.squarebit.machinations.machc.avm.runtime.TObject;
+
+public abstract class Expression {
 }

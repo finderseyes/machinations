@@ -55,6 +55,15 @@ public final class InstructionBlock implements Scope {
     }
 
     /**
+     * Creates a temporary variable.
+     * @return a temporary {@link VariableInfo}
+     * @throws VariableAlreadyExistedException
+     */
+    public VariableInfo createTempVar() throws VariableAlreadyExistedException {
+        return createVariable(String.format("$__var_%d", getVariableCount()));
+    }
+
+    /**
      * Sets parent scope.
      *
      * @param parentScope the parent scope
@@ -107,7 +116,7 @@ public final class InstructionBlock implements Scope {
      *
      * @param instruction the {@link Instruction} instance
      */
-    public void addInstruction(Instruction instruction) {
+    public void emit(Instruction instruction) {
         instruction.setScope(this).setIndex(instructions.size());
         instructions.add(instruction);
     }

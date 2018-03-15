@@ -17,6 +17,7 @@ public final class MethodInfo implements Scope {
     private String name;
 
     private boolean isStatic;
+    private boolean isConstructor;
 
     /////////////////////////
     // Parameters
@@ -33,6 +34,7 @@ public final class MethodInfo implements Scope {
      */
     public MethodInfo() {
         this.isStatic = false;
+        this.isConstructor = true;
 
         this.parameters = new ArrayList<>();
         this.parameterByName = new HashMap<>();
@@ -61,6 +63,46 @@ public final class MethodInfo implements Scope {
      */
     public MethodInfo setDeclaration(GMethod declaration) {
         this.declaration = declaration;
+        return this;
+    }
+
+    /**
+     * Sets the method static status.
+     *
+     * @param isStatic static status
+     * @return this instance.
+     */
+    public MethodInfo setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
+        return this;
+    }
+
+    /**
+     * Determines if the method is static.
+     *
+     * @return true or false
+     */
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    /**
+     * Is constructor boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isConstructor() {
+        return isConstructor;
+    }
+
+    /**
+     * Sets constructor.
+     *
+     * @param constructor the constructor
+     * @return the constructor
+     */
+    public MethodInfo setConstructor(boolean constructor) {
+        isConstructor = constructor;
         return this;
     }
 
@@ -180,5 +222,23 @@ public final class MethodInfo implements Scope {
     @Override
     public int getVariableCount() {
         return isStatic ? this.parameters.size() : this.parameters.size() + 1;
+    }
+
+    /**
+     * Gets this variable.
+     *
+     * @return the this variable
+     */
+    public VariableInfo getThisVariable() {
+        return thisVariable;
+    }
+
+    /**
+     * Gets instruction block.
+     *
+     * @return the instruction block
+     */
+    public InstructionBlock getInstructionBlock() {
+        return instructionBlock;
     }
 }

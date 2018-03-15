@@ -8,6 +8,7 @@ import com.squarebit.machinations.machc.ast.GGraphField;
 public final class FieldInfo {
     private GGraphField declaration;
     private TypeInfo declaringType;
+    private boolean isStatic;
     private TypeInfo type;
     private String name;
 
@@ -56,6 +57,26 @@ public final class FieldInfo {
      */
     public FieldInfo setDeclaringType(TypeInfo declaringType) {
         this.declaringType = declaringType;
+        return this;
+    }
+
+    /**
+     * Determines if the field is static.
+     *
+     * @return true or false
+     */
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    /**
+     * Sets the field static status.
+     *
+     * @param isStatic static status
+     * @return this instance
+     */
+    public FieldInfo setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
         return this;
     }
 
