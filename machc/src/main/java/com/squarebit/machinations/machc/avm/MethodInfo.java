@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * A method declared in a {@link TypeInfo}.
  */
-public final class MethodInfo {
+public final class MethodInfo implements Scope {
     private TypeInfo declaringType;
     private String name;
 
@@ -19,12 +19,18 @@ public final class MethodInfo {
     private List<ParameterInfo> parameters;
     private Map<String, ParameterInfo> parameterByName;
 
+    /////////////////////////
+    // Code
+    private InstructionBlock instructionBlock;
+
     /**
      * Instantiates a new instance.
      */
     public MethodInfo() {
         this.parameters = new ArrayList<>();
         this.parameterByName = new HashMap<>();
+
+        this.instructionBlock = new InstructionBlock().setParentScope(this);
     }
 
     /**
@@ -104,7 +110,33 @@ public final class MethodInfo {
             throw new ParameterAlreadyExistedException(this, parameterInfo.getName());
 
         parameterInfo.setDeclaringMethod(this);
+
+        VariableInfo variableInfo = parameterInfo.getVariable();
+        variableInfo.setDeclaringScope(this).setIndex(parameters.size());
+
         parameters.add(parameterInfo);
         parameterByName.put(parameterInfo.getName(), parameterInfo);
+    }
+
+    /**
+     * Gets parent scope.
+     *
+     * @return parent scope, or null.
+     */
+    @Override
+    public Scope getParentScope() {
+        return null;
+    }
+
+    /**
+     * Finds a variable with given name in the scope.
+     *
+     * @param name the variable name
+     * @return a {@link VariableInfo} instance, or null if not found.
+     */
+    @Override
+    public VariableInfo findVariable(String name) {
+        ParameterInfo parameterInfo = parameterByName.getOrDefault(name, null);
+        return (parameterInfo == null) ? null : parameterInfo.getVariable();
     }
 }

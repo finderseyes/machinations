@@ -5,12 +5,13 @@ package com.squarebit.machinations.machc.avm;
  */
 public final class ParameterInfo {
     private MethodInfo declaringMethod;
-    private String name;
+    private VariableInfo variable;
 
     /**
      * Instantiates a new instance.
      */
     public ParameterInfo() {
+        this.variable = new VariableInfo();
     }
 
     /**
@@ -39,7 +40,7 @@ public final class ParameterInfo {
      * @return the parameter name
      */
     public String getName() {
-        return name;
+        return variable.getName();
     }
 
     /**
@@ -49,7 +50,36 @@ public final class ParameterInfo {
      * @return this instance
      */
     public ParameterInfo setName(String name) {
-        this.name = name;
+        this.variable.setName(name);
         return this;
+    }
+
+    /**
+     * Gets parameter type.
+     *
+     * @return the parameter type.
+     */
+    public TypeInfo getType() {
+        return variable.getType();
+    }
+
+    /**
+     * Sets parameter type.
+     *
+     * @param type the type
+     * @return this instance
+     */
+    public ParameterInfo setType(TypeInfo type) {
+        this.variable.setType(type);
+        return this;
+    }
+
+    /**
+     * Gets the variable associated with this parameter.
+     *
+     * @return the variable
+     */
+    public VariableInfo getVariable() {
+        return variable;
     }
 }

@@ -137,7 +137,7 @@ public final class MachCompiler {
 //         */
 //        public void popScope() {
 //            if (scope != null) {
-//                scope = scope.getParent();
+//                scope = scope.getParentScope();
 //
 //                if (scope != null) {
 //                    this.method = (scope instanceof MethodScope) ? ((MethodScope)scope).getMethod() : null;
