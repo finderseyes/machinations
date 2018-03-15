@@ -14,6 +14,8 @@ public final class MethodInfo implements Scope {
     private TypeInfo declaringType;
     private String name;
 
+    private boolean isStatic;
+
     /////////////////////////
     // Parameters
     private List<ParameterInfo> parameters;
@@ -21,16 +23,23 @@ public final class MethodInfo implements Scope {
 
     /////////////////////////
     // Code
+    private VariableInfo thisVariable = null;
     private InstructionBlock instructionBlock;
 
     /**
      * Instantiates a new instance.
      */
     public MethodInfo() {
+        this.isStatic = false;
+
         this.parameters = new ArrayList<>();
         this.parameterByName = new HashMap<>();
 
         this.instructionBlock = new InstructionBlock().setParentScope(this);
+        this.thisVariable = new VariableInfo()
+                .setDeclaringScope(this)
+                .setIndex(0)
+                .setName("$this");
     }
 
     /**
@@ -52,6 +61,7 @@ public final class MethodInfo implements Scope {
      */
     public MethodInfo setDeclaringType(TypeInfo declaringType) {
         this.declaringType = declaringType;
+        this.thisVariable.setType(declaringType);
         return this;
     }
 
@@ -112,7 +122,7 @@ public final class MethodInfo implements Scope {
         parameterInfo.setDeclaringMethod(this);
 
         VariableInfo variableInfo = parameterInfo.getVariable();
-        variableInfo.setDeclaringScope(this).setIndex(parameters.size());
+        variableInfo.setDeclaringScope(this).setIndex(getVariableCount());
 
         parameters.add(parameterInfo);
         parameterByName.put(parameterInfo.getName(), parameterInfo);
@@ -138,5 +148,15 @@ public final class MethodInfo implements Scope {
     public VariableInfo findVariable(String name) {
         ParameterInfo parameterInfo = parameterByName.getOrDefault(name, null);
         return (parameterInfo == null) ? null : parameterInfo.getVariable();
+    }
+
+    /**
+     * Gets the number of variables declared from the root scope to current scope.
+     *
+     * @return the number of variable declared
+     */
+    @Override
+    public int getVariableCount() {
+        return isStatic ? this.parameters.size() : this.parameters.size() + 1;
     }
 }

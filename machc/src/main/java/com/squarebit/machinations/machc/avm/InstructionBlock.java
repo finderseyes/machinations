@@ -1,16 +1,21 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.exceptions.VariableAlreadyExistedException;
+import com.squarebit.machinations.machc.avm.instructions.Instruction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An instruction block.
+ */
 public final class InstructionBlock implements Scope {
     private Scope parentScope;
     private List<VariableInfo> variables;
     private Map<String, VariableInfo> variableByName;
+    private List<Instruction> instructions;
 
     /**
      * Instantiates a new Instruction block.
@@ -18,6 +23,7 @@ public final class InstructionBlock implements Scope {
     public InstructionBlock() {
         this.variables = new ArrayList<>();
         this.variableByName = new HashMap<>();
+        this.instructions = new ArrayList<>();
     }
 
     /**
@@ -43,7 +49,7 @@ public final class InstructionBlock implements Scope {
         if (this.findVariable(variableInfo.getName()) != null)
             throw new VariableAlreadyExistedException(this, variableInfo.getName());
 
-        variableInfo.setDeclaringScope(this).setIndex(variables.size());
+        variableInfo.setDeclaringScope(this).setIndex(getVariableCount());
         variables.add(variableInfo);
         variableByName.put(variableInfo.getName(), variableInfo);
     }
@@ -83,5 +89,16 @@ public final class InstructionBlock implements Scope {
             return parentScope.findVariable(name);
 
         return variableInfo;
+    }
+
+    /**
+     * Gets the number of variables declared from the root scope to current scope.
+     *
+     * @return the number of variable declared
+     */
+    @Override
+    public int getVariableCount() {
+        int parentVariableCount = parentScope == null ? 0 : parentScope.getVariableCount();
+        return (parentVariableCount + variables.size());
     }
 }

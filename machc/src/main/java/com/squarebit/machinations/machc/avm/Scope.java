@@ -17,4 +17,10 @@ public interface Scope {
      * @return a {@link VariableInfo} instance, or null if not found.
      */
     VariableInfo findVariable(String name);
+
+    /**
+     * Gets the number of variables declared from the root scope to current scope.
+     * @return the number of variable declared
+     */
+    int getVariableCount();
 }

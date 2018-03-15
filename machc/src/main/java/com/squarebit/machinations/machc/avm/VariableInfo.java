@@ -42,10 +42,21 @@ public final class VariableInfo {
         return this;
     }
 
+    /**
+     * Gets index (offset) of the variable in the call frame.
+     *
+     * @return the index
+     */
     public int getIndex() {
         return index;
     }
 
+    /**
+     * Sets variable index (offset) in the call frame.
+     *
+     * @param index the index
+     * @return the index
+     */
     public VariableInfo setIndex(int index) {
         this.index = index;
         return this;
