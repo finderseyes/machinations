@@ -3,6 +3,7 @@ package com.squarebit.machinations.machc.avm;
 import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.instructions.Evaluate;
 import com.squarebit.machinations.machc.avm.instructions.Instruction;
+import com.squarebit.machinations.machc.avm.instructions.LoadField;
 import com.squarebit.machinations.machc.avm.instructions.PutField;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
@@ -189,6 +190,10 @@ public final class Machine {
             executeEvaluate((Evaluate)instruction);
         else if (instruction instanceof PutField)
             executePutField((PutField)instruction);
+        else if (instruction instanceof LoadField)
+            executeLoadField((LoadField)instruction);
+        else
+            throw new RuntimeException("Unimplemented instruction");
     }
 
     /**
@@ -258,7 +263,7 @@ public final class Machine {
      * @param index variable index.
      * @param value value to set
      */
-    private void setLocalVariable(int index, TObject value) {
+    void setLocalVariable(int index, TObject value) {
         dataStack.set(this.activeMethodFrame.getOffset() + index, value);
     }
 
@@ -267,7 +272,7 @@ public final class Machine {
      * @param index the variable index.
      * @return variable value.
      */
-    private TObject getLocalVariable(int index) {
+    TObject getLocalVariable(int index) {
         return dataStack.get(this.activeMethodFrame.getOffset() + index);
     }
 
@@ -294,6 +299,17 @@ public final class Machine {
         if (instance instanceof TObjectBase) {
             TObjectBase objectBase = (TObjectBase)instance;
             objectBase.setField(instruction.getFieldInfo().getIndex(), value);
+        }
+        else
+            throw new RuntimeException("The given field does not belong to given type.");
+    }
+
+    private void executeLoadField(LoadField instruction) {
+        TObject owner = getLocalVariable(instruction.getFieldOwner().getIndex());
+        if (owner instanceof TObjectBase) {
+            TObjectBase objectBase = (TObjectBase)owner;
+            TObject value = objectBase.getField(instruction.getFieldInfo().getIndex());
+            setLocalVariable(instruction.getReturnValue().getIndex(), value);
         }
         else
             throw new RuntimeException("The given field does not belong to given type.");

@@ -2,7 +2,6 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
-import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -263,13 +262,13 @@ public class MachFrontend {
         {
             return null;
         }
-        else if (decl instanceof MachParser.ReturnStatementContext) {
-            ParseTree returnExpression = decl.getChild(1);
-            if (returnExpression instanceof MachParser.ExpressionContext)
-                return new GReturn(transformExpression((MachParser.ExpressionContext)returnExpression));
-            else
-                return new GReturn();
-        }
+//        else if (decl instanceof MachParser.ReturnStatementContext) {
+//            ParseTree returnExpression = decl.getChild(1);
+//            if (returnExpression instanceof MachParser.ExpressionContext)
+//                return new GReturn(transformExpression((MachParser.ExpressionContext)returnExpression));
+//            else
+//                return new GReturn();
+//        }
         else
             throw new Exception("Shall not reach here");
     }
@@ -883,6 +882,44 @@ public class MachFrontend {
     private GExpression transformPrimary(MachParser.PrimaryContext expressionContext)
         throws Exception
     {
+        GExpression reference = transformPrimaryReference(
+                (MachParser.PrimaryReferenceContext)expressionContext.getChild(0)
+        );
+
+        for (int i = 1; i < expressionContext.getChildCount(); i++) {
+            ParseTree decl = expressionContext.getChild(i).getChild(0);
+
+            if (decl instanceof MachParser.ReferenceFieldAccessContext)
+                reference = loadField(reference, (MachParser.ReferenceFieldAccessContext)decl);
+            else
+                throw new RuntimeException("Not implemented");
+        }
+
+        return reference;
+    }
+
+    /**
+     *
+     * @param reference
+     * @param fieldAccessContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression loadField(GExpression reference, MachParser.ReferenceFieldAccessContext fieldAccessContext)
+        throws Exception
+    {
+        return new GLoadField(reference, fieldAccessContext.getChild(1).getText());
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformPrimaryReference(MachParser.PrimaryReferenceContext expressionContext)
+        throws Exception
+    {
         ParseTree decl = expressionContext.getChild(0);
 
         if (decl instanceof MachParser.LiteralContext) {
@@ -891,11 +928,14 @@ public class MachFrontend {
         else if (decl.getText().equals("(")) {
             return transformExpression((MachParser.ExpressionContext)expressionContext.getChild(1));
         }
-        else if (decl instanceof MachParser.MethodInvocationContext) {
-            return transformMethodInvocation((MachParser.MethodInvocationContext)decl);
+        else if (decl instanceof MachParser.ThisReferenceContext) {
+            return GThis.INSTANCE;
+        }
+        else if (decl instanceof MachParser.LocalVariableOrThisFieldContext) {
+            return new GSymbolRef(decl.getText());
         }
         else
-            return null;
+            throw new RuntimeException("Not implemented");
     }
 
     /**

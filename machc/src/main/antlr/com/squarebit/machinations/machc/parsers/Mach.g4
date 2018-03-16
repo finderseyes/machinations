@@ -182,7 +182,7 @@ setElementType
     ;
 
 methodDeclaration
-    : methodModifier? methodName LEFT_PARENTHESIS RIGHT_PARENTHESIS methodBody
+    : methodModifier? methodName LEFT_PARENTHESIS methodArgumentDeclaratorList? RIGHT_PARENTHESIS methodBody
     ;
 
 methodModifier
@@ -208,6 +208,14 @@ interactionCondition
     ;
 
 methodName
+    : IDENTIFIER
+    ;
+
+methodArgumentDeclaratorList
+    : methodArgumentDeclarator (',' methodArgumentDeclarator)*
+    ;
+
+methodArgumentDeclarator
     : IDENTIFIER
     ;
 
@@ -420,15 +428,15 @@ primaryReference
 	: literal
 	| '(' expression ')'
 	| thisReference
-	| expressionName
-	| implicitReferenceMethodInvocation
+	| localVariableOrThisField
+	| thisMethodInvocation
 //	| methodInvocation
 //	| arrayAccess
 //	| bracketSetDescriptor
 //	| setOperations
 	;
 
-implicitReferenceMethodInvocation
+thisMethodInvocation
     : IDENTIFIER '(' argumentList? ')'
     ;
 
@@ -472,7 +480,7 @@ setCardinality
 
 methodInvocation
     : primary referenceMethodInvocation
-    | implicitReferenceMethodInvocation
+    | thisMethodInvocation
 //	: methodName '(' argumentList? ')'
 //	| expressionName '.' methodName '(' argumentList? ')'
 	| graphicalMethodInvocation

@@ -1,7 +1,7 @@
 package com.squarebit.machinations.machc.avm.expressions;
 
 public final class Add extends Expression {
-    public final Expression first, second;
+    private final Expression first, second;
 
     /**
      * Instantiates a new Add.

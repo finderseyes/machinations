@@ -229,5 +229,7 @@ public final class Compiler {
         }
         else
             throw new RuntimeException("dsfdsds");
+
+        return null;
     }
 }
