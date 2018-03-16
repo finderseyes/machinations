@@ -9,4 +9,11 @@ public class Invoke extends Instruction {
     private VariableInfo[] args;
 
     private VariableInfo result;
+
+    public Invoke(MethodInfo methodInfo, VariableInfo instance, VariableInfo[] args, VariableInfo result) {
+        this.methodInfo = methodInfo;
+        this.instance = instance;
+        this.args = args;
+        this.result = result;
+    }
 }

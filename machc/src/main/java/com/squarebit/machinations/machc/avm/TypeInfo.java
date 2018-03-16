@@ -250,6 +250,15 @@ public final class TypeInfo {
     }
 
     /**
+     * Finds a method with given name.
+     * @param name the name.
+     * @return
+     */
+    public MethodInfo findMethod(String name) {
+        return methodByName.getOrDefault(name, null);
+    }
+
+    /**
      * Gets internal instance constructor.
      *
      * @return the internal instance constructor.

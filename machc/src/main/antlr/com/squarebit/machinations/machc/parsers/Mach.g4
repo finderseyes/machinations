@@ -229,6 +229,7 @@ statement
     | expressionStatement
     | ifThenStatement
     | ifThenElseStatement
+    | returnStatement
     ;
 
 emptyStatement
@@ -260,6 +261,9 @@ ifThenElseStatement
     : 'if' '(' expression ')' statement 'else' statement
     ;
 
+returnStatement
+    : 'return' expression? ';'
+    ;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Expression
@@ -437,7 +441,11 @@ primaryReference
 	;
 
 thisMethodInvocation
-    : IDENTIFIER '(' argumentList? ')'
+    : methodInvocationDeclarator
+    ;
+
+methodInvocationDeclarator
+    : methodName '(' argumentList? ')'
     ;
 
 thisReference
@@ -463,7 +471,7 @@ fieldAccessPrimaryTail
     ;
 
 methodInvocationPrimaryTail
-    : '.' methodName '(' argumentList? ')'
+    : '.' methodInvocationDeclarator
     ;
 
 arrayAccessPrimaryTail

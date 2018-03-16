@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
+import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -262,13 +263,13 @@ public class MachFrontend {
         {
             return null;
         }
-//        else if (decl instanceof MachParser.ReturnStatementContext) {
-//            ParseTree returnExpression = decl.getChild(1);
-//            if (returnExpression instanceof MachParser.ExpressionContext)
-//                return new GReturn(transformExpression((MachParser.ExpressionContext)returnExpression));
-//            else
-//                return new GReturn();
-//        }
+        else if (decl instanceof MachParser.ReturnStatementContext) {
+            ParseTree returnExpression = decl.getChild(1);
+            if (returnExpression instanceof MachParser.ExpressionContext)
+                return new GReturn(transformExpression((MachParser.ExpressionContext)returnExpression));
+            else
+                return new GReturn();
+        }
         else
             throw new Exception("Shall not reach here");
     }
@@ -934,8 +935,36 @@ public class MachFrontend {
         else if (decl instanceof MachParser.LocalVariableOrThisFieldContext) {
             return new GSymbolRef(decl.getText());
         }
+        else if (decl instanceof MachParser.ThisMethodInvocationContext) {
+            return transformMethodInvocationDeclarator(
+                    GThis.INSTANCE,
+                    (MachParser.MethodInvocationDeclaratorContext) decl.getChild(0)
+            );
+        }
         else
             throw new RuntimeException("Not implemented");
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformMethodInvocationDeclarator(GExpression reference,
+                                                            MachParser.MethodInvocationDeclaratorContext context)
+        throws Exception
+    {
+        ParseTree decl = context.getChild(0);
+
+        String name = decl.getText();
+        List<GExpression> arguments = Collections.emptyList();
+
+        decl = context.getChild(2);
+        if (decl instanceof MachParser.ArgumentListContext)
+            arguments = transformArgumentList((MachParser.ArgumentListContext)decl);
+
+        return new GMethodInvocation(reference, name, arguments.toArray(new GExpression[0]));
     }
 
     /**

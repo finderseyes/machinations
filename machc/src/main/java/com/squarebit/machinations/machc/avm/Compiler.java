@@ -9,6 +9,7 @@ import com.squarebit.machinations.machc.avm.expressions.Constant;
 import com.squarebit.machinations.machc.avm.expressions.Expression;
 import com.squarebit.machinations.machc.avm.expressions.Variable;
 import com.squarebit.machinations.machc.avm.instructions.Evaluate;
+import com.squarebit.machinations.machc.avm.instructions.Invoke;
 import com.squarebit.machinations.machc.avm.instructions.LoadField;
 import com.squarebit.machinations.machc.avm.instructions.PutField;
 import com.squarebit.machinations.machc.avm.runtime.*;
@@ -150,8 +151,40 @@ public final class Compiler {
         else if (expression instanceof GSymbolRef) {
             return compileSymbolRefExpression(block, (GSymbolRef)expression);
         }
+        else if (expression instanceof GMethodInvocation) {
+            return compileMethodInvocation(block, (GMethodInvocation)expression);
+        }
         else
             throw new CompilationException("Unknown expression");
+    }
+
+    private Expression compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception
+    {
+        if (invocation.getReference() == GThis.INSTANCE) {
+            MethodInfo methodInfo = this.currentType.findMethod(invocation.getMethodName());
+
+            if (methodInfo == null)
+                throw new RuntimeException("Method not found");
+
+            int parameterCount = methodInfo.getParameters().size();
+            VariableInfo[] parameterVariables = new VariableInfo[parameterCount];
+
+            for (int i = 0; i < parameterCount; i++) {
+                parameterVariables[i] = block.createTempVar();
+
+                Expression expression = compileExpression(block, invocation.getArguments()[i]);
+                block.emit(new Evaluate(expression, parameterVariables[i]));
+            }
+
+            block.emit(new Invoke(
+                    methodInfo,
+                    this.currentMethod.getThisVariable(),
+                    parameterVariables,
+                    null
+            ));
+        }
+        else
+            throw new RuntimeException("Not implemented");
     }
 
     /**

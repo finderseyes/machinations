@@ -75,7 +75,7 @@ public class MachMachineTests {
             assertThat(Types.RUNTIME_GRAPH_TYPE.isAssignableFrom(graph.getType())).isTrue();
 
             {
-                assertThat(typeInfo.findField("b").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(typeInfo.findField("a_1").get(graph).getClass()).isEqualTo(TInteger.class);
                 assertThat(((TInteger)typeInfo.findField("b").get(graph)).getValue()).isEqualTo(3);
             }
         }
