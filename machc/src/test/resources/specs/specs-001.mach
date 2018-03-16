@@ -29,5 +29,7 @@ graph c {
 //    let b_3 = 3 - "bbb";    //
 
 
-    foo() { return 10; }
+    foo() { return bar() + 6; }
+
+    bar() { return 4; }
 }

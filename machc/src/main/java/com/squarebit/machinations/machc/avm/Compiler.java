@@ -2,16 +2,14 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
+import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierException;
 import com.squarebit.machinations.machc.avm.expressions.Add;
 import com.squarebit.machinations.machc.avm.expressions.Constant;
 import com.squarebit.machinations.machc.avm.expressions.Expression;
 import com.squarebit.machinations.machc.avm.expressions.Variable;
-import com.squarebit.machinations.machc.avm.instructions.Evaluate;
-import com.squarebit.machinations.machc.avm.instructions.Invoke;
-import com.squarebit.machinations.machc.avm.instructions.LoadField;
-import com.squarebit.machinations.machc.avm.instructions.PutField;
+import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -48,14 +46,26 @@ public final class Compiler {
                     declareMethod(typeInfo, method);
             }
 
-            // Build fields.
+            // Build fields and methods.
             for (TypeInfo typeInfo: moduleInfo.getTypes()) {
                 this.currentType = typeInfo;
                 GGraph declaration = typeInfo.getDeclaration();
+
+                // Fields
                 for (GGraphField graphField: declaration.getFields())
                     declareField(typeInfo, graphField);
-
                 typeInfo.reindex();
+
+                // Methods
+                for (MethodInfo methodInfo: typeInfo.getMethods()) {
+                    GMethod methodDeclaration = methodInfo.getDeclaration();
+                    this.currentMethod = methodInfo;
+
+                    InstructionBlock block = methodInfo.getInstructionBlock();
+                    for (GStatement statement: methodDeclaration.getStatements()) {
+                        compileStatement(block, statement);
+                    }
+                }
             }
         }
         catch (Exception exception) {
@@ -64,6 +74,26 @@ public final class Compiler {
 
         // Done.
         return moduleInfo;
+    }
+
+    /**
+     *
+     * @param block
+     * @param statement
+     * @throws Exception
+     */
+    private void compileStatement(InstructionBlock block, GStatement statement) throws Exception {
+        if (statement instanceof GReturn) {
+            compileReturnStatement(block, (GReturn)statement);
+        }
+    }
+
+    private void compileReturnStatement(InstructionBlock block, GReturn statement) throws Exception {
+        VariableInfo resultVar = block.createTempVar();
+        Expression resultExpression = compileExpression(block, statement.getExpression());
+
+        block.emit(new Evaluate(resultExpression, resultVar));
+        block.emit(new Return(resultVar));
     }
 
     /**

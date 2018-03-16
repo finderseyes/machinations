@@ -192,6 +192,8 @@ public final class Machine {
             executeLoadField((LoadField)instruction);
         else if (instruction instanceof Invoke)
             executeInvoke((Invoke)instruction);
+        else if (instruction instanceof Return)
+            executeReturn((Return)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -334,5 +336,19 @@ public final class Machine {
             if (resultVariable != null)
                 setLocalVariable(resultVariable.getIndex(), value);
         });
+    }
+
+    private void executeReturn(Return instruction) {
+        if (instruction.getValue() != null) {
+            this.activeMethodFrame.setReturnValue(getLocalVariable(instruction.getValue().getIndex()));
+        }
+
+        // Unroll the stack up to current method.
+        Frame frame = this.activeFrame;
+        while (frame != this.activeMethodFrame) {
+            exitFrame(frame);
+            frame = frame.getCaller();
+        }
+        this.activeFrame = this.activeMethodFrame;
     }
 }
