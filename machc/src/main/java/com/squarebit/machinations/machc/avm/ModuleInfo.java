@@ -59,4 +59,14 @@ public final class ModuleInfo {
         types.add(typeInfo);
         typeByName.put(typeInfo.getName(), typeInfo);
     }
+
+    /**
+     * Finds a type with given name.
+     *
+     * @param name the type name
+     * @return the {@link TypeInfo} instance
+     */
+    public TypeInfo findType(String name) {
+        return typeByName.getOrDefault(name, null);
+    }
 }

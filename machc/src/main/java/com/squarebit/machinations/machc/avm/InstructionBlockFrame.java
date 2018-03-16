@@ -1,5 +1,7 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.avm.instructions.Instruction;
+
 /**
  * Call frame of an instruction block.
  */
@@ -17,6 +19,16 @@ public final class InstructionBlockFrame extends Frame {
     public InstructionBlockFrame(Frame caller, int offset, InstructionBlock block) {
         super(caller, offset);
         this.block = block;
+    }
+
+    /**
+     * Gets the number of variable.
+     *
+     * @return number of local variables.
+     */
+    @Override
+    public int getLocalVariableCount() {
+        return block.getLocalVariableCount();
     }
 
     /**
@@ -46,5 +58,13 @@ public final class InstructionBlockFrame extends Frame {
     public InstructionBlockFrame setCounter(int counter) {
         this.counter = counter;
         return this;
+    }
+
+    /**
+     * Returns the next instruction and advances the instruction counter.
+     * @return next instruction
+     */
+    public Instruction next() {
+        return this.block.getInstructions().get(counter++);
     }
 }

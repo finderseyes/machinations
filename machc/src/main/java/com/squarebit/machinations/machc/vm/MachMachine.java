@@ -1,5 +1,7 @@
 package com.squarebit.machinations.machc.vm;
 
+import com.squarebit.machinations.machc.avm.Dispatcher;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;

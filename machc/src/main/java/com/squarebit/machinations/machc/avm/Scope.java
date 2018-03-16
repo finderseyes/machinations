@@ -23,4 +23,10 @@ public interface Scope {
      * @return the number of variable declared
      */
     int getVariableCount();
+
+    /**
+     * Gets the number of variables declared in this scope only.
+     * @return the number of variables declared in this scope.
+     */
+    int getLocalVariableCount();
 }

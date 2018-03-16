@@ -2,10 +2,12 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.GGraph;
 import com.squarebit.machinations.machc.avm.exceptions.FieldAlreadyExistedException;
+import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.exceptions.MethodAlreadyExistedException;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
-import com.squarebit.machinations.machc.vm.components.TObjectImpl;
+import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +40,7 @@ public final class TypeInfo {
      * Instantiates a new object.
      */
     public TypeInfo() {
-        this.implementingClass = TObjectImpl.class;
+        this.implementingClass = TObjectBase.class;
 
         this.fields = new ArrayList<>();
         this.fieldByName = new HashMap<>();
@@ -218,5 +220,57 @@ public final class TypeInfo {
      */
     public MethodInfo getInternalInstanceConstructor() {
         return internalInstanceConstructor;
+    }
+
+    /**
+     * Allocate a new uninitialized instance of given type.
+     * @return an instance of this type.
+     * @throws MachineException if any errors occur.
+     * @apiNote caller must be responsible for calling the type constructor.
+     */
+    public TObject allocateInstance() throws MachineException {
+        try {
+            TObject instance = (TObject)implementingClass.newInstance();
+
+            if (fields.size() > 0) {
+                if (instance instanceof TObjectBase) {
+                    TObjectBase objectBase = (TObjectBase)instance;
+                    setInstanceTypeInfo(objectBase);
+                    allocateInstanceFieldTable(objectBase);
+                }
+                else {
+                    throw new Exception("This type does not have a field storage.");
+                }
+            }
+
+            return instance;
+        }
+        catch (Exception exception) {
+            throw new MachineException(exception);
+        }
+    }
+
+    /**
+     * Allocate the field table for an instance of this type.
+     */
+    private void allocateInstanceFieldTable(TObjectBase instance) throws NoSuchFieldException, IllegalAccessException {
+        Field nativeField = implementingClass.getDeclaredField("__fieldTable");
+        nativeField.setAccessible(true);
+
+        int fieldCount = this.fields.size();
+        nativeField.set(instance, new TObject[fieldCount]);
+    }
+
+    /**
+     * Set instance type info.
+     * @param instance the instance
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    private void setInstanceTypeInfo(TObjectBase instance) throws NoSuchFieldException, IllegalAccessException {
+        Field nativeField = implementingClass.getDeclaredField("__typeInfo");
+        nativeField.setAccessible(true);
+
+        nativeField.set(instance, this);
     }
 }

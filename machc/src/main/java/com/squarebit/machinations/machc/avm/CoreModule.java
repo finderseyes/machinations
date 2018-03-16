@@ -5,7 +5,7 @@ import com.squarebit.machinations.machc.avm.runtime.TInteger;
 /**
  * Core {@link TypeInfo}s.
  */
-final class CoreModule {
+public final class CoreModule {
     private static final CoreModule INTERNAL = new CoreModule();
     private final ModuleInfo module;
     private final TypeInfo objectType;

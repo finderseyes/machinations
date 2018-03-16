@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.avm;
 /**
  * A call frame of the Abstract Virtual Machine.
  */
-public class Frame {
+public abstract class Frame {
     private Frame caller;
     private int offset;
 
@@ -35,4 +35,10 @@ public class Frame {
     public int getOffset() {
         return offset;
     }
+
+    /**
+     * Gets the number of variable.
+     * @return number of local variables.
+     */
+    public abstract int getLocalVariableCount();
 }

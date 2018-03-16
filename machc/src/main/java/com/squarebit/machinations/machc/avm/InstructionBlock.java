@@ -112,6 +112,24 @@ public final class InstructionBlock implements Scope {
     }
 
     /**
+     * Gets the number of variables declared in this scope only.
+     *
+     * @return the number of variables declared in this scope.
+     */
+    @Override
+    public int getLocalVariableCount() {
+        return variables.size();
+    }
+
+    /**
+     * Gets the list of instructions
+     * @return instruction list, in declaration order.
+     */
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    /**
      * Adds an instruction to this block.
      *
      * @param instruction the {@link Instruction} instance

@@ -2,12 +2,15 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Call frame of a method.
  */
 public final class MethodFrame extends Frame {
     private MethodInfo method;
     private TObject returnValue;
+    private CompletableFuture<TObject> returnFuture;
 
     /**
      * Instantiates a new Method frame.
@@ -19,6 +22,17 @@ public final class MethodFrame extends Frame {
     public MethodFrame(Frame caller, int offset, MethodInfo method) {
         super(caller, offset);
         this.method = method;
+        this.returnFuture = new CompletableFuture<>();
+    }
+
+    /**
+     * Gets the number of variable.
+     *
+     * @return number of local variables.
+     */
+    @Override
+    public int getLocalVariableCount() {
+        return method.getLocalVariableCount();
     }
 
     /**
@@ -48,5 +62,14 @@ public final class MethodFrame extends Frame {
     public MethodFrame setReturnValue(TObject returnValue) {
         this.returnValue = returnValue;
         return this;
+    }
+
+    /**
+     * Gets return future, which completes when the method is popped from the call stack.
+     *
+     * @return the return future
+     */
+    public CompletableFuture<TObject> getReturnFuture() {
+        return returnFuture;
     }
 }

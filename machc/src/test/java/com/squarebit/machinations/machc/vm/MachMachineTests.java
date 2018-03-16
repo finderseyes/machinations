@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MachMachineTests {
     @Test
     public void specs_001() throws Exception {
-        ProgramInfo program = Utils.compile("specs/specs-001.mach");
+        ProgramInfo program = Utils.compileold("specs/specs-001.mach");
 
         MachMachine machine = new MachMachine(program);
         machine.start();

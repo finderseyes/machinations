@@ -225,6 +225,16 @@ public final class MethodInfo implements Scope {
     }
 
     /**
+     * Gets the number of variables declared in this scope only.
+     *
+     * @return the number of variables declared in this scope.
+     */
+    @Override
+    public int getLocalVariableCount() {
+        return this.getVariableCount();
+    }
+
+    /**
      * Gets this variable.
      *
      * @return the this variable
