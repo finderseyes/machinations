@@ -265,8 +265,10 @@ assignment
 	;
 
 leftHandSide
-	:	IDENTIFIER
+	: expressionName
+	| primary (referenceFieldAccess | referenceArrayAccess)
 	;
+
 
 assignmentOperator
 	:	'='
@@ -383,15 +385,74 @@ postDecrementExpression_lf_postfixExpression
 	:	'--'
 	;
 
+// --> Resolve to value
 primary
+    : primaryReference (referenceOperator)*
+    ;
+
+referenceOperator
+    : referenceFieldAccess
+    | referenceMethodInvocation
+    | referenceArrayAccess
+    ;
+
+referenceFieldAccess
+    : '.' IDENTIFIER
+    ;
+
+referenceMethodInvocation
+    : '.' IDENTIFIER '(' argumentList? ')'
+    ;
+
+referenceArrayAccess
+    : ('[' expression ']')+
+    ;
+
+primaryReference
+	: literal
+	| '(' expression ')'
+	| thisReference
+	| expressionName
+	| implicitReferenceMethodInvocation
+//	| methodInvocation
+//	| arrayAccess
+//	| bracketSetDescriptor
+//	| setOperations
+	;
+
+implicitReferenceMethodInvocation
+    : IDENTIFIER '(' argumentList? ')'
+    ;
+
+thisReference
+    : 'this'
+    ;
+
+primaryHeadNoArrayAccess
 	: literal
 	| '(' expression ')'
 	| methodInvocation
-	| propertyAccess
-	| arrayAccess
 	| bracketSetDescriptor
 	| setOperations
 	;
+
+primaryTail
+    : fieldAccessPrimaryTail
+    | methodInvocationPrimaryTail
+    | arrayAccessPrimaryTail
+    ;
+
+fieldAccessPrimaryTail
+    : '.' IDENTIFIER
+    ;
+
+methodInvocationPrimaryTail
+    : '.' methodName '(' argumentList? ')'
+    ;
+
+arrayAccessPrimaryTail
+    : '[' expression ']'
+    ;
 
 setOperations
     : setCardinality
@@ -401,17 +462,11 @@ setCardinality
     : '|' expression '|'
     ;
 
-arrayAccess
-    : expressionName ('[' expression ']')+
-    ;
-
-propertyAccess
-	: IDENTIFIER '.' IDENTIFIER
-	;
-
 methodInvocation
-	: methodName '(' argumentList? ')'
-	| expressionName '.' IDENTIFIER '(' argumentList? ')'
+    : primary referenceMethodInvocation
+    | implicitReferenceMethodInvocation
+//	: methodName '(' argumentList? ')'
+//	| expressionName '.' methodName '(' argumentList? ')'
 	| graphicalMethodInvocation
 	;
 

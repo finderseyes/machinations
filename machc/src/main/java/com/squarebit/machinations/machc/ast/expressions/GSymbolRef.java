@@ -5,6 +5,7 @@ package com.squarebit.machinations.machc.ast.expressions;
  */
 public final class GSymbolRef extends GExpression {
     private final String symbolName;
+    private GSymbolRef next;
 
     /**
      * Instantiates symbol reference.
@@ -22,5 +23,25 @@ public final class GSymbolRef extends GExpression {
      */
     public String getSymbolName() {
         return symbolName;
+    }
+
+    /**
+     * Gets next.
+     *
+     * @return the next
+     */
+    public GSymbolRef getNext() {
+        return next;
+    }
+
+    /**
+     * Sets next.
+     *
+     * @param next the next
+     * @return the next
+     */
+    public GSymbolRef setNext(GSymbolRef next) {
+        this.next = next;
+        return this;
     }
 }

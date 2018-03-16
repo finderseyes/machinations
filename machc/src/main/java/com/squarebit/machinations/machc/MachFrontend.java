@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
+import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -12,6 +13,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,13 +149,129 @@ public class MachFrontend {
                     graph.addField(field);
                 }
             }
-            else if (decl instanceof MachParser.NodeDeclarationContext) {
-                // transformNodeDeclaration(graphTransformationContext, (MachParser.NodeDeclarationContext)decl);
+            else if (decl instanceof MachParser.MethodDeclarationContext) {
+                GMethod method = transformMethodDeclaration((MachParser.MethodDeclarationContext)decl);
+                graph.addMethod(method);
             }
-
         }
 
         return graph;
+    }
+
+    /**
+     *
+     * @param methodDeclarationContext
+     * @return
+     * @throws Exception
+     */
+    private GMethod transformMethodDeclaration(MachParser.MethodDeclarationContext methodDeclarationContext)
+        throws Exception
+    {
+        GMethod method = new GMethod();
+
+        int next = 0;
+        ParseTree decl = methodDeclarationContext.getChild(next);
+
+        if (decl instanceof MachParser.MethodModifierContext) {
+            next += 1;
+            decl = methodDeclarationContext.getChild(next);
+        }
+
+        String methodName = decl.getText();
+        method.setName(methodName);
+
+        next += 2;
+        decl = methodDeclarationContext.getChild(next);
+
+        if (decl instanceof MachParser.MethodArgumentDeclaratorListContext) {
+            for (int i = 0; i < decl.getChildCount(); i += 2)
+                method.addArgument(decl.getChild(i).getText());
+
+            next += 2;
+            decl = methodDeclarationContext.getChild(next);
+        }
+        else {
+            next += 1;
+            decl = methodDeclarationContext.getChild(next);
+        }
+
+        ParseTree statementsContext = decl.getChild(1);
+        if (statementsContext instanceof MachParser.BlockStatementsContext) {
+            List<GStatement> statements = transformBlockStatements((MachParser.BlockStatementsContext)statementsContext);
+            statements.forEach(method::addStatement);
+        }
+
+        return method;
+    }
+
+    /**
+     * Transform block statements to a list.
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private List<GStatement> transformBlockStatements(MachParser.BlockStatementsContext context)
+        throws Exception
+    {
+        List<GStatement> statements = new ArrayList<>();
+        for (int i = 0; i < context.getChildCount(); i++) {
+            ParseTree decl = context.getChild(i);
+            GStatement statement = transformBlockStatement((MachParser.BlockStatementContext)decl);
+            if (statement != GStatement.EMPTY)
+                statements.add(statement);
+        }
+        return statements;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformBlockStatement(MachParser.BlockStatementContext context)
+        throws Exception
+    {
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.StatementContext) {
+            return transformStatement((MachParser.StatementContext)decl);
+        }
+        else
+            return null;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformStatement(MachParser.StatementContext context) throws Exception {
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.EmptyStatementContext)
+            return GStatement.EMPTY;
+        else if (decl instanceof MachParser.BlockContext) {
+            return null;
+        }
+        else if (decl instanceof MachParser.ExpressionStatementContext) {
+            return null;
+        }
+        else if (decl instanceof MachParser.IfThenStatementContext ||
+                decl instanceof MachParser.IfThenElseStatementContext)
+        {
+            return null;
+        }
+        else if (decl instanceof MachParser.ReturnStatementContext) {
+            ParseTree returnExpression = decl.getChild(1);
+            if (returnExpression instanceof MachParser.ExpressionContext)
+                return new GReturn(transformExpression((MachParser.ExpressionContext)returnExpression));
+            else
+                return new GReturn();
+        }
+        else
+            throw new Exception("Shall not reach here");
     }
 
     /**
@@ -770,6 +888,12 @@ public class MachFrontend {
         if (decl instanceof MachParser.LiteralContext) {
             return transformLiteral((MachParser.LiteralContext)decl);
         }
+        else if (decl.getText().equals("(")) {
+            return transformExpression((MachParser.ExpressionContext)expressionContext.getChild(1));
+        }
+        else if (decl instanceof MachParser.MethodInvocationContext) {
+            return transformMethodInvocation((MachParser.MethodInvocationContext)decl);
+        }
         else
             return null;
     }
@@ -811,5 +935,75 @@ public class MachFrontend {
         throws Exception
     {
         return  null;
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformMethodInvocation(MachParser.MethodInvocationContext expressionContext)
+        throws Exception
+    {
+        ParseTree decl = expressionContext.getChild(0);
+
+        if (decl instanceof MachParser.GraphicalMethodInvocationContext) {
+            return null;
+        }
+        else {
+            GSymbolRef target = null;
+            String name = null;
+            List<GExpression> arguments = Collections.emptyList();
+
+            if (decl instanceof MachParser.MethodNameContext) {
+                name = decl.getText();
+                decl = expressionContext.getChild(2);
+            }
+            else {
+                name = expressionContext.getChild(2).getText();
+                target = transformExpressionName((MachParser.ExpressionNameContext)decl);
+                decl = expressionContext.getChild(4);
+            }
+
+            if (decl instanceof MachParser.ArgumentListContext)
+                arguments = transformArgumentList((MachParser.ArgumentListContext)decl);
+
+            return new GMethodCall(target, name, arguments.toArray(new GExpression[0]));
+        }
+    }
+
+    /**
+     *
+     * @param expressionContext
+     * @return
+     */
+    private GSymbolRef transformExpressionName(MachParser.ExpressionNameContext expressionContext) throws Exception {
+        GSymbolRef ref = new GSymbolRef(expressionContext.getChild(0).getText());
+        GSymbolRef current = ref;
+
+        for (int i = 2; i < expressionContext.getChildCount(); i+=2) {
+            GSymbolRef next = new GSymbolRef(expressionContext.getChild(i).getText());
+            current.setNext(next);
+            current = next;
+        }
+
+        return ref;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private List<GExpression> transformArgumentList(MachParser.ArgumentListContext context) throws Exception {
+        List<GExpression> expressions = new ArrayList<>();
+
+        for (int i = 0; i < context.getChildCount(); i++) {
+            GExpression exp = transformExpression((MachParser.ExpressionContext)context.getChild(i));
+            expressions.add(exp);
+        }
+        return expressions;
     }
 }

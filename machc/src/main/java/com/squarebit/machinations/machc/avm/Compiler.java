@@ -7,6 +7,7 @@ import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierExceptio
 import com.squarebit.machinations.machc.avm.expressions.Add;
 import com.squarebit.machinations.machc.avm.expressions.Constant;
 import com.squarebit.machinations.machc.avm.expressions.Expression;
+import com.squarebit.machinations.machc.avm.expressions.Variable;
 import com.squarebit.machinations.machc.avm.instructions.Evaluate;
 import com.squarebit.machinations.machc.avm.instructions.LoadField;
 import com.squarebit.machinations.machc.avm.instructions.PutField;
@@ -20,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class Compiler {
     private Scope currentScope;
+    private MethodInfo currentMethod;
     private TypeInfo currentType;
 
     /**
@@ -109,6 +111,8 @@ public final class Compiler {
         MethodInfo internalInstanceConstructor = fieldInfo.getDeclaringType().getInternalInstanceConstructor();
         InstructionBlock block = internalInstanceConstructor.getInstructionBlock();
 
+        this.currentMethod = internalInstanceConstructor;
+
         Expression expression = compileExpression(block, field.getInitializer());
         VariableInfo temp = block.createTempVar();
 
@@ -181,27 +185,47 @@ public final class Compiler {
         VariableInfo localVar = block.findVariable(symbolRef.getSymbolName());
 
         if (localVar != null) {
-
+            if (symbolRef.getNext() == null)
+                return new Variable(localVar);
+            else {
+                VariableInfo result = block.createTempVar();
+                compileFieldRefRecurisve(block, symbolRef.getNext(), localVar, result);
+                return new Variable(result);
+            }
         }
         else {
             FieldInfo fieldInfo = this.currentType.findField(symbolRef.getSymbolName());
             if (fieldInfo != null) {
+                VariableInfo result = block.createTempVar();
 
+                if (symbolRef.getNext() == null) {
+                    block.emit(new LoadField(currentMethod.getThisVariable(), fieldInfo, result));
+                    return new Variable(result);
+                }
+                else {
+
+                }
             }
             else
                 throw new UnknownIdentifierException(symbolRef.getSymbolName());
         }
     }
 
-    private Expression refRecurisve(InstructionBlock block, GSymbolRef ref, VariableInfo fieldOwner) throws Exception {
+    private Expression compileFieldRefRecurisve(InstructionBlock block, GSymbolRef ref, VariableInfo fieldOwner, VariableInfo result)
+            throws Exception
+    {
         TypeInfo fieldOnwerType = fieldOwner.getType();
         FieldInfo fieldInfo = fieldOnwerType.findField(ref.getSymbolName());
 
         if (fieldInfo != null) {
-            VariableInfo temp = block.createTempVar();
-            block.emit(new LoadField(fieldOwner, fieldInfo, temp));
-
-            if (ref.)
+            if (ref.getNext() == null) {
+                block.emit(new LoadField(fieldOwner, fieldInfo, result));
+            }
+            else {
+                VariableInfo temp = block.createTempVar();
+                block.emit(new LoadField(fieldOwner, fieldInfo, temp));
+                compileFieldRefRecurisve(block, ref.getNext(), temp, result);
+            }
         }
         else
             throw new RuntimeException("dsfdsds");
