@@ -11,6 +11,7 @@ public final class FieldInfo {
     private boolean isStatic;
     private TypeInfo type;
     private String name;
+    private int index;
 
     /**
      * Instantiates a new object.
@@ -119,6 +120,26 @@ public final class FieldInfo {
      */
     public FieldInfo setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets index.
+     *
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * Sets index.
+     *
+     * @param index the index
+     * @return the index
+     */
+    public FieldInfo setIndex(int index) {
+        this.index = index;
         return this;
     }
 }

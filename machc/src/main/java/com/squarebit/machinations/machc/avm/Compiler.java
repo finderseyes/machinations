@@ -44,6 +44,8 @@ public final class Compiler {
                 GGraph declaration = typeInfo.getDeclaration();
                 for (GGraphField graphField: declaration.getFields())
                     declareField(typeInfo, graphField);
+
+                typeInfo.reindex();
             }
         }
         catch (Exception exception) {

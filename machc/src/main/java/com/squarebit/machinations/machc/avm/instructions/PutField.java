@@ -13,4 +13,16 @@ public final class PutField extends Instruction {
         this.fieldInfo = fieldInfo;
         this.value = value;
     }
+
+    public VariableInfo getThisObject() {
+        return thisObject;
+    }
+
+    public FieldInfo getFieldInfo() {
+        return fieldInfo;
+    }
+
+    public VariableInfo getValue() {
+        return value;
+    }
 }

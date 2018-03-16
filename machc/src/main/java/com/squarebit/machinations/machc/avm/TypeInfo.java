@@ -273,4 +273,13 @@ public final class TypeInfo {
 
         nativeField.set(instance, this);
     }
+
+    /**
+     * Reindex fields.
+     */
+    public void reindex() {
+        for (int i = 0; i < fields.size(); i++) {
+            fields.get(i).setIndex(i);
+        }
+    }
 }

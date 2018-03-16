@@ -11,4 +11,12 @@ public class Evaluate extends Instruction {
         this.expression = expression;
         this.result = result;
     }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public VariableInfo getResult() {
+        return result;
+    }
 }

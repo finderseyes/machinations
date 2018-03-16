@@ -1,8 +1,11 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.exceptions.MachineException;
+import com.squarebit.machinations.machc.avm.instructions.Evaluate;
 import com.squarebit.machinations.machc.avm.instructions.Instruction;
+import com.squarebit.machinations.machc.avm.instructions.PutField;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
+import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
@@ -19,8 +22,13 @@ public final class Machine {
 
     //////////////////////////////////////////
     // Call stack and data stack.
+    private MethodFrame activeMethodFrame = null;
     private Frame activeFrame = null;
     private Stack<TObject> dataStack;
+
+
+    // Expression machine
+    private ExpressionMachine expressionMachine;
 
     /**
      * Initializes a new machine instance.
@@ -29,6 +37,7 @@ public final class Machine {
         this.dispatcher = Dispatcher.createSingleThreadDispatcher("@avm_main");
         this.activeFrame = null;
         this.dataStack = new Stack<>();
+        this.expressionMachine = new ExpressionMachine(this);
     }
 
     /**
@@ -160,6 +169,14 @@ public final class Machine {
         if (frame instanceof MethodFrame) {
             MethodFrame methodFrame = (MethodFrame)frame;
             methodFrame.getReturnFuture().complete(methodFrame.getReturnValue());
+
+            // Move active method frame to nearest method frame.
+            frame = frame.getCaller();
+            while (frame != null && !(frame instanceof MethodFrame))
+                frame = frame.getCaller();
+
+            if (frame != null)
+                this.activeMethodFrame = (MethodFrame)frame;
         }
     }
 
@@ -168,9 +185,10 @@ public final class Machine {
      * @param instruction instruction to execute
      */
     private void executeInstruction(Instruction instruction) {
-        int k = 10;
-
-        throw new RuntimeException("DSFDSFDSfsd");
+        if (instruction instanceof Evaluate)
+            executeEvaluate((Evaluate)instruction);
+        else if (instruction instanceof PutField)
+            executePutField((PutField)instruction);
     }
 
     /**
@@ -200,6 +218,8 @@ public final class Machine {
     private MethodFrame pushMethodFrame(MethodInfo methodInfo) {
         MethodFrame methodFrame = new MethodFrame(this.activeFrame, dataStack.size(), methodInfo);
         enterFrame(methodFrame);
+
+        this.activeMethodFrame = methodFrame;
         this.activeFrame = methodFrame;
         return methodFrame;
     }
@@ -239,7 +259,16 @@ public final class Machine {
      * @param value value to set
      */
     private void setLocalVariable(int index, TObject value) {
-        dataStack.set(this.activeFrame.getOffset() + index, value);
+        dataStack.set(this.activeMethodFrame.getOffset() + index, value);
+    }
+
+    /**
+     * Gets a local variable on the stack.
+     * @param index the variable index.
+     * @return variable value.
+     */
+    private TObject getLocalVariable(int index) {
+        return dataStack.get(this.activeMethodFrame.getOffset() + index);
     }
 
     /**
@@ -248,5 +277,25 @@ public final class Machine {
      */
     private void executeOnMachineThread(Runnable runnable) {
         machineThreadTasks.add(runnable);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Instructions execution
+
+    private void executeEvaluate(Evaluate instruction) {
+        TObject result = expressionMachine.evaluate(instruction.getExpression());
+        setLocalVariable(instruction.getResult().getIndex(), result);
+    }
+
+    private void executePutField(PutField instruction) {
+        TObject value = getLocalVariable(instruction.getValue().getIndex());
+
+        TObject instance = getLocalVariable(instruction.getThisObject().getIndex());
+        if (instance instanceof TObjectBase) {
+            TObjectBase objectBase = (TObjectBase)instance;
+            objectBase.setField(instruction.getFieldInfo().getIndex(), value);
+        }
+        else
+            throw new RuntimeException("The given field does not belong to given type.");
     }
 }
