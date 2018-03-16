@@ -67,6 +67,8 @@ final class ExpressionMachine {
             TInteger secondInteger = evaluateAsInteger(second);
             return new TInteger(firstInteger.getValue() + secondInteger.getValue());
         }
+        else if (typeInfo == CoreModule.NAN_TYPE)
+            return TNaN.INSTANCE;
         else
             return TNaN.INSTANCE;
     }
@@ -74,6 +76,8 @@ final class ExpressionMachine {
     private TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {
         if (firstType == CoreModule.STRING_TYPE || secondType == CoreModule.STRING_TYPE)
             return CoreModule.STRING_TYPE;
+        else if (firstType == CoreModule.NAN_TYPE || secondType == CoreModule.NAN_TYPE)
+            return CoreModule.NAN_TYPE;
         else if (firstType == CoreModule.FLOAT_TYPE || secondType == CoreModule.FLOAT_TYPE)
             return CoreModule.FLOAT_TYPE;
         else if (firstType == CoreModule.INTEGER_TYPE || secondType == CoreModule.INTEGER_TYPE)

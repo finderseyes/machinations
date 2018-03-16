@@ -60,7 +60,7 @@ public final class InstructionBlock implements Scope {
      * @throws VariableAlreadyExistedException
      */
     public VariableInfo createTempVar() throws VariableAlreadyExistedException {
-        return createVariable(String.format("$__var_%d", getVariableCount()));
+        return createVariable(String.format("$__temp__%d", getVariableCount()));
     }
 
     /**

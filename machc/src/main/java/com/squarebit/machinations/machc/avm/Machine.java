@@ -1,10 +1,7 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.exceptions.MachineException;
-import com.squarebit.machinations.machc.avm.instructions.Evaluate;
-import com.squarebit.machinations.machc.avm.instructions.Instruction;
-import com.squarebit.machinations.machc.avm.instructions.LoadField;
-import com.squarebit.machinations.machc.avm.instructions.PutField;
+import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
@@ -116,6 +113,7 @@ public final class Machine {
                 if (!canExecuteNextInstruction(frame)) {
                     exitFrame(frame);
                     frame = frame.getCaller();
+                    this.activeFrame = frame;
                 }
                 else
                     canExecute = true;
@@ -126,8 +124,6 @@ public final class Machine {
                 Instruction instruction = blockFrame.next();
                 executeInstruction(instruction);
             }
-
-            this.activeFrame = frame;
         }
         catch (Exception ex) {
             // Something happens.
@@ -168,8 +164,7 @@ public final class Machine {
             dataStack.pop();
 
         if (frame instanceof MethodFrame) {
-            MethodFrame methodFrame = (MethodFrame)frame;
-            methodFrame.getReturnFuture().complete(methodFrame.getReturnValue());
+            MethodFrame exitingFrame = (MethodFrame)frame;
 
             // Move active method frame to nearest method frame.
             frame = frame.getCaller();
@@ -178,6 +173,9 @@ public final class Machine {
 
             if (frame != null)
                 this.activeMethodFrame = (MethodFrame)frame;
+
+            // Result is resolve finally.
+            exitingFrame.getReturnFuture().complete(exitingFrame.getReturnValue());
         }
     }
 
@@ -192,6 +190,8 @@ public final class Machine {
             executePutField((PutField)instruction);
         else if (instruction instanceof LoadField)
             executeLoadField((LoadField)instruction);
+        else if (instruction instanceof Invoke)
+            executeInvoke((Invoke)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -313,5 +313,26 @@ public final class Machine {
         }
         else
             throw new RuntimeException("The given field does not belong to given type.");
+    }
+
+    private void executeInvoke(Invoke invoke) {
+        TObject instance = getLocalVariable(invoke.getInstance().getIndex());
+
+        int parameterCount = invoke.getArgs().length;
+        TObject[] parameters = new TObject[parameterCount];
+        for (int i = 0; i < parameterCount; i++)
+            parameters[i] = getLocalVariable(invoke.getArgs()[i].getIndex());
+
+        CompletableFuture<TObject> returnFuture = machInvokeOnMachineThread(
+                invoke.getMethodInfo(),
+                instance,
+                parameters
+        );
+
+        returnFuture.thenAccept(value -> {
+            VariableInfo resultVariable = invoke.getResult();
+            if (resultVariable != null)
+                setLocalVariable(resultVariable.getIndex(), value);
+        });
     }
 }

@@ -1,6 +1,8 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.avm.runtime.TNaN;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
+import com.squarebit.machinations.machc.avm.runtime.TVoid;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -23,6 +25,7 @@ public final class MethodFrame extends Frame {
         super(caller, offset);
         this.method = method;
         this.returnFuture = new CompletableFuture<>();
+        this.returnValue = TNaN.INSTANCE;
     }
 
     /**

@@ -16,4 +16,20 @@ public class Invoke extends Instruction {
         this.args = args;
         this.result = result;
     }
+
+    public MethodInfo getMethodInfo() {
+        return methodInfo;
+    }
+
+    public VariableInfo getInstance() {
+        return instance;
+    }
+
+    public VariableInfo[] getArgs() {
+        return args;
+    }
+
+    public VariableInfo getResult() {
+        return result;
+    }
 }

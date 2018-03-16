@@ -73,8 +73,13 @@ public class MachineTests {
             assertThat(graph.getClass()).isEqualTo(TRuntimeGraph.class);
 
             {
-                assertThat(typeInfo.findField("b").get(graph).getClass()).isEqualTo(TInteger.class);
-                assertThat(((TInteger)typeInfo.findField("b").get(graph)).getValue()).isEqualTo(3);
+                assertThat(typeInfo.findField("a_1").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(((TInteger)typeInfo.findField("a_1").get(graph)).getValue()).isEqualTo(3);
+            }
+
+            {
+                assertThat(typeInfo.findField("a_2").get(graph).getClass()).isEqualTo(TInteger.class);
+                assertThat(((TInteger)typeInfo.findField("a_2").get(graph)).getValue()).isEqualTo(13);
             }
         }
 

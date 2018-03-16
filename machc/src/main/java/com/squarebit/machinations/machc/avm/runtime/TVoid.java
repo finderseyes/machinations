@@ -4,6 +4,12 @@ import com.squarebit.machinations.machc.avm.CoreModule;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 
 public class TVoid implements TObject {
+    public static final TVoid INSTANCE = new TVoid();
+
+    private TVoid() {
+
+    }
+
     /**
      * Gets information of the type of this class.
      *

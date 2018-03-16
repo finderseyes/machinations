@@ -176,12 +176,15 @@ public final class Compiler {
                 block.emit(new Evaluate(expression, parameterVariables[i]));
             }
 
+            VariableInfo result = block.createTempVar();
             block.emit(new Invoke(
                     methodInfo,
                     this.currentMethod.getThisVariable(),
                     parameterVariables,
-                    null
+                    result
             ));
+
+            return new Variable(result);
         }
         else
             throw new RuntimeException("Not implemented");
