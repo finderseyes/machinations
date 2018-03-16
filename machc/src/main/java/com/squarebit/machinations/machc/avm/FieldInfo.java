@@ -1,6 +1,8 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.GGraphField;
+import com.squarebit.machinations.machc.avm.runtime.TObject;
+import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
 /**
  * A field declared in a {@link TypeInfo}.
@@ -141,5 +143,31 @@ public final class FieldInfo {
     public FieldInfo setIndex(int index) {
         this.index = index;
         return this;
+    }
+
+    /**
+     * Gets the field value of an instance.
+     *
+     * @param instance the instance
+     * @return the field value
+     */
+    public TObject get(TObject instance) {
+        if (instance instanceof TObjectBase) {
+            return ((TObjectBase)instance).getField(index);
+        }
+        throw new RuntimeException("The given object does not have specified field");
+    }
+
+    /**
+     * Sets the field value.
+     *
+     * @param instance the instance
+     * @param value    the value
+     */
+    public void set(TObject instance, TObject value) {
+        if (instance instanceof TObjectBase) {
+            ((TObjectBase)instance).setField(index, value);
+        }
+        throw new RuntimeException("The given object does not have specified field");
     }
 }

@@ -21,7 +21,7 @@ public class TObjectBase implements TObject {
      * @return the {@link TypeInfo}
      */
     @Override
-    public TypeInfo getTypeInfo() {
+    public final TypeInfo getTypeInfo() {
         return __typeInfo;
     }
 

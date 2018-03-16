@@ -6,19 +6,19 @@ Test aspects:
 
 graph a {
     let _int = 10;
-//    let _float = 1.5;
-//    let _float_as_percentage = 10%;
-//    let _dice = 2D10;
-//    let _draw = draw2;
+    let _float = 1.5;
+    let _float_as_percentage = 10%;
+    let _dice = 2D10;
+    let _draw = draw2;
 }
 
-//default graph b {
-//    let _boolean = true;
-//    let _string = "hello Mach";
-//}
-//
-//graph c {
-//    let a = 1;
-//    let b = a + 2;
-////    let c = a - 2;
-//}
+default graph b {
+    let _boolean = true;
+    let _string = "hello Mach";
+}
+
+graph c {
+    let a = 1;
+    let b = a + 2;
+//    let c = a - 2;
+}

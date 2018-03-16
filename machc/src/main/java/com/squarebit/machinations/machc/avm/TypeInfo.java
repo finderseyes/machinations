@@ -17,6 +17,32 @@ import java.util.Map;
  * A type declared in a {@link ModuleInfo}.
  */
 public final class TypeInfo {
+    /**
+     *
+     */
+    private static class FieldCache {
+        private static final FieldCache INSTANCE = new FieldCache();
+
+        private Field objectBaseTypeInfoField;
+        private Field objectBaseFieldTableField;
+
+        public FieldCache() {
+            try {
+                objectBaseTypeInfoField = TObjectBase.class.getDeclaredField("__typeInfo");
+                objectBaseFieldTableField = TObjectBase.class.getDeclaredField("__fieldTable");
+
+                objectBaseTypeInfoField.setAccessible(true);
+                objectBaseFieldTableField.setAccessible(true);
+            }
+            catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public static final Field TYPE_INFO_FIELD = INSTANCE.objectBaseTypeInfoField;
+        public static final Field FIELD_TABLE_FIELD = INSTANCE.objectBaseFieldTableField;
+    }
+
     private GGraph declaration;
     private ModuleInfo module;
     private String name;
@@ -177,6 +203,16 @@ public final class TypeInfo {
     }
 
     /**
+     * Finds a field with given name.
+     *
+     * @param name the field name
+     * @return the {@link FieldInfo} instance if found
+     */
+    public FieldInfo findField(String name) {
+        return fieldByName.getOrDefault(name, null);
+    }
+
+    /**
      * Gets all methods declared in this type.
      *
      * @return the method list in declaration order
@@ -254,9 +290,7 @@ public final class TypeInfo {
      * Allocate the field table for an instance of this type.
      */
     private void allocateInstanceFieldTable(TObjectBase instance) throws NoSuchFieldException, IllegalAccessException {
-        Field nativeField = implementingClass.getDeclaredField("__fieldTable");
-        nativeField.setAccessible(true);
-
+        Field nativeField = FieldCache.FIELD_TABLE_FIELD;
         int fieldCount = this.fields.size();
         nativeField.set(instance, new TObject[fieldCount]);
     }
@@ -268,9 +302,7 @@ public final class TypeInfo {
      * @throws IllegalAccessException
      */
     private void setInstanceTypeInfo(TObjectBase instance) throws NoSuchFieldException, IllegalAccessException {
-        Field nativeField = implementingClass.getDeclaredField("__typeInfo");
-        nativeField.setAccessible(true);
-
+        Field nativeField = FieldCache.TYPE_INFO_FIELD;
         nativeField.set(instance, this);
     }
 
