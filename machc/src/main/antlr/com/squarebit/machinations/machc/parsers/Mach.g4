@@ -265,10 +265,18 @@ assignment
 	;
 
 leftHandSide
-	: expressionName
-	| primary (referenceFieldAccess | referenceArrayAccess)
+	: localVariableOrThisField
+	| targetWithOwner
 	;
 
+// -> value is assign to a local variale or a field of current instance.
+localVariableOrThisField
+    : IDENTIFIER
+    ;
+
+targetWithOwner
+    : primary (referenceFieldAccess | referenceArrayAccess)
+    ;
 
 assignmentOperator
 	:	'='

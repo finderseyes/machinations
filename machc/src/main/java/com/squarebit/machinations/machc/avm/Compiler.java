@@ -203,7 +203,7 @@ public final class Compiler {
                     return new Variable(result);
                 }
                 else {
-
+                    return null;
                 }
             }
             else
