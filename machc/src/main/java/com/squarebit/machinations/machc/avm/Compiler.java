@@ -44,6 +44,8 @@ public final class Compiler {
                 this.currentType = typeInfo;
                 for (GMethod method: graph.getMethods())
                     declareMethod(typeInfo, method);
+
+                typeInfo.reindexMethods();
             }
 
             // Build fields and methods.
@@ -54,7 +56,7 @@ public final class Compiler {
                 // Fields
                 for (GGraphField graphField: declaration.getFields())
                     declareField(typeInfo, graphField);
-                typeInfo.reindex();
+                typeInfo.reindexFields();
 
                 // Methods
                 for (MethodInfo methodInfo: typeInfo.getMethods()) {

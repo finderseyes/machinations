@@ -4,11 +4,14 @@ import com.squarebit.machinations.machc.avm.CoreModule;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 import com.squarebit.machinations.machc.avm.runtime.annotations.ConstructorMethod;
 
+import java.util.concurrent.CompletableFuture;
+
 public final class TSetDescriptor implements TObject {
 
     @ConstructorMethod
-    public void init(TObject a) {
+    public CompletableFuture<TObject> init() {
         int k = 10;
+        return CompletableFuture.completedFuture(null);
     }
 
     /**

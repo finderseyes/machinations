@@ -1,11 +1,15 @@
 package com.squarebit.machinations.machc.avm;
 
+import com.squarebit.machinations.machc.avm.runtime.NativeMethodFrame;
+
 /**
  * A call frame of the Abstract Virtual Machine.
  */
 public abstract class Frame {
     private Frame caller;
     private int offset;
+
+    private NativeMethodFrame activeNativeMethodFrame;
 
     /**
      * Instantiates a new Frame.
@@ -41,4 +45,24 @@ public abstract class Frame {
      * @return number of local variables.
      */
     public abstract int getLocalVariableCount();
+
+    /**
+     * Gets native call stack.
+     *
+     * @return the native call stack
+     */
+    public NativeMethodFrame getActiveNativeMethodFrame() {
+        return activeNativeMethodFrame;
+    }
+
+    /**
+     * Sets native call stack.
+     *
+     * @param activeNativeMethodFrame the native call stack
+     * @return the native call stack
+     */
+    public Frame setActiveNativeMethodFrame(NativeMethodFrame activeNativeMethodFrame) {
+        this.activeNativeMethodFrame = activeNativeMethodFrame;
+        return this;
+    }
 }

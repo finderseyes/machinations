@@ -57,6 +57,7 @@ public final class TypeInfo {
     // Methods
     private List<MethodInfo> methods;
     private Map<String, MethodInfo> methodByName;
+    private Map<MethodSignature, MethodInfo> methodBySignature;
 
     ////////////////////
     // Constructors
@@ -73,6 +74,7 @@ public final class TypeInfo {
 
         this.methods = new ArrayList<>();
         this.methodByName = new HashMap<>();
+        this.methodBySignature = new HashMap<>();
 
         // Internal instance constructor.
         this.internalInstanceConstructor = new MethodInfo()
@@ -259,6 +261,16 @@ public final class TypeInfo {
     }
 
     /**
+     * Find a method with given name and parameter count.
+     * @param name
+     * @param parameterCount
+     * @return
+     */
+    public MethodInfo findMethod(String name, int parameterCount) {
+        return methodBySignature.getOrDefault(new MethodSignature(name, parameterCount), null);
+    }
+
+    /**
      * Gets internal instance constructor.
      *
      * @return the internal instance constructor.
@@ -318,9 +330,24 @@ public final class TypeInfo {
     /**
      * Reindex fields.
      */
-    public void reindex() {
+    public void reindexFields() {
         for (int i = 0; i < fields.size(); i++) {
             fields.get(i).setIndex(i);
+        }
+    }
+
+    /**
+     * Reindex methods.
+     */
+    public void reindexMethods() {
+        methodBySignature.clear();
+        methodByName.clear();
+
+        for (int i = 0; i < methods.size(); i++) {
+            MethodInfo methodInfo = methods.get(i);
+            MethodSignature signature = new MethodSignature(methodInfo.getName(), methodInfo.getParameterCount());
+            methodBySignature.put(signature, methodInfo);
+            methodByName.put(methodInfo.getName(), methodInfo);
         }
     }
 }

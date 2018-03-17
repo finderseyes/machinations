@@ -12,6 +12,8 @@ import java.util.Map;
  * A method declared in a {@link TypeInfo}.
  */
 public final class MethodInfo implements Scope {
+    public static final String CONSTRUCTOR_NAME = "$__ctor__$";
+
     private GMethod declaration;
     private TypeInfo declaringType;
     private String name;
@@ -29,6 +31,9 @@ public final class MethodInfo implements Scope {
     private VariableInfo thisVariable = null;
     private InstructionBlock instructionBlock;
 
+    // Signature.
+    private MethodSignature signature;
+
     /**
      * Instantiates a new instance.
      */
@@ -44,6 +49,8 @@ public final class MethodInfo implements Scope {
                 .setDeclaringScope(this)
                 .setIndex(0)
                 .setName("$this");
+
+        this.signature = new MethodSignature();
     }
 
     /**
@@ -148,6 +155,7 @@ public final class MethodInfo implements Scope {
      */
     public MethodInfo setName(String name) {
         this.name = name;
+        this.signature.setName(name);
         return this;
     }
 
@@ -158,6 +166,15 @@ public final class MethodInfo implements Scope {
      */
     public List<ParameterInfo> getParameters() {
         return parameters;
+    }
+
+    /**
+     * Gets parameter count.
+     *
+     * @return the parameter count
+     */
+    public int getParameterCount() {
+        return this.parameters.size();
     }
 
     /**

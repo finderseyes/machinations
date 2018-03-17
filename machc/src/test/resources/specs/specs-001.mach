@@ -20,8 +20,9 @@ default graph b {
 graph c {
     let a_0 = 1;
     let a_1 = a_0 + 2;
-    let a_2 = a_1 + foo();
     let a_3 = {1};
+    let a_2 = a_1 + foo();
+
 
 //    // with type coerce.
 //    let b_0 = 1 + 1.5;      // 2.5
