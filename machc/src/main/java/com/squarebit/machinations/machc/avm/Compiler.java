@@ -192,7 +192,9 @@ public final class Compiler {
     }
 
     private Expression compileSetDescriptor(InstructionBlock block, GSetDescriptor descriptor) throws Exception {
-        return null;
+        VariableInfo temp = block.createTempVar();
+        block.emit(new New(temp, CoreModule.SET_DESCRIPTOR_TYPE));
+        return new Variable(temp);
     }
 
     private Expression compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception

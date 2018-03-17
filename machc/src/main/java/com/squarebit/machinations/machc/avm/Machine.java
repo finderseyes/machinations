@@ -4,7 +4,9 @@ import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
+import com.squarebit.machinations.machc.avm.runtime.annotations.ConstructorMethod;
 
+import java.lang.annotation.Annotation;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -194,6 +196,8 @@ public final class Machine {
             executeInvoke((Invoke)instruction);
         else if (instruction instanceof Return)
             executeReturn((Return)instruction);
+        else if (instruction instanceof New)
+            executeNew((New)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -350,5 +354,28 @@ public final class Machine {
             frame = frame.getCaller();
         }
         this.activeFrame = this.activeMethodFrame;
+    }
+
+    private void executeNew(New instruction) {
+        try {
+            TypeInfo typeInfo = instruction.getTypeInfo();
+
+            // Find constructor method.
+            Class implementingClass = typeInfo.getImplementingClass();
+            Annotation constructorMethods = implementingClass.getDeclaredAnnotation(ConstructorMethod.class);
+
+            TObject instance = typeInfo.allocateInstance();
+            CompletableFuture<TObject> returnFuture =
+                    machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
+
+            returnFuture.thenAccept(value -> {
+                VariableInfo resultVariable = instruction.getTo();
+                if (resultVariable != null)
+                    setLocalVariable(resultVariable.getIndex(), instance);
+            });
+        }
+        catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
     }
 }
