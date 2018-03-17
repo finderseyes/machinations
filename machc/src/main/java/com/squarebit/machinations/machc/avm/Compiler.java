@@ -148,7 +148,7 @@ public final class Compiler {
         VariableInfo temp = block.createTempVar();
 
         block.emit(new Evaluate(expression, temp));
-        block.emit(new PutField(internalInstanceConstructor.getThisVariable(), fieldInfo, temp));
+        block.emit(new PutField(fieldInfo, internalInstanceConstructor.getThisVariable(), temp));
     }
 
     /**
@@ -265,7 +265,7 @@ public final class Compiler {
                 VariableInfo result = block.createTempVar();
 
                 if (symbolRef.getNext() == null) {
-                    block.emit(new LoadField(currentMethod.getThisVariable(), fieldInfo, result));
+                    block.emit(new LoadField(fieldInfo, currentMethod.getThisVariable(), result));
                     return new Variable(result);
                 }
                 else {
@@ -285,11 +285,11 @@ public final class Compiler {
 
         if (fieldInfo != null) {
             if (ref.getNext() == null) {
-                block.emit(new LoadField(fieldOwner, fieldInfo, result));
+                block.emit(new LoadField(fieldInfo, fieldOwner, result));
             }
             else {
                 VariableInfo temp = block.createTempVar();
-                block.emit(new LoadField(fieldOwner, fieldInfo, temp));
+                block.emit(new LoadField(fieldInfo, fieldOwner, temp));
                 compileFieldRefRecurisve(block, ref.getNext(), temp, result);
             }
         }

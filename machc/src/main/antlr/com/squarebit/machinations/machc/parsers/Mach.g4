@@ -281,7 +281,7 @@ leftHandSide
 	| targetWithOwner
 	;
 
-// -> value is assign to a local variale or a field of current instance.
+// -> from is assign to a local variale or a field of current instance.
 localVariableOrThisField
     : IDENTIFIER
     ;
@@ -405,7 +405,7 @@ postDecrementExpression_lf_postfixExpression
 	:	'--'
 	;
 
-// --> Resolve to value
+// --> Resolve to from
 primary
     : primaryReference (referenceOperator)*
     ;

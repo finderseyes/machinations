@@ -291,13 +291,13 @@ public final class Machine {
 
     private void executeEvaluate(Evaluate instruction) {
         TObject result = expressionMachine.evaluate(instruction.getExpression());
-        setLocalVariable(instruction.getResult().getIndex(), result);
+        setLocalVariable(instruction.getTo().getIndex(), result);
     }
 
     private void executePutField(PutField instruction) {
-        TObject value = getLocalVariable(instruction.getValue().getIndex());
+        TObject value = getLocalVariable(instruction.getFrom().getIndex());
 
-        TObject instance = getLocalVariable(instruction.getThisObject().getIndex());
+        TObject instance = getLocalVariable(instruction.getInstance().getIndex());
         if (instance instanceof TObjectBase) {
             TObjectBase objectBase = (TObjectBase)instance;
             objectBase.setField(instruction.getFieldInfo().getIndex(), value);
@@ -307,11 +307,11 @@ public final class Machine {
     }
 
     private void executeLoadField(LoadField instruction) {
-        TObject owner = getLocalVariable(instruction.getFieldOwner().getIndex());
+        TObject owner = getLocalVariable(instruction.getInstance().getIndex());
         if (owner instanceof TObjectBase) {
             TObjectBase objectBase = (TObjectBase)owner;
             TObject value = objectBase.getField(instruction.getFieldInfo().getIndex());
-            setLocalVariable(instruction.getReturnValue().getIndex(), value);
+            setLocalVariable(instruction.getTo().getIndex(), value);
         }
         else
             throw new RuntimeException("The given field does not belong to given type.");
@@ -320,10 +320,10 @@ public final class Machine {
     private void executeInvoke(Invoke invoke) {
         TObject instance = getLocalVariable(invoke.getInstance().getIndex());
 
-        int parameterCount = invoke.getArgs().length;
+        int parameterCount = invoke.getParameters().length;
         TObject[] parameters = new TObject[parameterCount];
         for (int i = 0; i < parameterCount; i++)
-            parameters[i] = getLocalVariable(invoke.getArgs()[i].getIndex());
+            parameters[i] = getLocalVariable(invoke.getParameters()[i].getIndex());
 
         CompletableFuture<TObject> returnFuture = machInvokeOnMachineThread(
                 invoke.getMethodInfo(),
@@ -332,7 +332,7 @@ public final class Machine {
         );
 
         returnFuture.thenAccept(value -> {
-            VariableInfo resultVariable = invoke.getResult();
+            VariableInfo resultVariable = invoke.getTo();
             if (resultVariable != null)
                 setLocalVariable(resultVariable.getIndex(), value);
         });

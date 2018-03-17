@@ -437,11 +437,11 @@ methodModifier
 	;
 
 methodHeader
-	:	result methodDeclarator throws_?
-	|	typeParameters annotation* result methodDeclarator throws_?
+	:	to methodDeclarator throws_?
+	|	typeParameters annotation* to methodDeclarator throws_?
 	;
 
-result
+to
 	:	unannType
 	|	'void'
 	;

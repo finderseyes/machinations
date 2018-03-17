@@ -15,19 +15,41 @@ public abstract class Instruction {
     public Instruction() {
     }
 
+    /**
+     * Gets instruction scope.
+     *
+     * @return the scope
+     */
     public Scope getScope() {
         return scope;
     }
 
+    /**
+     * Sets instruction scope.
+     *
+     * @param scope the scope
+     * @return the scope
+     */
     public Instruction setScope(Scope scope) {
         this.scope = scope;
         return this;
     }
 
+    /**
+     * Gets instruction index in containing block.
+     *
+     * @return the index
+     */
     public int getIndex() {
         return index;
     }
 
+    /**
+     * Sets instruction index in container block.
+     *
+     * @param index the index
+     * @return the index
+     */
     public Instruction setIndex(int index) {
         this.index = index;
         return this;

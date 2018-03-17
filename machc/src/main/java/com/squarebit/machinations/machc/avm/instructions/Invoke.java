@@ -3,33 +3,64 @@ package com.squarebit.machinations.machc.avm.instructions;
 import com.squarebit.machinations.machc.avm.MethodInfo;
 import com.squarebit.machinations.machc.avm.VariableInfo;
 
+/**
+ * Invokes an instance method and stores returned value to a local variable.
+ */
 public class Invoke extends Instruction {
-    private MethodInfo methodInfo;
-    private VariableInfo instance;
-    private VariableInfo[] args;
+    private final MethodInfo methodInfo;
+    private final VariableInfo instance;
+    private final VariableInfo[] parameters;
 
-    private VariableInfo result;
+    private final VariableInfo to;
 
-    public Invoke(MethodInfo methodInfo, VariableInfo instance, VariableInfo[] args, VariableInfo result) {
+    /**
+     * Instantiates a new Invoke.
+     *
+     * @param methodInfo    the method info
+     * @param instance      the instance on which the method is called
+     * @param parameters    the parameters passed to the method
+     * @param to            the variable storing returned value
+     */
+    public Invoke(MethodInfo methodInfo, VariableInfo instance, VariableInfo[] parameters, VariableInfo to) {
         this.methodInfo = methodInfo;
         this.instance = instance;
-        this.args = args;
-        this.result = result;
+        this.parameters = parameters;
+        this.to = to;
     }
 
+    /**
+     * Gets method info.
+     *
+     * @return the method info
+     */
     public MethodInfo getMethodInfo() {
         return methodInfo;
     }
 
+    /**
+     * Gets instance.
+     *
+     * @return the instance
+     */
     public VariableInfo getInstance() {
         return instance;
     }
 
-    public VariableInfo[] getArgs() {
-        return args;
+    /**
+     * Get parameters variable info [ ].
+     *
+     * @return the variable info [ ]
+     */
+    public VariableInfo[] getParameters() {
+        return parameters;
     }
 
-    public VariableInfo getResult() {
-        return result;
+    /**
+     * Gets return store.
+     *
+     * @return the return store
+     */
+    public VariableInfo getTo() {
+        return to;
     }
 }
