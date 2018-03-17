@@ -941,8 +941,65 @@ public class MachFrontend {
                     (MachParser.MethodInvocationDeclaratorContext) decl.getChild(0)
             );
         }
+        else if (decl instanceof MachParser.BracketSetDescriptorContext) {
+            return transformBracketSetDescriptor((MachParser.BracketSetDescriptorContext)decl);
+        }
         else
             throw new RuntimeException("Not implemented");
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformBracketSetDescriptor(MachParser.BracketSetDescriptorContext context)
+        throws Exception
+    {
+        GSetDescriptor descriptor = new GSetDescriptor();
+        for (int i = 1; i < context.getChildCount(); i+=2) {
+            GSetElementDescriptor elementDescriptor = transformSetElementDescriptor(
+                    (MachParser.SetElementDescriptorContext)context.getChild(i)
+            );
+            descriptor.addElementDescriptor(elementDescriptor);
+        }
+        return descriptor;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GSetElementDescriptor transformSetElementDescriptor(MachParser.SetElementDescriptorContext context)
+        throws Exception
+    {
+        GExpression size = null;
+        GInteger capacity = null;
+        GString name = null;
+
+        int next = 0;
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.SetElementSizeContext) {
+            size = transformExpression((MachParser.ExpressionContext)decl.getChild(0));
+            next += 1;
+            decl = context.getChild(next);
+        }
+
+        if (decl instanceof MachParser.SetElementCapacityContext) {
+            capacity = GInteger.parse(decl.getChild(1).getText());
+            next += 1;
+            decl = context.getChild(next);
+        }
+
+        if (decl instanceof MachParser.SetElementTypeContext) {
+            name = new GString(decl.getText());
+        }
+
+        return new GSetElementDescriptor(size, capacity, name);
     }
 
     /**

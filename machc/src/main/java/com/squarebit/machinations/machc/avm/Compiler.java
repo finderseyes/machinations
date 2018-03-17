@@ -175,6 +175,9 @@ public final class Compiler {
             GString value = (GString)expression;
             return new Constant(new TString(value.getValue()));
         }
+        else if (expression instanceof GSetDescriptor) {
+            return compileSetDescriptor(block, (GSetDescriptor)expression);
+        }
         else if (expression instanceof GBinaryExpression) {
             return compileBinaryExpression(block, (GBinaryExpression)expression);
         }
@@ -186,6 +189,10 @@ public final class Compiler {
         }
         else
             throw new CompilationException("Unknown expression");
+    }
+
+    private Expression compileSetDescriptor(InstructionBlock block, GSetDescriptor descriptor) throws Exception {
+        return null;
     }
 
     private Expression compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception

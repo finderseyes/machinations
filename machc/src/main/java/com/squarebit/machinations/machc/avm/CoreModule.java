@@ -20,6 +20,9 @@ public final class CoreModule {
     private final TypeInfo booleanType;
     private final TypeInfo stringType;
 
+    private final TypeInfo setDescriptorType;
+    private final TypeInfo setType;
+
     private final TypeInfo graphType;
 
     /**
@@ -38,6 +41,9 @@ public final class CoreModule {
             this.randomDiceType = module.createType("RandomDice").setImplementingClass(TRandomDice.class);
             this.booleanType = module.createType("Boolean").setImplementingClass(TBoolean.class);
             this.stringType = module.createType("String").setImplementingClass(TString.class);
+
+            this.setDescriptorType = module.createType("SetDescriptor").setImplementingClass(TSetDescriptor.class);
+            this.setType = module.createType("Set").setImplementingClass(TSet.class);
 
             this.graphType = module.createType("Graph").setImplementingClass(TGraph.class);
         }
@@ -58,6 +64,9 @@ public final class CoreModule {
     public static final TypeInfo RANDOM_DICE_TYPE = INTERNAL.randomDiceType;
     public static final TypeInfo BOOLEAN_TYPE = INTERNAL.booleanType;
     public static final TypeInfo STRING_TYPE = INTERNAL.stringType;
+
+    public static final TypeInfo SET_DESCRIPTOR_TYPE = INTERNAL.setDescriptorType;
+    public static final TypeInfo SET_TYPE = INTERNAL.setType;
 
     public static final TypeInfo GRAPH_TYPE = INTERNAL.graphType;
 }

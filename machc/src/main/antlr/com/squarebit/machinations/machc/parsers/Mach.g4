@@ -166,15 +166,23 @@ setDescriptor
     ;
 
 bracketSetDescriptor
-    : '{' multipleElementDescriptor (',' multipleElementDescriptor)* '}'
+    : '{' setElementDescriptor (',' setElementDescriptor)* '}'
     ;
 
 implicitSetDescriptor
-    : expression ('/' integralLiteral)? setElementType?
+    : setElementDescriptor
     ;
 
-multipleElementDescriptor
-    : expression ('/' integralLiteral)? setElementType?
+setElementDescriptor
+    : setElementSize setElementCapacity? setElementType?
+    ;
+
+setElementSize
+    : expression
+    ;
+
+setElementCapacity
+    : '/' integralLiteral
     ;
 
 setElementType
@@ -436,7 +444,7 @@ primaryReference
 	| thisMethodInvocation
 //	| methodInvocation
 //	| arrayAccess
-//	| bracketSetDescriptor
+	| bracketSetDescriptor
 //	| setOperations
 	;
 
