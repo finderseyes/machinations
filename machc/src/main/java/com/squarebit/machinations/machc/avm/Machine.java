@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Stream;
 
 public final class Machine {
 
@@ -384,9 +385,13 @@ public final class Machine {
                     machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
 
             // Try to see if there is a native constructor.
-            Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), 0);
+            VariableInfo[] args = instruction.getArgs();
+            Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), args.length);
             if (nativeConstructor != null) {
-                internalConstructorReturn.thenCompose(v -> invokeNative(nativeConstructor, instance));
+                internalConstructorReturn.thenCompose(v -> {
+                    TObject[] argValues = Stream.of(args).map(a -> getLocalVariable(a.getIndex())).toArray(TObject[]::new);
+                    return invokeNative(nativeConstructor, instance, argValues);
+                });
             }
 
             // TODO: Try to see if there is a Mac constructor.

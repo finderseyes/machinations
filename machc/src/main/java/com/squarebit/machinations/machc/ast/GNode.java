@@ -1,5 +1,7 @@
 package com.squarebit.machinations.machc.ast;
 
+import com.squarebit.machinations.machc.ast.expressions.GSetDescriptor;
+
 /**
  * A node in the graph.
  */
@@ -13,7 +15,24 @@ public class GNode extends GGraphField {
         DRAIN,
         TRASITIVE,
         CONVERTER,
-        END
+        END;
+
+        public static Type parse(String value) {
+            if (value.equals("pool"))
+                return POOL;
+            else if (value.equals("transitive"))
+                return TRASITIVE;
+            else if (value.equals("source"))
+                return SOURCE;
+            else if (value.equals("drain"))
+                return DRAIN;
+            else if (value.equals("converter"))
+                return CONVERTER;
+            else if (value.equals("end"))
+                return END;
+
+            return POOL;
+        }
     }
 
     /**
@@ -64,38 +83,9 @@ public class GNode extends GGraphField {
         }
     }
 
-    /**
-     * The node initializer.
-     */
-    public static class Initializer {
-        private GResourceSet resourceSet;
-
-        /**
-         * Gets resource set.
-         *
-         * @return the resource set
-         */
-        public GResourceSet getResourceSet() {
-            return resourceSet;
-        }
-
-        /**
-         * Sets resource set.
-         *
-         * @param resourceSet the resource set
-         * @return the resource set
-         */
-        public Initializer setResourceSet(GResourceSet resourceSet) {
-            this.resourceSet = resourceSet;
-            return this;
-        }
-    }
-
-    public static final Initializer SOURCE_INITIALIZER = new Initializer();
-    public static final Initializer DRAIN_INITIALIZER = new Initializer();
-
     private Modifier modifier = new Modifier();
-    private Initializer initializer = null;
+    private Type type = Type.POOL;
+    private GSetDescriptor initializer = null;
 
     /**
      * Gets the node modifier.
@@ -118,11 +108,31 @@ public class GNode extends GGraphField {
     }
 
     /**
+     * Gets type.
+     *
+     * @return the type
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * Sets type.
+     *
+     * @param type the type
+     * @return the type
+     */
+    public GNode setType(Type type) {
+        this.type = type;
+        return this;
+    }
+
+    /**
      * Gets initializer.
      *
      * @return the initializer
      */
-    public Initializer getInitializer() {
+    public GSetDescriptor getInitializer() {
         return initializer;
     }
 
@@ -132,7 +142,7 @@ public class GNode extends GGraphField {
      * @param initializer the initializer
      * @return the initializer
      */
-    public GNode setInitializer(Initializer initializer) {
+    public GNode setInitializer(GSetDescriptor initializer) {
         this.initializer = initializer;
         return this;
     }

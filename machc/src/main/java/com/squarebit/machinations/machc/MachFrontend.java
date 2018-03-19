@@ -292,12 +292,15 @@ public class MachFrontend {
         ParseTree decl = graphFieldDeclarationContext.getChild(0);
 
         if (decl instanceof MachParser.FieldDeclarationContext) {
-            List<GField> fields = transformFieldDeclaration(
-                    graphTransformationContext,
-                    (MachParser.FieldDeclarationContext)decl);
+            List<GField> fields = transformFieldDeclaration((MachParser.FieldDeclarationContext)decl);
             return fields.stream().map(f -> (GGraphField)f).collect(Collectors.toList());
         }
+        else if (decl instanceof MachParser.NodeDeclarationContext) {
+            List<GNode> nodes = transformNodeDeclaration((MachParser.NodeDeclarationContext)decl);
+            return nodes.stream().map(f -> (GGraphField)f).collect(Collectors.toList());
+        }
 
+        //
         throw new RuntimeException("Should not reach here.");
     }
 
@@ -307,8 +310,7 @@ public class MachFrontend {
      * @param fieldDeclarationContext
      * @return
      */
-    private List<GField> transformFieldDeclaration(GGraphTransformationContext graphTransformationContext,
-                                                        MachParser.FieldDeclarationContext fieldDeclarationContext)
+    private List<GField> transformFieldDeclaration(MachParser.FieldDeclarationContext fieldDeclarationContext)
         throws Exception
     {
         List<GField> fields = new ArrayList<>();
@@ -346,185 +348,72 @@ public class MachFrontend {
     /**
      * Transform node declaration.
      *
-     * @param graphTransformationContext
-     * @param nodeDeclarationContext
      * @return
      * @throws Exception
      */
-    private List<GNode> transformNodeDeclaration(GGraphTransformationContext graphTransformationContext,
-                                           MachParser.NodeDeclarationContext nodeDeclarationContext)
+    private List<GNode> transformNodeDeclaration(MachParser.NodeDeclarationContext declarationContext)
         throws Exception
     {
         List<GNode> nodes = new ArrayList<>();
 
-//        int next = 0;
-//        ParseTree decl = nodeDeclarationContext.getChild(next);
-//        MachParser.NodeModifiersContext nodeModifiersContext = null;
-//
-//        if (decl instanceof MachParser.NodeModifiersContext) {
-//            nodeModifiersContext = (MachParser.NodeModifiersContext)decl;
-//
-//            next += 2;
-//            decl = nodeDeclarationContext.getChild(next);
-//        }
-//        else {
-//            next += 1;
-//            decl = nodeDeclarationContext.getChild(next);
-//        }
-//
-//        if (decl instanceof MachParser.NodeDeclaratorListContext) {
-//            for (int i = 0; i < decl.getChildCount(); i += 2) {
-//                GNode node = transformNodeDeclarator(
-//                        graphTransformationContext,
-//                        nodeModifiersContext,
-//                        (MachParser.NodeDeclaratorContext)decl.getChild(i)
-//                );
-//
-//                graphTransformationContext.getGraph().addField(node);
-//                nodes.add(node);
-//            }
-//        }
+        GNode.Type nodeType = GNode.Type.POOL;
+
+        int next = 0;
+        ParseTree decl = declarationContext.getChild(next);
+        MachParser.NodeModifierContext nodeModifiersContext = null;
+
+        if (decl instanceof MachParser.NodeModifierContext) {
+            nodeModifiersContext = (MachParser.NodeModifierContext)decl;
+
+            next += 1;
+            decl = declarationContext.getChild(next);
+        }
+
+        if (decl instanceof MachParser.NodeTypeContext) {
+            ParseTree nodeTypeDecl = decl.getChild(0);
+
+            if (nodeTypeDecl instanceof MachParser.BuiltinNodeTypeNameContext) {
+                nodeType = GNode.Type.parse(nodeTypeDecl.getText());
+            }
+        }
+        else if (decl instanceof MachParser.NodeArrayTypeContext) {
+            throw new RuntimeException("Not implemented.");
+        }
+
+        next += 1;
+        decl = declarationContext.getChild(next);
+        if (decl instanceof MachParser.NodeDeclaratorListContext) {
+            for (int i = 0; i < decl.getChildCount(); i+= 2) {
+                GNode node = transformNodeDeclarator((MachParser.NodeDeclaratorContext)decl.getChild(i));
+                nodes.add(node);
+            }
+        }
 
         return nodes;
     }
 
-//    /**
-//     * Populates node modifiers to node.
-//     * @param modifiersContext the node modifiers
-//     */
-//    private GNode.Modifier transformNodeModifiers(MachParser.NodeModifiersContext modifiersContext) throws Exception {
-//        GNode.Modifier modifier = new GNode.Modifier();
-//
-//        for (int i = 0; i < modifiersContext.getChildCount(); i++) {
-//            ParseTree delc = modifiersContext.getChild(i).getChild(0);
-//            String value = delc.getText();
-//
-//            if (value.equals("interactive")) {
-//                if (modifier.isInterative())
-//                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
-//                else
-//                    modifier.setInterative(true);
-//            }
-//            else if (value.equals("transitive")) {
-//                if (modifier.isTransitive())
-//                    throw new CompilationException(String.format(ErrorMessages.INCOMPATIBLE_NODE_MODIFIERS, value));
-//                else
-//                    modifier.setTransitive(true);
-//            }
-//            else
-//                throw new CompilationException(String.format(ErrorMessages.UNKNOWN_NODE_IDENTIFIER, value));
-//
-//        }
-//
-//        return modifier;
-//    }
-//
-//    /**
-//     * Transform a node declarator to a node.
-//     * @param graphTransformationContext the graph context
-//     * @param nodeDeclaratorContext the node declarator
-//     * @return
-//     * @throws Exception
-//     */
-//    private GNode transformNodeDeclarator(GGraphTransformationContext graphTransformationContext,
-//                                           MachParser.NodeModifiersContext nodeModifiersContext,
-//                                           MachParser.NodeDeclaratorContext nodeDeclaratorContext) throws Exception
-//    {
-//        GNode node = new GNode();
-//
-//        GNodeTransformationContext nodeTransformationContext =
-//                new GNodeTransformationContext().setNode(node);
-//
-//        if (nodeModifiersContext != null)
-//            node.setModifier(transformNodeModifiers(nodeModifiersContext));
-//
-//        node.setId(nodeDeclaratorContext.getChild(0).getText());
-//
-//        ParseTree decl = nodeDeclaratorContext.getChild(2);
-//        if (decl instanceof MachParser.NodeInitializerContext) {
-//            node.setInitializer(
-//                    transformNodeInitializer(nodeTransformationContext, (MachParser.NodeInitializerContext)decl)
-//            );
-//        }
-//
-//        return node;
-//    }
+    /**
+     * Transform a node declarator to a node.
+     *
+     * @param nodeDeclaratorContext the node declarator
+     * @return
+     * @throws Exception
+     */
+    private GNode transformNodeDeclarator(MachParser.NodeDeclaratorContext nodeDeclaratorContext) throws Exception
+    {
+        GNode node = new GNode();
 
-//    /**
-//     *
-//     * @param nodeTransformationContext
-//     * @param nodeInitializerContext
-//     * @return
-//     * @throws Exception
-//     */
-//    private GNode.Initializer transformNodeInitializer(GNodeTransformationContext nodeTransformationContext,
-//                                                       MachParser.NodeInitializerContext nodeInitializerContext)
-//        throws Exception
-//    {
-//        ParseTree decl = nodeInitializerContext.getChild(0);
-//
-//        if (decl instanceof MachParser.SourceNodeInitializerContext)
-//            return GNode.SOURCE_INITIALIZER;
-//        else if (decl instanceof MachParser.DrainNodeInitializerContext)
-//            return GNode.DRAIN_INITIALIZER;
-//        else {
-//            return null;
-////            MachParser.ResourceSetExpressionContext resourceSetExpressionContext =
-////                    (MachParser.ResourceSetExpressionContext)decl.getChild(0);
-////
-////            GResourceSet resourceSet = new GResourceSet();
-////
-////            if (resourceSetExpressionContext.getChildCount() == 1) {
-////                GResourceDescriptor descriptor = transformResourceDescriptor(
-////                        nodeTransformationContext,
-////                        (MachParser.ResourceDescriptorContext)resourceSetExpressionContext.getChild(0)
-////                );
-////                resourceSet.addDescriptor(descriptor);
-////            }
-////            else {
-////                for (int i = 1; i < resourceSetExpressionContext.getChildCount() - 1; i += 2) {
-////                    GResourceDescriptor descriptor = transformResourceDescriptor(
-////                            nodeTransformationContext,
-////                            (MachParser.ResourceDescriptorContext)resourceSetExpressionContext.getChild(i)
-////                    );
-////                    resourceSet.addDescriptor(descriptor);
-////                }
-////            }
-////
-////            return new GNode.Initializer().setResourceSet(resourceSet);
-//        }
-//    }
+        node.setName(nodeDeclaratorContext.getChild(0).getText());
 
-//    /**
-//     *
-//     * @param nodeTransformationContext
-//     * @param resourceDescriptorContext
-//     * @return
-//     * @throws Exception
-//     */
-//    private GResourceDescriptor transformResourceDescriptor(
-//            GNodeTransformationContext nodeTransformationContext,
-//            MachParser.ResourceDescriptorContext resourceDescriptorContext)
-//        throws Exception
-//    {
-//        GResourceDescriptor descriptor = new GResourceDescriptor();
-//
-//        int next = 1;
-//        ParseTree decl = resourceDescriptorContext.getChild(next);
-//
-//        if (decl instanceof TerminalNode) {
-//            int capacity = Integer.parseInt(resourceDescriptorContext.getChild(next + 1).getText());
-//            descriptor.setCapacity(capacity);
-//
-//            next += 2;
-//            decl = resourceDescriptorContext.getChild(next);
-//        }
-//
-//        if (decl instanceof MachParser.ResourceNameContext)
-//            descriptor.setResourceName(decl.getText());
-//
-//        return descriptor;
-//    }
+        ParseTree decl = nodeDeclaratorContext.getChild(2);
+        if (decl instanceof MachParser.NodeInitializerContext) {
+            MachParser.SetDescriptorContext setDescriptorContext =
+                    (MachParser.SetDescriptorContext)decl.getChild(0).getChild(0);
+            node.setInitializer(transformSetDescriptor(setDescriptorContext));
+        }
+
+        return node;
+    }
 
     /**
      * Transform an expression.
@@ -954,11 +843,45 @@ public class MachFrontend {
 
     /**
      *
+     * @param setDescriptorContext
+     * @return
+     * @throws Exception
+     */
+    private GSetDescriptor transformSetDescriptor(MachParser.SetDescriptorContext setDescriptorContext) throws Exception {
+        ParseTree decl = setDescriptorContext.getChild(0);
+
+        if (decl instanceof MachParser.BracketSetDescriptorContext)
+            return transformBracketSetDescriptor((MachParser.BracketSetDescriptorContext)decl);
+        else if (decl instanceof MachParser.ImplicitSetDescriptorContext) {
+            return transformImplicitSetDescriptor((MachParser.ImplicitSetDescriptorContext)decl);
+        }
+
+        throw new Exception("Not implemented exception");
+    }
+
+    /**
+     *
      * @param context
      * @return
      * @throws Exception
      */
-    private GExpression transformBracketSetDescriptor(MachParser.BracketSetDescriptorContext context)
+    private GSetDescriptor transformImplicitSetDescriptor(MachParser.ImplicitSetDescriptorContext context) throws Exception {
+        GSetElementDescriptor elementDescriptor = transformSetElementDescriptor(
+                (MachParser.SetElementDescriptorContext)context.getChild(0)
+        );
+
+        GSetDescriptor descriptor = new GSetDescriptor();
+        descriptor.addElementDescriptor(elementDescriptor);
+        return descriptor;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GSetDescriptor transformBracketSetDescriptor(MachParser.BracketSetDescriptorContext context)
         throws Exception
     {
         GSetDescriptor descriptor = new GSetDescriptor();

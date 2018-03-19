@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.runtime.*;
+import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
 
 /**
  * Core {@link TypeInfo}s.
@@ -24,6 +25,13 @@ public final class CoreModule {
     private final TypeInfo setType;
 
     private final TypeInfo graphType;
+    private final TypeInfo nodeType;
+    private final TypeInfo poolNodeType;
+//    private final TypeInfo sourceNodeType;
+//    private final TypeInfo drainNodeType;
+//    private final TypeInfo transitiveNodeType;
+//    private final TypeInfo converterNodeType;
+//    private final TypeInfo endNodeType;
 
     /**
      * Initializes a new core module.
@@ -46,6 +54,10 @@ public final class CoreModule {
             this.setType = module.createType("Set").setImplementingClass(TSet.class);
 
             this.graphType = module.createType("Graph").setImplementingClass(TGraph.class);
+            this.nodeType = module.createType("Node").setImplementingClass(TNode.class);
+
+            this.poolNodeType = module.createType("PoolNode").setImplementingClass(TPoolNode.class);
+
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -69,4 +81,7 @@ public final class CoreModule {
     public static final TypeInfo SET_TYPE = INTERNAL.setType;
 
     public static final TypeInfo GRAPH_TYPE = INTERNAL.graphType;
+    public static final TypeInfo NODE_TYPE = INTERNAL.nodeType;
+
+    public static final TypeInfo POOL_NODE_TYPE = INTERNAL.poolNodeType;
 }

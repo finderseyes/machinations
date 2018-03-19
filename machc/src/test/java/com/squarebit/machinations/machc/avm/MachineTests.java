@@ -93,4 +93,21 @@ public class MachineTests {
 
         machine.shutdown();
     }
+
+    @Test
+    public void specs_002() throws Exception {
+        ModuleInfo module = Utils.compile("specs/specs-002.mach");
+
+        Machine machine = new Machine();
+        machine.start();
+
+        {
+            TypeInfo typeInfo = module.findType("game");
+            TObject graph = machine.newInstance(typeInfo).get();
+
+            assertThat(graph.getClass()).isEqualTo(TRuntimeGraph.class);
+        }
+
+        machine.shutdown();
+    }
 }

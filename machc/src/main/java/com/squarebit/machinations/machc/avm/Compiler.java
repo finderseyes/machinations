@@ -8,6 +8,7 @@ import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierExceptio
 import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
+import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -125,6 +126,43 @@ public final class Compiler {
             if (field.getInitializer() != null)
                 initializeField(fieldInfo);
         }
+        else if (graphField instanceof GNode) {
+            GNode node = (GNode)graphField;
+
+            if (node.getType() == GNode.Type.POOL) {
+                fieldInfo.setType(CoreModule.POOL_NODE_TYPE);
+            }
+
+            initializeNodeField(fieldInfo);
+        }
+    }
+
+    /**
+     *
+     * @param fieldInfo
+     * @throws Exception
+     */
+    private void initializeNodeField(FieldInfo fieldInfo) throws Exception {
+        checkArgument(fieldInfo.getDeclaration() instanceof GNode);
+
+        GNode node = (GNode)fieldInfo.getDeclaration();
+
+        MethodInfo internalInstanceConstructor = fieldInfo.getDeclaringType().getInternalInstanceConstructor();
+        InstructionBlock block = internalInstanceConstructor.getInstructionBlock();
+
+        this.currentMethod = internalInstanceConstructor;
+
+        VariableInfo fieldValue = block.createTempVar();
+
+        if (node.getInitializer() != null) {
+            Variable expression = compileSetDescriptor(block, node.getInitializer());
+            block.emit(new New(fieldValue, fieldInfo.getType(), new VariableInfo[]{ expression.getVariableInfo() }));
+        }
+        else {
+            block.emit(new New(fieldValue, fieldInfo.getType()));
+        }
+
+        block.emit(new PutField(fieldInfo, internalInstanceConstructor.getThisVariable(), fieldValue));
     }
 
     /**
@@ -191,7 +229,7 @@ public final class Compiler {
             throw new CompilationException("Unknown expression");
     }
 
-    private Expression compileSetDescriptor(InstructionBlock block, GSetDescriptor setDescriptor) throws Exception {
+    private Variable compileSetDescriptor(InstructionBlock block, GSetDescriptor setDescriptor) throws Exception {
         VariableInfo temp = block.createTempVar();
 
         SetDescriptor result = new SetDescriptor();
@@ -212,7 +250,7 @@ public final class Compiler {
         return new Variable(temp);
     }
 
-    private Expression compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception
+    private Variable compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception
     {
         if (invocation.getReference() == GThis.INSTANCE) {
             MethodInfo methodInfo = this.currentType.findMethod(invocation.getMethodName());
