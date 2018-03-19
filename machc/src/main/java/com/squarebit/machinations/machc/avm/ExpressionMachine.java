@@ -1,10 +1,11 @@
 package com.squarebit.machinations.machc.avm;
 
-import com.squarebit.machinations.machc.avm.expressions.Add;
-import com.squarebit.machinations.machc.avm.expressions.Constant;
-import com.squarebit.machinations.machc.avm.expressions.Expression;
-import com.squarebit.machinations.machc.avm.expressions.Variable;
+import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * In charge of expression evaluation.
@@ -30,6 +31,9 @@ final class ExpressionMachine {
     public TObject evaluate(Expression expression) {
         if (expression instanceof Constant)
             return evaluateConstant((Constant)expression);
+        else if (expression instanceof SetDescriptor) {
+            return evaluateSetDescriptor((SetDescriptor)expression);
+        }
         else if (expression instanceof Variable) {
             Variable variable = (Variable)expression;
             return machine.getLocalVariable(variable.getVariableInfo().getIndex());
@@ -54,6 +58,24 @@ final class ExpressionMachine {
             return ((TRandomDice)value).generate();
         else
             return value;
+    }
+
+    private TSetDescriptor evaluateSetDescriptor(SetDescriptor setDescriptor) {
+        List<TSetElementTypeDescriptor> typeDescriptors = new ArrayList<>();
+
+        for (SetElementDescriptor descriptor: setDescriptor.getElementDescriptors()) {
+            int size = evaluateAsInteger(evaluate(descriptor.getSize())).getValue();
+            int capacity = descriptor.getCapacity() != null ?
+                evaluateAsInteger(evaluate(descriptor.getCapacity())).getValue() :
+                -1;
+
+            String name = descriptor.getName() != null ?
+                evaluateAsString(evaluate(descriptor.getName())).getValue() : null;
+
+            typeDescriptors.add(new TSetElementTypeDescriptor(size, capacity, name));
+        }
+
+        return new TSetDescriptor(typeDescriptors);
     }
 
     private TObject evaluateAdd(Add add) {
@@ -93,5 +115,11 @@ final class ExpressionMachine {
             return new TInteger((int)((TFloat)value).getValue());
         else
             throw new RuntimeException("Cannot convert to integer");
+    }
+
+    private TString evaluateAsString(TObject value) {
+        if (value instanceof TString)
+            return (TString) value;
+        return new TString(value.toString());
     }
 }

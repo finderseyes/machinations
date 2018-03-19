@@ -22,6 +22,7 @@ graphBody
 
 graphBodyDeclaration
     : graphFieldDeclaration
+    | constructorDeclaration
     | methodDeclaration
     ;
 
@@ -189,8 +190,12 @@ setElementType
     : IDENTIFIER
     ;
 
+constructorDeclaration
+    : graphType LEFT_PARENTHESIS methodArgumentDeclaratorList? RIGHT_PARENTHESIS methodBody
+    ;
+
 methodDeclaration
-    : methodModifier? methodName LEFT_PARENTHESIS methodArgumentDeclaratorList? RIGHT_PARENTHESIS methodBody
+    : methodModifier? 'function' methodName LEFT_PARENTHESIS methodArgumentDeclaratorList? RIGHT_PARENTHESIS methodBody
     ;
 
 methodModifier

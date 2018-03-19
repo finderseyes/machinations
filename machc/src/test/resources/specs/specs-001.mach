@@ -20,8 +20,8 @@ default graph b {
 graph c {
     let a_0 = 1;
     let a_1 = a_0 + 2;
-    let a_3 = {1};
     let a_2 = a_1 + foo();
+    let a_3 = {1 +4, foo() gold};
 
 
 //    // with type coerce.
@@ -31,7 +31,7 @@ graph c {
 //    let b_3 = 3 - "bbb";    //
 
 
-    foo() { return bar() + 6; }
+    function foo() { return bar() + 6; }
 
-    bar() { return 4; }
+    function bar() { return 4; }
 }

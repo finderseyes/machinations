@@ -5,12 +5,10 @@ import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierException;
-import com.squarebit.machinations.machc.avm.expressions.Add;
-import com.squarebit.machinations.machc.avm.expressions.Constant;
-import com.squarebit.machinations.machc.avm.expressions.Expression;
-import com.squarebit.machinations.machc.avm.expressions.Variable;
+import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -193,9 +191,24 @@ public final class Compiler {
             throw new CompilationException("Unknown expression");
     }
 
-    private Expression compileSetDescriptor(InstructionBlock block, GSetDescriptor descriptor) throws Exception {
+    private Expression compileSetDescriptor(InstructionBlock block, GSetDescriptor setDescriptor) throws Exception {
         VariableInfo temp = block.createTempVar();
-        block.emit(new New(temp, CoreModule.SET_DESCRIPTOR_TYPE));
+
+        SetDescriptor result = new SetDescriptor();
+
+        for (GSetElementDescriptor elementDescriptor : setDescriptor.getElementDescriptors()) {
+            Expression size = compileExpression(block, elementDescriptor.getSize());
+            Constant capacity = elementDescriptor.getCapacity() != null ?
+                    new Constant(new TInteger((elementDescriptor.getCapacity()).getValue())) : null;
+            Constant name = elementDescriptor.getName() != null ?
+                    new Constant(new TString((elementDescriptor.getName()).getValue())) : null;
+
+            result.add(new SetElementDescriptor(size, capacity, name));
+        }
+
+        block.emit(new Evaluate(result, temp));
+
+        // block.emit(new New(temp, CoreModule.SET_DESCRIPTOR_TYPE));
         return new Variable(temp);
     }
 

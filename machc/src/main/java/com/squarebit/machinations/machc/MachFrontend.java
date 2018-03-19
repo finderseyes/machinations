@@ -173,6 +173,10 @@ public class MachFrontend {
         ParseTree decl = methodDeclarationContext.getChild(next);
 
         if (decl instanceof MachParser.MethodModifierContext) {
+            next += 2;
+            decl = methodDeclarationContext.getChild(next);
+        }
+        else {
             next += 1;
             decl = methodDeclarationContext.getChild(next);
         }

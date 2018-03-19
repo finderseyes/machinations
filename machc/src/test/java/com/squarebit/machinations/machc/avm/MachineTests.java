@@ -81,6 +81,14 @@ public class MachineTests {
                 assertThat(typeInfo.findField("a_2").get(graph).getClass()).isEqualTo(TInteger.class);
                 assertThat(((TInteger)typeInfo.findField("a_2").get(graph)).getValue()).isEqualTo(13);
             }
+
+            {
+                assertThat(typeInfo.findField("a_3").get(graph).getClass()).isEqualTo(TSetDescriptor.class);
+
+                TSetDescriptor a_3 = (TSetDescriptor)typeInfo.findField("a_3").get(graph);
+                assertThat(a_3.findElementTypeDescriptor("").getSize()).isEqualTo(5);
+                assertThat(a_3.findElementTypeDescriptor("gold").getSize()).isEqualTo(10);
+            }
         }
 
         machine.shutdown();
