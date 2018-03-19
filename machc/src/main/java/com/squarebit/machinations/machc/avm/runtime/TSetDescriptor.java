@@ -55,4 +55,13 @@ public final class TSetDescriptor implements TObject {
     public TSetElementTypeDescriptor findElementTypeDescriptor(String name) {
         return typeDescriptorByName.getOrDefault(name, null);
     }
+
+    /**
+     * Gets element type descriptors.
+     *
+     * @return the element type descriptors
+     */
+    public Collection<TSetElementTypeDescriptor> getElementTypeDescriptors() {
+        return typeDescriptorByName.values();
+    }
 }

@@ -13,7 +13,7 @@ public class MachineTests {
     public void specs_001() throws Exception {
         ModuleInfo module = Utils.compile("specs/specs-001.mach");
 
-        Machine machine = new Machine();
+        Machine machine = new Machine(module);
         machine.start();
 
         {
@@ -98,7 +98,7 @@ public class MachineTests {
     public void specs_002() throws Exception {
         ModuleInfo module = Utils.compile("specs/specs-002.mach");
 
-        Machine machine = new Machine();
+        Machine machine = new Machine(module);
         machine.start();
 
         {

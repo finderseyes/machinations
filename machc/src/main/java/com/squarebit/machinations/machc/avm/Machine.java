@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 
 public final class Machine {
 
+    private ModuleInfo moduleInfo;
+
     //////////////////////////////////////////
     // Machine thread dispatcher and running state
     //
@@ -37,7 +39,8 @@ public final class Machine {
     /**
      * Initializes a new machine instance.
      */
-    public Machine() {
+    public Machine(ModuleInfo moduleInfo) {
+        this.moduleInfo = moduleInfo;
         this.dispatcher = Dispatcher.createSingleThreadDispatcher("@avm_main");
         this.activeFrame = null;
         this.dataStack = new Stack<>();
@@ -59,6 +62,24 @@ public final class Machine {
     public void shutdown() {
         isRunning = false;
         dispatcher.shutdown();
+    }
+
+    /**
+     *
+     * @param moduleInfo
+     */
+    public void loadModule(ModuleInfo moduleInfo) {
+        this.moduleInfo = moduleInfo;
+    }
+
+    /**
+     * Find type type info.
+     *
+     * @param name the name
+     * @return the type info
+     */
+    public TypeInfo findType(String name) {
+        return this.moduleInfo.findType(name);
     }
 
     /**
@@ -128,8 +149,10 @@ public final class Machine {
                     }
                     else {
                         CompletableFuture<TObject> returnFuture = nativeMethodFrame.getReturnFuture();
-                        if (returnFuture.isDone())
+
+                        if (returnFuture.isDone()) {
                             frame.setActiveNativeMethodFrame(nativeMethodFrame.getCaller());
+                        }
                         else
                             waitForNativeMethodReturn = true;
                     }
@@ -226,7 +249,7 @@ public final class Machine {
      * @param args
      * @return
      */
-    private CompletableFuture<TObject> machInvokeOnMachineThread(MethodInfo method, TObject instance, TObject ... args) {
+    CompletableFuture<TObject> machInvokeOnMachineThread(MethodInfo method, TObject instance, TObject ... args) {
         MethodFrame methodFrame = pushMethodFrame(method);
         setLocalVariable(0, instance);
         for (int i = 0; i < args.length; i++)
@@ -422,11 +445,16 @@ public final class Machine {
 
                 return returnFuture;
             }
-            else
-                throw new RuntimeException("invalid native method");
+            else {
+                CompletableFuture<TObject> returnFuture = new CompletableFuture<>();
+                returnFuture.completeExceptionally(new Exception("invalid native method"));
+                return returnFuture;
+            }
         }
         catch (Exception exception) {
-            throw new RuntimeException(exception);
+            CompletableFuture<TObject> returnFuture = new CompletableFuture<>();
+            returnFuture.completeExceptionally(exception);
+            return returnFuture;
         }
     }
 }

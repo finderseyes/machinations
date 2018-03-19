@@ -24,6 +24,8 @@ public final class CoreModule {
     private final TypeInfo setDescriptorType;
     private final TypeInfo setType;
 
+    private final TypeInfo namedResourceType;
+
     private final TypeInfo graphType;
     private final TypeInfo nodeType;
     private final TypeInfo poolNodeType;
@@ -52,12 +54,12 @@ public final class CoreModule {
 
             this.setDescriptorType = module.createType("SetDescriptor").setImplementingClass(TSetDescriptor.class);
             this.setType = module.createType("Set").setImplementingClass(TSet.class);
+            this.namedResourceType = module.createType("NamedResource").setImplementingClass(TNamedResource.class);
 
             this.graphType = module.createType("Graph").setImplementingClass(TGraph.class);
             this.nodeType = module.createType("Node").setImplementingClass(TNode.class);
 
             this.poolNodeType = module.createType("PoolNode").setImplementingClass(TPoolNode.class);
-
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -79,6 +81,7 @@ public final class CoreModule {
 
     public static final TypeInfo SET_DESCRIPTOR_TYPE = INTERNAL.setDescriptorType;
     public static final TypeInfo SET_TYPE = INTERNAL.setType;
+    public static final TypeInfo NAMED_RESOURCE = INTERNAL.namedResourceType;
 
     public static final TypeInfo GRAPH_TYPE = INTERNAL.graphType;
     public static final TypeInfo NODE_TYPE = INTERNAL.nodeType;

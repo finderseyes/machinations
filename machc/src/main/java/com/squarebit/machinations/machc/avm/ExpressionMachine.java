@@ -6,6 +6,7 @@ import com.squarebit.machinations.machc.avm.runtime.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * In charge of expression evaluation.
@@ -34,6 +35,9 @@ final class ExpressionMachine {
         else if (expression instanceof SetDescriptor) {
             return evaluateSetDescriptor((SetDescriptor)expression);
         }
+        else if (expression instanceof Set) {
+            return evaluateSet((Set)expression);
+        }
         else if (expression instanceof Variable) {
             Variable variable = (Variable)expression;
             return machine.getLocalVariable(variable.getVariableInfo().getIndex());
@@ -58,6 +62,40 @@ final class ExpressionMachine {
             return ((TRandomDice)value).generate();
         else
             return value;
+    }
+
+    private TSet evaluateSet(Set set) {
+        try {
+            TSet result = new TSet();
+            TSetDescriptor descriptor = evaluateSetDescriptor(set.getDescriptor());
+
+            CompletableFuture<TObject> constructorCalls = null;
+
+            for (TSetElementTypeDescriptor typeDescriptor: descriptor.getElementTypeDescriptors()) {
+                TypeInfo graphElementType = this.machine.findType(typeDescriptor.getName());
+
+                final TypeInfo elementType = graphElementType != null ? graphElementType : CoreModule.NAMED_RESOURCE;
+
+                for (int i = 0; i < typeDescriptor.getSize(); i++) {
+                    TObject instance = elementType.allocateInstance();
+
+                    // Call the internal instance constructor.
+                    if (constructorCalls == null)
+                        constructorCalls = machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance);
+                    else
+                        constructorCalls.thenCompose(
+                                v ->  machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance)
+                        );
+
+                    result.add((TSetElement)instance);
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private TSetDescriptor evaluateSetDescriptor(SetDescriptor setDescriptor) {

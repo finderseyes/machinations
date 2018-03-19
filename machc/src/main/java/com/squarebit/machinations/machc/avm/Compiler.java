@@ -155,8 +155,13 @@ public final class Compiler {
         VariableInfo fieldValue = block.createTempVar();
 
         if (node.getInitializer() != null) {
-            Variable expression = compileSetDescriptor(block, node.getInitializer());
-            block.emit(new New(fieldValue, fieldInfo.getType(), new VariableInfo[]{ expression.getVariableInfo() }));
+            SetDescriptor descriptor = compileSetDescriptor(block, node.getInitializer());
+            Set set = new Set(descriptor);
+
+            VariableInfo temp = block.createTempVar();
+
+            block.emit(new Evaluate(set, temp));
+            block.emit(new New(fieldValue, fieldInfo.getType(), new VariableInfo[]{ temp }));
         }
         else {
             block.emit(new New(fieldValue, fieldInfo.getType()));
@@ -229,9 +234,7 @@ public final class Compiler {
             throw new CompilationException("Unknown expression");
     }
 
-    private Variable compileSetDescriptor(InstructionBlock block, GSetDescriptor setDescriptor) throws Exception {
-        VariableInfo temp = block.createTempVar();
-
+    private SetDescriptor compileSetDescriptor(InstructionBlock block, GSetDescriptor setDescriptor) throws Exception {
         SetDescriptor result = new SetDescriptor();
 
         for (GSetElementDescriptor elementDescriptor : setDescriptor.getElementDescriptors()) {
@@ -244,10 +247,8 @@ public final class Compiler {
             result.add(new SetElementDescriptor(size, capacity, name));
         }
 
-        block.emit(new Evaluate(result, temp));
-
         // block.emit(new New(temp, CoreModule.SET_DESCRIPTOR_TYPE));
-        return new Variable(temp);
+        return result;
     }
 
     private Variable compileMethodInvocation(InstructionBlock block, GMethodInvocation invocation) throws Exception
