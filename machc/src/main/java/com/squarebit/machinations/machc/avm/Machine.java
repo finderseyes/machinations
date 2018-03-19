@@ -380,60 +380,16 @@ public final class Machine {
             CompletableFuture<TObject> returnFuture =
                     machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
 
-            returnFuture.thenAccept(v -> {
-                int l =10;
-            });
-
+            // Try to see if a native
             Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), 0);
             if (nativeConstructor != null) {
-                returnFuture.thenApply(x -> instance).thenCompose(v -> {
-//                    return invokeNative(nativeConstructor, instance).thenApply(x -> instance)
-//                            ;
-                    CompletableFuture<TObject> inner = new CompletableFuture<>();
-                    invokeNative(nativeConstructor, instance)
-                            .thenAccept(x -> {
-                                inner.complete(instance);
-                            });
-                    return inner;
-                });
+                returnFuture.thenCompose(v -> invokeNative(nativeConstructor, instance));
             }
 
-//            // Find constructor method.
-//            Class implementingClass = typeInfo.getImplementingClass();
-//            Optional<Method> constructorMethod = Stream.of(implementingClass.getMethods())
-//                    .filter(m -> m.getDeclaredAnnotation(ConstructorMethod.class) != null)
-//                    .findFirst();
-//
-//            TObject instance = typeInfo.allocateInstance();
-//            CompletableFuture<TObject> returnFuture =
-//                    machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
-//
-//            if (constructorMethod.isPresent()) {
-//                returnFuture.thenCompose(value -> {
-//                    CompletableFuture<TObject> result = new CompletableFuture<>();
-//                    try {
-//                        constructorMethod.get().invoke(instance, new TInteger(1000));
-//
-//                        VariableInfo resultVariable = instruction.getTo();
-//                        if (resultVariable != null)
-//                            setLocalVariable(resultVariable.getIndex(), instance);
-//
-//                        result.complete(instance);
-//                    }
-//                    catch (Exception ex) {
-//                        result.completeExceptionally(ex);
-//                    }
-//
-//                    return result;
-//                });
-//            }
-//            else {
-//                returnFuture.thenAccept(value -> {
-//                    VariableInfo resultVariable = instruction.getTo();
-//                    if (resultVariable != null)
-//                        setLocalVariable(resultVariable.getIndex(), instance);
-//                });
-//            }
+            returnFuture.thenAccept(x -> {
+                int k = 10;
+            });
+
         }
         catch (Exception exception) {
             throw new RuntimeException(exception);

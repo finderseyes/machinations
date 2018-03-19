@@ -11,7 +11,7 @@ public final class TSetDescriptor implements TObject {
     @ConstructorMethod
     public CompletableFuture<TObject> init() {
         int k = 10;
-        return CompletableFuture.completedFuture(null);
+        throw new RuntimeException("SDfsd");
     }
 
     /**
