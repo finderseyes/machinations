@@ -1,7 +1,7 @@
 /**
 Test aspects:
-    - Graph declaration.
-    - Primitive type declaration.
+- Graph declaration, with non-node field and methods.
+- Primitive type declaration: integer, float, random dice, boolean and string.
 */
 
 graph a {
@@ -12,7 +12,7 @@ graph a {
     let _draw = draw2;
 }
 
-default graph b {
+graph b {
     let _boolean = true;
     let _string = "hello Mach";
 }
@@ -21,15 +21,16 @@ graph c {
     let a_0 = 1;
     let a_1 = a_0 + 2;
     let a_2 = a_1 + foo();
+
+    // Evaluate to a set descriptor, instead of a set.
+    // NOTE: local variables and dynamic-typed fields (those declared by 'let' keyword) can only
+    // store a set descriptor, but not a set.
+    // The difference between a set descriptor and a set is that a set actually instantiates all elements of its type,
+    // while a set descriptor only stores a summary of how many items are there of a given element type in a set.
+    //
+    // We design it this way so that in graphical instructions, as a set descriptor is sufficient to instruct the
+    // machine about the resource flow, constructing a descriptor is way faster than constructing a set.
     let a_3 = {1 +4, foo() gold};
-
-
-//    // with type coerce.
-//    let b_0 = 1 + 1.5;      // 2.5
-//    let b_1 = 1 + "aaa";    // "1aaa"
-//    let b_2 = 3 + 3 - 1.5;  // 4.5
-//    let b_3 = 3 - "bbb";    //
-
 
     function foo() { return bar() + 6; }
 
