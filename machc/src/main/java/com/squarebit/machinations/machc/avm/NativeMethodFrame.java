@@ -1,4 +1,4 @@
-package com.squarebit.machinations.machc.avm.runtime;
+package com.squarebit.machinations.machc.avm;
 
 import java.util.concurrent.CompletableFuture;
 

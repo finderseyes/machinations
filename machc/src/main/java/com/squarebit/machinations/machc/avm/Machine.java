@@ -2,11 +2,11 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.instructions.*;
-import com.squarebit.machinations.machc.avm.runtime.NativeMethodFrame;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -376,29 +376,37 @@ public final class Machine {
         try {
             TypeInfo typeInfo = instruction.getTypeInfo();
 
+            // Allocate the instance first.
             TObject instance = typeInfo.allocateInstance();
-            CompletableFuture<TObject> returnFuture =
+
+            // Call the internal instance constructor.
+            CompletableFuture<TObject> internalConstructorReturn =
                     machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
 
-            // Try to see if a native
+            // Try to see if there is a native constructor.
             Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), 0);
             if (nativeConstructor != null) {
-                returnFuture.thenCompose(v -> invokeNative(nativeConstructor, instance));
+                internalConstructorReturn.thenCompose(v -> invokeNative(nativeConstructor, instance));
             }
 
-            returnFuture.thenAccept(x -> {
-                int k = 10;
-            });
-
+            // TODO: Try to see if there is a Mac constructor.
         }
         catch (Exception exception) {
             throw new RuntimeException(exception);
         }
     }
 
-    private CompletableFuture<TObject> invokeNative(Method method, TObject instance, Object ... args) {
+    /**
+     * Invoke a native method.
+     * @param method
+     * @param instance
+     * @param args
+     * @return
+     */
+    private CompletableFuture<TObject> invokeNative(Method method, TObject instance, TObject ... args) {
         try {
-            Object result = method.invoke(instance, args);
+            Object result = method.invoke(instance, Arrays.copyOf(args, args.length, Object[].class));
+
             if (result instanceof CompletableFuture<?>) {
                 CompletableFuture<TObject> returnFuture = (CompletableFuture<TObject>)result;
 
@@ -414,14 +422,6 @@ public final class Machine {
         }
         catch (Exception exception) {
             throw new RuntimeException(exception);
-        }
-    }
-
-    private static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
-        try {
-            return clazz.cast(o);
-        } catch(ClassCastException e) {
-            return null;
         }
     }
 }

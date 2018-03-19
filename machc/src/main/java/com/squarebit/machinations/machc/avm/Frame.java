@@ -1,7 +1,5 @@
 package com.squarebit.machinations.machc.avm;
 
-import com.squarebit.machinations.machc.avm.runtime.NativeMethodFrame;
-
 /**
  * A call frame of the Abstract Virtual Machine.
  */
