@@ -51,7 +51,7 @@ public class NativeToMachineFrame extends InstructionFrame {
             return null;
 
         NativeToMachineInvocation invocation = this.currentInvocation;
-        this.currentInvocation = invocation.getNext();
+//        this.currentInvocation = invocation.getNext();
 
         return build(invocation);
     }
