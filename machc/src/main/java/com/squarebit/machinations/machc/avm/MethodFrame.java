@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
  * Call frame of a method.
  */
 public final class MethodFrame extends Frame {
+    private int offset;
     private MethodInfo method;
     private TObject returnValue;
     private CompletableFuture<TObject> returnFuture;
@@ -22,10 +23,20 @@ public final class MethodFrame extends Frame {
      * @param method the method
      */
     public MethodFrame(Frame caller, int offset, MethodInfo method) {
-        super(caller, offset);
+        super(caller);
+        this.offset = offset;
         this.method = method;
         this.returnFuture = new CompletableFuture<>();
         this.returnValue = TNaN.INSTANCE;
+    }
+
+    /**
+     * Gets frame data offset.
+     *
+     * @return the frame data offset
+     */
+    public int getOffset() {
+        return offset;
     }
 
     /**

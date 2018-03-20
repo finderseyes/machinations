@@ -162,7 +162,7 @@ public final class Machine {
             }
 
             if (canExecute) {
-                InstructionBlockFrame blockFrame = (InstructionBlockFrame)frame;
+                InstructionFrame blockFrame = (InstructionFrame)frame;
                 Instruction instruction = blockFrame.next();
                 executeInstruction(instruction);
             }
@@ -179,10 +179,9 @@ public final class Machine {
      * @return true or false
      */
     private boolean canExecuteNextInstruction(Frame frame) {
-        if (frame instanceof InstructionBlockFrame) {
-            InstructionBlockFrame blockFrame = (InstructionBlockFrame)frame;
-
-            return blockFrame.getCounter() < blockFrame.getBlock().getInstructions().size();
+        if (frame instanceof InstructionFrame) {
+            InstructionFrame instructionFrame = (InstructionFrame)frame;
+            return instructionFrame.hasNext();
         }
 
         return false;
@@ -281,7 +280,7 @@ public final class Machine {
      * @return the instruction block frame
      */
     private InstructionBlockFrame pushInstructionBlockFrame(InstructionBlock instructionBlock) {
-        InstructionBlockFrame blockFrame = new InstructionBlockFrame(this.activeFrame, dataStack.size(), instructionBlock);
+        InstructionBlockFrame blockFrame = new InstructionBlockFrame(this.activeFrame, instructionBlock);
         enterFrame(blockFrame);
         this.activeFrame = blockFrame;
         return blockFrame;
