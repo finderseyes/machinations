@@ -126,6 +126,37 @@ public final class Machine {
     }
 
     /**
+     * Invoke a native method.
+     * @param method
+     * @param instance
+     * @param args
+     * @return
+     */
+    private CompletableFuture<TObject> nativeInvoke(Method method, TObject instance, TObject ... args) {
+        CompletableFuture<TObject> result = new CompletableFuture<>();
+        try {
+            @SuppressWarnings("unchecked")
+            CompletableFuture<TObject> returnFuture = (CompletableFuture<TObject>)(method.invoke(
+                    instance, Arrays.copyOf(args, args.length, Object[].class)
+            ));
+
+            pushNativeMethodFrame(returnFuture);
+
+            returnFuture.whenComplete((value, exception) -> {
+                if (exception != null)
+                    result.completeExceptionally(exception);
+                else
+                    result.complete(value);
+            });
+        }
+        catch (Exception exception) {
+            result.completeExceptionally(exception);
+        }
+
+        return result;
+    }
+
+    /**
      * Execute one execution loop, which executes one instruction at a time.
      */
     private void runLoopOnce() {
@@ -495,36 +526,5 @@ public final class Machine {
 
     private void executePutConstant(PutConstant instruction) {
         setLocalVariable(instruction.getTo().getIndex(), instruction.getValue());
-    }
-
-    /**
-     * Invoke a native method.
-     * @param method
-     * @param instance
-     * @param args
-     * @return
-     */
-    private CompletableFuture<TObject> nativeInvoke(Method method, TObject instance, TObject ... args) {
-        CompletableFuture<TObject> result = new CompletableFuture<>();
-        try {
-            @SuppressWarnings("unchecked")
-            CompletableFuture<TObject> returnFuture =  (CompletableFuture<TObject>)(method.invoke(
-                    instance, Arrays.copyOf(args, args.length, Object[].class)
-            ));
-
-            pushNativeMethodFrame(returnFuture);
-
-            returnFuture.whenComplete((value, exception) -> {
-                if (exception != null)
-                    result.completeExceptionally(exception);
-                else
-                    result.complete(value);
-            });
-        }
-        catch (Exception exception) {
-            result.completeExceptionally(exception);
-        }
-
-        return result;
     }
 }

@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.Utils;
 import com.squarebit.machinations.machc.avm.runtime.*;
+import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
 
@@ -105,6 +106,26 @@ public class MachineTests {
             TObject graph = machine.newInstance(typeInfo).get();
 
             assertThat(graph.getClass()).isEqualTo(TRuntimeGraph.class);
+
+            {
+                TPoolNode pool = (TPoolNode)typeInfo.findField("a_0").get(graph);
+                assertThat(pool.getContent().size()).isEqualTo(0);
+            }
+
+            {
+                TPoolNode pool = (TPoolNode)typeInfo.findField("a_1").get(graph);
+                assertThat(pool.getContent().size()).isEqualTo(10);
+            }
+
+            {
+                TPoolNode pool = (TPoolNode)typeInfo.findField("a_2").get(graph);
+                assertThat(pool.getContent().size()).isEqualTo(15);
+            }
+
+            {
+                TPoolNode pool = (TPoolNode)typeInfo.findField("a_3").get(graph);
+                assertThat(pool.getContent().size()).isEqualTo(20);
+            }
         }
 
         machine.shutdown();

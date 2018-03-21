@@ -13,12 +13,14 @@ import java.util.Set;
  */
 public final class TSet implements TObject {
     private Map<String, Set<TSetElement>> elementsByType;
+    private Set<TSetElement> elements;
 
     /**
      * Instantiates a new T set.
      */
     public TSet() {
         this.elementsByType = new HashMap<>();
+        this.elements = new HashSet<>();
     }
 
     /**
@@ -36,7 +38,18 @@ public final class TSet implements TObject {
      * @param element element
      */
     public void add(TSetElement element) {
-        Set<TSetElement> elements = elementsByType.computeIfAbsent(element.getTypeName(), n -> new HashSet<>());
-        elements.add(element);
+        Set<TSetElement> typeElements = elementsByType.computeIfAbsent(element.getTypeName(), n -> new HashSet<>());
+        typeElements.add(element);
+
+        this.elements.add(element);
+    }
+
+    /**
+     * Size int.
+     *
+     * @return the int
+     */
+    public int size() {
+        return this.elements.size();
     }
 }
