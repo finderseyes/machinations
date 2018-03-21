@@ -12,13 +12,6 @@ public class MachineInvocationPlan {
 
     /**
      * Instantiates a new Invocation plan.
-     */
-    public MachineInvocationPlan() {
-
-    }
-
-    /**
-     * Instantiates a new Invocation plan.
      *
      * @param invocation the invocation
      */

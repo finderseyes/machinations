@@ -32,7 +32,7 @@ public class NativeToMachineFrame extends InstructionFrame implements DataFrame 
         this.machineInvocationPlan = machineInvocationPlan;
         this.counter = 0;
 
-        this.block = new InstructionBlock().setParentScope(getScope(caller));
+        this.block = new InstructionBlock().setParentScope(null);
         this.returnValueStore = this.block.createTempVar();
 
         this.returnFuture = new CompletableFuture<>();

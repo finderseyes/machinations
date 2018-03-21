@@ -69,7 +69,9 @@ final class ExpressionMachine {
             TSet result = new TSet();
             TSetDescriptor descriptor = evaluateSetDescriptor(set.getDescriptor());
 
-            CompletableFuture<TObject> constructorCalls = null;
+//            CompletableFuture<TObject> constructorCalls = null;
+
+            MachineInvocationPlan machineInvocationPlan = null;
 
             for (TSetElementTypeDescriptor typeDescriptor: descriptor.getElementTypeDescriptors()) {
                 TypeInfo graphElementType = this.machine.findType(typeDescriptor.getName());
@@ -79,16 +81,29 @@ final class ExpressionMachine {
                 for (int i = 0; i < typeDescriptor.getSize(); i++) {
                     TObject instance = elementType.allocateInstance();
 
-                    // Call the internal instance constructor.
-                    if (constructorCalls == null)
-                        constructorCalls = machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance);
+                    if (machineInvocationPlan == null)
+                        machineInvocationPlan = new MachineInvocationPlan(
+                                new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance));
                     else
-                        constructorCalls.thenCompose(
-                                v ->  machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance)
+                        machineInvocationPlan.thenInvoke(
+                                v -> new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
                         );
+
+//                    // Call the internal instance constructor.
+//                    if (constructorCalls == null)
+//                        constructorCalls = machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance);
+//                    else
+//                        constructorCalls.thenCompose(
+//                                v ->  machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance)
+//                        );
 
                     result.add((TSetElement)instance);
                 }
+
+            }
+
+            if (machineInvocationPlan != null) {
+                machine.machineInvoke(machineInvocationPlan);
             }
 
             return result;
