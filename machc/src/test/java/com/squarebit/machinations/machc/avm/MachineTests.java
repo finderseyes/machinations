@@ -115,16 +115,21 @@ public class MachineTests {
             {
                 TPoolNode pool = (TPoolNode)typeInfo.findField("a_1").get(graph);
                 assertThat(pool.getContent().size()).isEqualTo(10);
+                assertThat(pool.getContent().size("soldier")).isEqualTo(10);
             }
 
             {
                 TPoolNode pool = (TPoolNode)typeInfo.findField("a_2").get(graph);
                 assertThat(pool.getContent().size()).isEqualTo(15);
+                assertThat(pool.getContent().size("gold")).isEqualTo(10);
+                assertThat(pool.getContent().size("")).isEqualTo(5);
             }
 
             {
                 TPoolNode pool = (TPoolNode)typeInfo.findField("a_3").get(graph);
-                assertThat(pool.getContent().size()).isEqualTo(20);
+                assertThat(pool.getContent().size()).isEqualTo(25);
+                assertThat(pool.getContent().size("soldier")).isEqualTo(20);
+                assertThat(pool.getContent().size("gold")).isEqualTo(5);
             }
         }
 

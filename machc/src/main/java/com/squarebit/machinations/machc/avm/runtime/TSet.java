@@ -45,11 +45,22 @@ public final class TSet implements TObject {
     }
 
     /**
-     * Size int.
+     * Gets the total size of the set.
      *
-     * @return the int
+     * @return the size
      */
     public int size() {
         return this.elements.size();
+    }
+
+    /**
+     * Gets the number of items of a given type.
+     * @param typeName the type name.
+     * @return number of items of given type.
+     */
+    public int size(String typeName) {
+        Set<TSetElement> typeElements = elementsByType.getOrDefault(typeName, null);
+
+        return (typeElements != null) ? typeElements.size() : 0;
     }
 }

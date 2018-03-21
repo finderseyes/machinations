@@ -4,7 +4,7 @@ import com.squarebit.machinations.machc.avm.CoreModule;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 
 public class TNamedResource implements TObject, TSetElement {
-    private final String typeName;
+    private String typeName;
 
     /**
      * Instantiates a new T named resource.
@@ -40,5 +40,16 @@ public class TNamedResource implements TObject, TSetElement {
     @Override
     public String getTypeName() {
         return this.typeName;
+    }
+
+    /**
+     * Sets type name.
+     *
+     * @param typeName the type name
+     * @return the type name
+     */
+    public TNamedResource setTypeName(String typeName) {
+        this.typeName = typeName;
+        return this;
     }
 }

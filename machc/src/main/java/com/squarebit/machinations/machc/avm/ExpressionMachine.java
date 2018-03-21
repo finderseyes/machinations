@@ -81,21 +81,18 @@ final class ExpressionMachine {
                 for (int i = 0; i < typeDescriptor.getSize(); i++) {
                     TObject instance = elementType.allocateInstance();
 
-                    if (machineInvocationPlan == null)
-                        machineInvocationPlan = new MachineInvocationPlan(
-                                new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance));
-                    else
-                        machineInvocationPlan.thenInvoke(
-                                v -> new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
-                        );
-
-//                    // Call the internal instance constructor.
-//                    if (constructorCalls == null)
-//                        constructorCalls = machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance);
-//                    else
-//                        constructorCalls.thenCompose(
-//                                v ->  machine.machInvokeOnMachineThread(elementType.getInternalInstanceConstructor(), instance)
-//                        );
+                    if (elementType == CoreModule.NAMED_RESOURCE) {
+                        ((TNamedResource)instance).setTypeName(typeDescriptor.getName());
+                    }
+                    else {
+                        if (machineInvocationPlan == null)
+                            machineInvocationPlan = new MachineInvocationPlan(
+                                    new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance));
+                        else
+                            machineInvocationPlan.thenInvoke(
+                                    v -> new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
+                            );
+                    }
 
                     result.add((TSetElement)instance);
                 }
