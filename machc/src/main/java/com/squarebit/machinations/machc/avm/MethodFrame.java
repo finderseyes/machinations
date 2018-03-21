@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Call frame of a method.
  */
-public final class MethodFrame extends Frame {
+public final class MethodFrame extends Frame implements DataFrame {
     private int offset;
     private MethodInfo method;
     private TObject returnValue;
@@ -85,5 +85,13 @@ public final class MethodFrame extends Frame {
      */
     public CompletableFuture<TObject> getReturnFuture() {
         return returnFuture;
+    }
+
+    /**
+     * On exited.
+     */
+    @Override
+    public void onExit(Machine machine) {
+        this.returnFuture.complete(this.returnValue);
     }
 }

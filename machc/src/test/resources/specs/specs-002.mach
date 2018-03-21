@@ -9,9 +9,9 @@ graph soldier {
 }
 
 graph game {
-    pool
-        a_0,                    // empty pool
-        a_1 = {10 },            // pool with 10 default resources
-        a_2 = {5, 10 gold },    // pool with 5 default resources and 10 gold (named resource, having no properties)
-        a_3 = {20 soldier };    // pool with 20 soldier resources
+//    pool
+//        a_0,                    // empty pool
+//        a_1 = {10 },            // pool with 10 default resources
+//        a_2 = {5, 10 gold },    // pool with 5 default resources and 10 gold (named resource, having no properties)
+//        a_3 = {20 soldier };    // pool with 20 soldier resources
 }

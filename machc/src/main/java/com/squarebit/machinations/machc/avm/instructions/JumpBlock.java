@@ -8,4 +8,8 @@ public class JumpBlock extends Instruction {
     public JumpBlock(InstructionBlock block) {
         this.block = block;
     }
+
+    public InstructionBlock getBlock() {
+        return block;
+    }
 }

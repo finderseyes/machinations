@@ -289,15 +289,11 @@ public final class TypeInfo {
         try {
             TObject instance = (TObject)implementingClass.newInstance();
 
-            if (fields.size() > 0) {
-                if (instance instanceof TObjectBase) {
-                    TObjectBase objectBase = (TObjectBase)instance;
-                    setInstanceTypeInfo(objectBase);
-                    allocateInstanceFieldTable(objectBase);
-                }
-                else {
-                    throw new Exception("This type does not have a field storage.");
-                }
+            if (instance instanceof TObjectBase) {
+                TObjectBase objectBase = (TObjectBase)instance;
+
+                setInstanceTypeInfo(objectBase);
+                allocateInstanceFieldTable(objectBase);
             }
 
             return instance;

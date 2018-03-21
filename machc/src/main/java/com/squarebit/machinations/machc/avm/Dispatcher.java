@@ -38,7 +38,21 @@ public final class Dispatcher {
      * @return
      */
     public CompletableFuture<Void> dispatch(Runnable runnable) {
-        return CompletableFuture.runAsync(runnable, this.executorService);
+        // return CompletableFuture.runAsync(runnable, this.executorService);
+        CompletableFuture<Void> result = new CompletableFuture<>();
+
+        this.executorService.submit(() -> {
+            try {
+                runnable.run();
+                result.complete(null);
+            }
+            catch (Exception exception) {
+                result.completeExceptionally(exception);
+
+            }
+        });
+
+        return result;
     }
 
     /**

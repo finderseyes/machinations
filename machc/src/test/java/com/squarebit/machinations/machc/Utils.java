@@ -4,9 +4,6 @@ import com.squarebit.machinations.machc.ast.GProgram;
 import com.squarebit.machinations.machc.ast.GUnit;
 import com.squarebit.machinations.machc.avm.Compiler;
 import com.squarebit.machinations.machc.avm.ModuleInfo;
-import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
-import com.squarebit.machinations.machc.vm.MachCompiler;
-import com.squarebit.machinations.machc.vm.ProgramInfo;
 
 import java.io.File;
 import java.net.URL;
@@ -28,10 +25,6 @@ public class Utils {
         String absolutePath = absoluteResourcePath(path);
         MachFrontend frontend = new MachFrontend();
         return frontend.compile(absolutePath);
-    }
-
-    public static ProgramInfo compileold(String path) throws Exception {
-        return MachCompiler.compile(transform(path));
     }
 
     public static ModuleInfo compile(String path) throws Exception {

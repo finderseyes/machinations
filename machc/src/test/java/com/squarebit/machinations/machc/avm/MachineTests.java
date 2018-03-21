@@ -2,7 +2,6 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.Utils;
 import com.squarebit.machinations.machc.avm.runtime.*;
-import com.squarebit.machinations.machc.vm.ProgramInfo;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
 

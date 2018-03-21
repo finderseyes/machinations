@@ -50,4 +50,25 @@ public abstract class Frame {
         this.activeNativeMethodFrame = activeNativeMethodFrame;
         return this;
     }
+
+    /**
+     * Called back when the frame is exiting, data stack is not popped.
+     */
+    public void onExiting(Machine machine) {
+    }
+
+    /**
+     * Called back when the frame is exited, data stack is popped.
+     */
+    public void onExit(Machine machine) {
+    }
+
+    /**
+     * On panic.
+     *
+     * @param exception the exception
+     */
+    public void onPanic(Exception exception) {
+
+    }
 }

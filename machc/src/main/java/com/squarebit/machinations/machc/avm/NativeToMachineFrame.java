@@ -2,22 +2,57 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.instructions.Instruction;
 import com.squarebit.machinations.machc.avm.instructions.JumpBlock;
+import com.squarebit.machinations.machc.avm.runtime.TObject;
+import com.squarebit.machinations.machc.avm.runtime.TVoid;
 
-public class NativeToMachineFrame extends InstructionFrame {
-    private NativeToMachineInvocation invocation;
-    private NativeToMachineInvocation currentInvocation;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
+public class NativeToMachineFrame extends InstructionFrame implements DataFrame {
+    private int offset;
+    private MachineInvocationPlan machineInvocationPlan;
+    private int counter;
+
+    private VariableInfo returnValueStore;
+
+    private TObject returnValue = TVoid.INSTANCE;
+    private CompletableFuture<TObject> returnFuture;
 
     /**
      * Instantiates a new Native to machine frame.
      *
-     * @param caller     the caller
-     * @param invocation the invocation
+     * @param caller                    the caller
+     * @param machineInvocationPlan     machine invocation plan
      */
-    public NativeToMachineFrame(Frame caller, NativeToMachineInvocation invocation) {
+    public NativeToMachineFrame(Frame caller, int offset, MachineInvocationPlan machineInvocationPlan) {
         super(caller);
-        this.invocation = invocation;
-        this.currentInvocation = invocation;
+        this.offset = offset;
+        this.machineInvocationPlan = machineInvocationPlan;
+        this.counter = 0;
+
         this.block = new InstructionBlock().setParentScope(getScope(caller));
+        this.returnValueStore = this.block.createTempVar();
+
+        this.returnFuture = new CompletableFuture<>();
+    }
+
+    /**
+     * Gets frame data offset.
+     *
+     * @return the frame data offset
+     */
+    @Override
+    public int getOffset() {
+        return this.offset;
+    }
+
+    /**
+     * Gets return future.
+     *
+     * @return the return future
+     */
+    public CompletableFuture<TObject> getReturnFuture() {
+        return returnFuture;
     }
 
     /**
@@ -27,7 +62,7 @@ public class NativeToMachineFrame extends InstructionFrame {
      */
     @Override
     public int getLocalVariableCount() {
-        return 0;
+        return 1;
     }
 
     /**
@@ -37,7 +72,7 @@ public class NativeToMachineFrame extends InstructionFrame {
      */
     @Override
     public boolean hasNext() {
-        return this.currentInvocation != null;
+        return this.counter < machineInvocationPlan.getStepCount();
     }
 
     /**
@@ -47,12 +82,12 @@ public class NativeToMachineFrame extends InstructionFrame {
      */
     @Override
     public Instruction next() {
-        if (this.currentInvocation == null)
-            return null;
+        if (!hasNext()) return null;
 
-        NativeToMachineInvocation invocation = this.currentInvocation;
-//        this.currentInvocation = invocation.getNext();
+        Function<TObject, NativeToMachineInvocation> step = machineInvocationPlan.getSteps().get(counter);
+        NativeToMachineInvocation invocation = step.apply(null);
 
+        counter++;
         return build(invocation);
     }
 
@@ -64,5 +99,31 @@ public class NativeToMachineFrame extends InstructionFrame {
     private Instruction build(NativeToMachineInvocation invocation) {
         InstructionBlock invocationBlock = new InstructionBlock().setParentScope(this.block);
         return new JumpBlock(invocationBlock);
+    }
+
+    /**
+     * Called back when the frame is exiting, data stack is not popped.
+     */
+    @Override
+    public void onExiting(Machine machine) {
+        this.returnValue = machine.getLocalVariable(returnValueStore.getIndex());
+    }
+
+    /**
+     * Called back when the frame is exited, data stack is popped.
+     */
+    @Override
+    public void onExit(Machine machine) {
+        returnFuture.complete(returnValue);
+    }
+
+    /**
+     * On panic.
+     *
+     * @param exception the exception
+     */
+    @Override
+    public void onPanic(Exception exception) {
+        returnFuture.completeExceptionally(exception);
     }
 }

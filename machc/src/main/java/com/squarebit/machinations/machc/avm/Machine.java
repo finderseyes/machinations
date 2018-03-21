@@ -1,6 +1,5 @@
 package com.squarebit.machinations.machc.avm;
 
-import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
@@ -25,7 +24,7 @@ public final class Machine {
 
     //////////////////////////////////////////
     // Call stack and data stack.
-    private MethodFrame activeMethodFrame = null;
+    private DataFrame activeDataFrame = null;
     private Frame activeFrame = null;
     private Stack<TObject> dataStack;
 
@@ -90,21 +89,34 @@ public final class Machine {
      */
     public CompletableFuture<TObject> newInstance(TypeInfo typeInfo) {
         CompletableFuture<TObject> result = new CompletableFuture<>();
+        try {
+            TObject instance = typeInfo.allocateInstance();
+            MachineInvocationPlan invocationPlan = new MachineInvocationPlan(
+                    new NativeToMachineInvocation(typeInfo.getInternalInstanceConstructor(), instance)
+            );
+
+            return machineInvoke(invocationPlan).thenApply(r -> instance);
+        }
+        catch (Exception ex) {
+            result.completeExceptionally(ex);
+        }
+
+        return result;
+    }
+
+    public CompletableFuture<TObject> machineInvoke(MachineInvocationPlan machineInvocationPlan) {
+        CompletableFuture<TObject> result = new CompletableFuture<>();
+
         executeOnMachineThread(() -> {
-            try {
-                TObject instance = typeInfo.allocateInstance();
-                CompletableFuture<TObject> returnFuture =
-                        machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
-                returnFuture.whenComplete((v, ex) -> {
-                    if (ex != null)
-                        result.completeExceptionally(ex);
-                    else
-                        result.complete(instance);
-                });
-            }
-            catch (Exception ex) {
-                result.completeExceptionally(ex);
-            }
+            NativeToMachineFrame nativeToMachineFrame = pushNativeToMachineFrame(machineInvocationPlan);
+            CompletableFuture<TObject> returnFuture = nativeToMachineFrame.getReturnFuture();
+
+            returnFuture.whenComplete((v, ex) -> {
+                if (ex != null)
+                    result.completeExceptionally(ex);
+                else
+                    result.complete(v);
+            });
         });
 
         return result;
@@ -201,23 +213,33 @@ public final class Machine {
      * @param frame the exiting frame.
      */
     private void exitFrame(Frame frame) {
+        frame.onExiting(this);
+
         for (int i = 0; i < frame.getLocalVariableCount(); i++)
             dataStack.pop();
 
         if (frame instanceof MethodFrame) {
-            MethodFrame exitingFrame = (MethodFrame)frame;
-
             // Move active method frame to nearest method frame.
-            frame = frame.getCaller();
-            while (frame != null && !(frame instanceof MethodFrame))
-                frame = frame.getCaller();
-
-            if (frame != null)
-                this.activeMethodFrame = (MethodFrame)frame;
-
-            // Result is resolve finally.
-            exitingFrame.getReturnFuture().complete(exitingFrame.getReturnValue());
+            this.activeDataFrame = findCallingDataFrame(frame.getCaller());
         }
+
+        frame.onExit(this);
+    }
+
+    /**
+     * Find the method frame calling this frame.
+     *
+     * @param frame the frame.
+     * @return the method frame or null.
+     */
+    private DataFrame findCallingDataFrame(Frame frame) {
+        while (frame != null && !(frame instanceof DataFrame))
+            frame = frame.getCaller();
+
+        if (frame == null)
+            return null;
+        else
+            return (DataFrame)frame;
     }
 
     /**
@@ -237,6 +259,8 @@ public final class Machine {
             executeReturn((Return)instruction);
         else if (instruction instanceof New)
             executeNew((New)instruction);
+        else if (instruction instanceof JumpBlock)
+            executeJumpBlock((JumpBlock)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -269,7 +293,7 @@ public final class Machine {
         MethodFrame methodFrame = new MethodFrame(this.activeFrame, dataStack.size(), methodInfo);
         enterFrame(methodFrame);
 
-        this.activeMethodFrame = methodFrame;
+        this.activeDataFrame = methodFrame;
         this.activeFrame = methodFrame;
         return methodFrame;
     }
@@ -287,6 +311,21 @@ public final class Machine {
     }
 
     /**
+     * Push a new native-to-machine frame.
+     * @param machineInvocationPlan
+     * @return
+     */
+    private NativeToMachineFrame pushNativeToMachineFrame(MachineInvocationPlan machineInvocationPlan) {
+        NativeToMachineFrame nativeToMachineFrame = new NativeToMachineFrame(
+                this.activeFrame, dataStack.size(), machineInvocationPlan
+        );
+        enterFrame(nativeToMachineFrame);
+        this.activeFrame = nativeToMachineFrame;
+        this.activeDataFrame = nativeToMachineFrame;
+        return nativeToMachineFrame;
+    }
+
+    /**
      * Unrolls everything in case of errors.
      * @param exception the cause of the error
      */
@@ -294,13 +333,13 @@ public final class Machine {
         Frame frame = this.activeFrame;
 
         while (frame != null) {
-            if (frame instanceof MethodFrame) {
-                MethodFrame methodFrame = (MethodFrame)frame;
-                methodFrame.getReturnFuture().completeExceptionally(new MachineException(exception));
-            }
-
+            frame.onPanic(exception);
             frame = frame.getCaller();
         }
+
+        this.isRunning = false;
+        this.activeFrame = null;
+        this.activeDataFrame = null;
     }
 
     /**
@@ -309,7 +348,7 @@ public final class Machine {
      * @param value value to set
      */
     void setLocalVariable(int index, TObject value) {
-        dataStack.set(this.activeMethodFrame.getOffset() + index, value);
+        dataStack.set(this.activeDataFrame.getOffset() + index, value);
     }
 
     /**
@@ -318,7 +357,7 @@ public final class Machine {
      * @return variable value.
      */
     TObject getLocalVariable(int index) {
-        return dataStack.get(this.activeMethodFrame.getOffset() + index);
+        return dataStack.get(this.activeDataFrame.getOffset() + index);
     }
 
     /**
@@ -382,17 +421,17 @@ public final class Machine {
     }
 
     private void executeReturn(Return instruction) {
-        if (instruction.getValue() != null) {
-            this.activeMethodFrame.setReturnValue(getLocalVariable(instruction.getValue().getIndex()));
-        }
-
-        // Unroll the stack up to current method.
-        Frame frame = this.activeFrame;
-        while (frame != this.activeMethodFrame) {
-            exitFrame(frame);
-            frame = frame.getCaller();
-        }
-        this.activeFrame = this.activeMethodFrame;
+//        if (instruction.getValue() != null) {
+//            this.activeDataFrame.setReturnValue(getLocalVariable(instruction.getValue().getIndex()));
+//        }
+//
+//        // Unroll the stack up to current method.
+//        Frame frame = this.activeFrame;
+//        while (frame != this.activeDataFrame) {
+//            exitFrame(frame);
+//            frame = frame.getCaller();
+//        }
+//        this.activeFrame = this.activeDataFrame;
     }
 
     private void executeNew(New instruction) {
@@ -421,6 +460,10 @@ public final class Machine {
         catch (Exception exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    private void executeJumpBlock(JumpBlock instruction) {
+        pushInstructionBlockFrame(instruction.getBlock());
     }
 
     /**
