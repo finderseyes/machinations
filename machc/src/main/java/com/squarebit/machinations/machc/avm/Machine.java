@@ -20,6 +20,7 @@ public final class Machine {
     //
     private Dispatcher dispatcher;
     private boolean isRunning = false;
+    private Exception lastException = null;
     private final ConcurrentLinkedQueue<Runnable> machineThreadTasks = new ConcurrentLinkedQueue<>();
 
     //////////////////////////////////////////
@@ -153,13 +154,15 @@ public final class Machine {
             boolean mustWaitForNativeMethod = false;
 
             while (frame != null && !canExecute && !mustWaitForNativeMethod) {
-                frame = this.activeFrame;
                 mustWaitForNativeMethod = shouldWaitForNativeMethodFrame(frame);
 
                 if (!mustWaitForNativeMethod) {
                     if (!canExecuteNextInstruction(frame)) {
-                        this.activeFrame = frame.getCaller();
-                        exitFrame(frame);
+                        Frame exitingFrame = frame;
+                        frame = frame.getCaller();
+                        this.activeFrame = frame;
+
+                        exitFrame(exitingFrame);
                     }
                     else
                         canExecute = true;
@@ -354,6 +357,7 @@ public final class Machine {
         this.isRunning = false;
         this.activeFrame = null;
         this.activeDataFrame = null;
+        this.lastException = exception;
     }
 
     /**
@@ -379,6 +383,9 @@ public final class Machine {
      * @param runnable
      */
     private void executeOnMachineThread(Runnable runnable) {
+        if (!isRunning)
+            throw new RuntimeException("Machine is not running.", this.lastException);
+
         machineThreadTasks.add(runnable);
     }
 
@@ -435,17 +442,22 @@ public final class Machine {
     }
 
     private void executeReturn(Return instruction) {
-//        if (instruction.getValue() != null) {
-//            this.activeDataFrame.setReturnValue(getLocalVariable(instruction.getValue().getIndex()));
-//        }
-//
-//        // Unroll the stack up to current method.
-//        Frame frame = this.activeFrame;
-//        while (frame != this.activeDataFrame) {
-//            exitFrame(frame);
-//            frame = frame.getCaller();
-//        }
-//        this.activeFrame = this.activeDataFrame;
+        MethodFrame methodFrame = (MethodFrame)findCallingDataFrame(this.activeFrame);
+        Frame methodCallerFrame = methodFrame.getCaller();
+
+        if (instruction.getValue() != null) {
+            methodFrame.setReturnValue(getLocalVariable(instruction.getValue().getIndex()));
+        }
+
+        // Unroll the stack up to current method.
+        Frame frame = this.activeFrame;
+        while (frame != methodCallerFrame) {
+            exitFrame(frame);
+            frame = frame.getCaller();
+        }
+
+        this.activeFrame = frame;
+        this.activeDataFrame = findCallingDataFrame(frame);
     }
 
     private void executeNew(New instruction) {
