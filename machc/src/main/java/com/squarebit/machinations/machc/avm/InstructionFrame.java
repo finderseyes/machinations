@@ -56,6 +56,8 @@ public abstract class InstructionFrame extends Frame {
     Scope getScope(Frame frame) {
         if (frame == null)
             return null;
+        else if (frame instanceof MethodFrame)
+            return ((MethodFrame)frame).getMethod();
         else
             return ((InstructionFrame)frame).block;
     }

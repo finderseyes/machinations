@@ -1,7 +1,9 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.instructions.Instruction;
+import com.squarebit.machinations.machc.avm.instructions.Invoke;
 import com.squarebit.machinations.machc.avm.instructions.JumpBlock;
+import com.squarebit.machinations.machc.avm.instructions.PutConstant;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TVoid;
 
@@ -98,6 +100,17 @@ public class NativeToMachineFrame extends InstructionFrame implements DataFrame 
      */
     private Instruction build(NativeToMachineInvocation invocation) {
         InstructionBlock invocationBlock = new InstructionBlock().setParentScope(this.block);
+
+        VariableInfo instanceVar = invocationBlock.createTempVar();
+        invocationBlock.emit(new PutConstant(invocation.getInstance(), instanceVar));
+
+        TObject[] args = invocation.getArgs();
+        VariableInfo[] argVars = new VariableInfo[args.length];
+        for (int i = 0; i < args.length; i++)
+            invocationBlock.emit(new PutConstant(args[i], argVars[i]));
+
+        invocationBlock.emit(new Invoke(invocation.getMethodInfo(), instanceVar, argVars, returnValueStore));
+
         return new JumpBlock(invocationBlock);
     }
 

@@ -13,4 +13,16 @@ public class NativeToMachineInvocation {
         this.instance = instance;
         this.args = args;
     }
+
+    public MethodInfo getMethodInfo() {
+        return methodInfo;
+    }
+
+    public TObject getInstance() {
+        return instance;
+    }
+
+    public TObject[] getArgs() {
+        return args;
+    }
 }

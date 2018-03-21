@@ -9,6 +9,7 @@ graph soldier {
 }
 
 graph game {
+     let x = 10;
 //    pool
 //        a_0,                    // empty pool
 //        a_1 = {10 },            // pool with 10 default resources

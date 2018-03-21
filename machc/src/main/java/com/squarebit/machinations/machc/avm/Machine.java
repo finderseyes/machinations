@@ -261,6 +261,8 @@ public final class Machine {
             executeNew((New)instruction);
         else if (instruction instanceof JumpBlock)
             executeJumpBlock((JumpBlock)instruction);
+        else if (instruction instanceof PutConstant)
+            executePutConstant((PutConstant)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -464,6 +466,10 @@ public final class Machine {
 
     private void executeJumpBlock(JumpBlock instruction) {
         pushInstructionBlockFrame(instruction.getBlock());
+    }
+
+    private void executePutConstant(PutConstant instruction) {
+        setLocalVariable(instruction.getTo().getIndex(), instruction.getValue());
     }
 
     /**
