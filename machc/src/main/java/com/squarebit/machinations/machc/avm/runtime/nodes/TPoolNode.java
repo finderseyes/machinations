@@ -9,6 +9,8 @@ import com.squarebit.machinations.machc.avm.runtime.annotations.ConstructorMetho
 import java.util.concurrent.CompletableFuture;
 
 public class TPoolNode extends TNode {
+    private TSet container;
+
     @ConstructorMethod
     public CompletableFuture<TObject> init() {
         return CompletableFuture.completedFuture(null);
@@ -16,7 +18,8 @@ public class TPoolNode extends TNode {
 
     @ConstructorMethod
     public CompletableFuture<TObject> init(TSet set) {
-        return CompletableFuture.completedFuture(null);
+        this.container = set;
+        return CompletableFuture.completedFuture(this);
     }
 
     /**

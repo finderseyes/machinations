@@ -91,11 +91,8 @@ public final class Machine {
         CompletableFuture<TObject> result = new CompletableFuture<>();
         try {
             TObject instance = typeInfo.allocateInstance();
-            MachineInvocationPlan invocationPlan = new MachineInvocationPlan(
-                    new NativeToMachineInvocation(typeInfo.getInternalInstanceConstructor(), instance)
-            );
-
-            return machineInvoke(invocationPlan).thenApply(r -> instance);
+            return machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance))
+                    .thenApply(r -> instance);
         }
         catch (Exception ex) {
             result.completeExceptionally(ex);
@@ -104,6 +101,11 @@ public final class Machine {
         return result;
     }
 
+    /**
+     *
+     * @param machineInvocationPlan
+     * @return
+     */
     public CompletableFuture<TObject> machineInvoke(MachineInvocationPlan machineInvocationPlan) {
         CompletableFuture<TObject> result = new CompletableFuture<>();
 
@@ -148,29 +150,23 @@ public final class Machine {
         try {
             Frame frame = this.activeFrame;
             boolean canExecute = false;
-            boolean waitForNativeMethodReturn = false;
+            boolean mustWaitForNativeMethod = false;
 
-            while (frame != null && !canExecute && !waitForNativeMethodReturn) {
-                if (!canExecuteNextInstruction(frame)) {
-                    NativeMethodFrame nativeMethodFrame = frame.getActiveNativeMethodFrame();
+            while (frame != null && !canExecute && !mustWaitForNativeMethod) {
+                frame = this.activeFrame;
+                mustWaitForNativeMethod = shouldWaitForNativeMethodFrame(frame);
 
-                    if (nativeMethodFrame == null) {
+                if (!mustWaitForNativeMethod) {
+                    if (!canExecuteNextInstruction(frame)) {
+                        this.activeFrame = frame.getCaller();
                         exitFrame(frame);
-                        frame = frame.getCaller();
-                        this.activeFrame = frame;
                     }
-                    else {
-                        CompletableFuture<TObject> returnFuture = nativeMethodFrame.getReturnFuture();
-
-                        if (returnFuture.isDone()) {
-                            frame.setActiveNativeMethodFrame(nativeMethodFrame.getCaller());
-                        }
-                        else
-                            waitForNativeMethodReturn = true;
-                    }
+                    else
+                        canExecute = true;
                 }
-                else
-                    canExecute = true;
+                else {
+                    int k = 100;
+                }
             }
 
             if (canExecute) {
@@ -199,6 +195,10 @@ public final class Machine {
         return false;
     }
 
+    private boolean shouldWaitForNativeMethodFrame(Frame frame) {
+        return (frame instanceof NativeMethodFrame && !((NativeMethodFrame)frame).getReturnFuture().isDone());
+    }
+
     /**
      * Prepares to enter a new frame.
      * @param frame the new frame
@@ -218,7 +218,7 @@ public final class Machine {
         for (int i = 0; i < frame.getLocalVariableCount(); i++)
             dataStack.pop();
 
-        if (frame instanceof MethodFrame) {
+        if (frame instanceof DataFrame) {
             // Move active method frame to nearest method frame.
             this.activeDataFrame = findCallingDataFrame(frame.getCaller());
         }
@@ -325,6 +325,18 @@ public final class Machine {
         this.activeFrame = nativeToMachineFrame;
         this.activeDataFrame = nativeToMachineFrame;
         return nativeToMachineFrame;
+    }
+
+    /**
+     *
+     * @param returnFuture
+     * @return
+     */
+    private NativeMethodFrame pushNativeMethodFrame(CompletableFuture<TObject> returnFuture) {
+        NativeMethodFrame nativeMethodFrame = new NativeMethodFrame(this.activeFrame, returnFuture);
+        enterFrame(nativeMethodFrame);
+        this.activeFrame = nativeMethodFrame;
+        return nativeMethodFrame;
     }
 
     /**
@@ -443,21 +455,22 @@ public final class Machine {
             // Allocate the instance first.
             TObject instance = typeInfo.allocateInstance();
 
-            // Call the internal instance constructor.
-            CompletableFuture<TObject> internalConstructorReturn =
-                    machInvokeOnMachineThread(typeInfo.getInternalInstanceConstructor(), instance);
-
             // Try to see if there is a native constructor.
             VariableInfo[] args = instruction.getArgs();
-            Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), args.length);
-            if (nativeConstructor != null) {
-                internalConstructorReturn.thenCompose(v -> {
-                    TObject[] argValues = Stream.of(args).map(a -> getLocalVariable(a.getIndex())).toArray(TObject[]::new);
-                    return invokeNative(nativeConstructor, instance, argValues);
-                });
-            }
+            TObject[] argValues = Stream.of(args).map(a -> getLocalVariable(a.getIndex())).toArray(TObject[]::new);
 
-            // TODO: Try to see if there is a Mac constructor.
+            Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), args.length);
+
+            if (nativeConstructor != null) {
+                machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance))
+                        .thenCompose(v -> nativeInvoke(nativeConstructor, instance, argValues)
+                                .thenAccept(v0 -> setLocalVariable(instruction.getTo().getIndex(), instance))
+                        );
+            }
+            else {
+                // TODO: Try to see if there is a Mac constructor.
+                machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance));
+            }
         }
         catch (Exception exception) {
             throw new RuntimeException(exception);
@@ -479,30 +492,27 @@ public final class Machine {
      * @param args
      * @return
      */
-    private CompletableFuture<TObject> invokeNative(Method method, TObject instance, TObject ... args) {
+    private CompletableFuture<TObject> nativeInvoke(Method method, TObject instance, TObject ... args) {
+        CompletableFuture<TObject> result = new CompletableFuture<>();
         try {
-            Object result = method.invoke(instance, Arrays.copyOf(args, args.length, Object[].class));
+            @SuppressWarnings("unchecked")
+            CompletableFuture<TObject> returnFuture =  (CompletableFuture<TObject>)(method.invoke(
+                    instance, Arrays.copyOf(args, args.length, Object[].class)
+            ));
 
-            if (result instanceof CompletableFuture<?>) {
-                CompletableFuture<TObject> returnFuture = (CompletableFuture<TObject>)result;
+            pushNativeMethodFrame(returnFuture);
 
-                NativeMethodFrame nativeMethodFrame = new NativeMethodFrame()
-                        .setCaller(this.activeFrame.getActiveNativeMethodFrame())
-                        .setReturnFuture(returnFuture);
-                this.activeFrame.setActiveNativeMethodFrame(nativeMethodFrame);
-
-                return returnFuture;
-            }
-            else {
-                CompletableFuture<TObject> returnFuture = new CompletableFuture<>();
-                returnFuture.completeExceptionally(new Exception("invalid native method"));
-                return returnFuture;
-            }
+            returnFuture.whenComplete((value, exception) -> {
+                if (exception != null)
+                    result.completeExceptionally(exception);
+                else
+                    result.complete(value);
+            });
         }
         catch (Exception exception) {
-            CompletableFuture<TObject> returnFuture = new CompletableFuture<>();
-            returnFuture.completeExceptionally(exception);
-            return returnFuture;
+            result.completeExceptionally(exception);
         }
+
+        return result;
     }
 }

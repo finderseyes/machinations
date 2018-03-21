@@ -5,7 +5,6 @@ package com.squarebit.machinations.machc.avm;
  */
 public abstract class Frame {
     private Frame caller;
-    private NativeMethodFrame activeNativeMethodFrame;
 
     /**
      * Instantiates a new Frame.
@@ -30,26 +29,6 @@ public abstract class Frame {
      * @return number of local variables.
      */
     public abstract int getLocalVariableCount();
-
-    /**
-     * Gets native call stack.
-     *
-     * @return the native call stack
-     */
-    public NativeMethodFrame getActiveNativeMethodFrame() {
-        return activeNativeMethodFrame;
-    }
-
-    /**
-     * Sets native call stack.
-     *
-     * @param activeNativeMethodFrame the native call stack
-     * @return the native call stack
-     */
-    public Frame setActiveNativeMethodFrame(NativeMethodFrame activeNativeMethodFrame) {
-        this.activeNativeMethodFrame = activeNativeMethodFrame;
-        return this;
-    }
 
     /**
      * Called back when the frame is exiting, data stack is not popped.

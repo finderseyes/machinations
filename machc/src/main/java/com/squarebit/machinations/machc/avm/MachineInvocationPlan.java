@@ -10,6 +10,10 @@ import java.util.function.Function;
 public class MachineInvocationPlan {
     private List<Function<TObject, NativeToMachineInvocation>> steps;
 
+    public MachineInvocationPlan(MethodInfo methodInfo, TObject instance, TObject ... args) {
+        this(new NativeToMachineInvocation(methodInfo, instance, args));
+    }
+
     /**
      * Instantiates a new Invocation plan.
      *
