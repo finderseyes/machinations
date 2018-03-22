@@ -127,6 +127,15 @@ public final class InstructionBlock implements Scope {
     }
 
     /**
+     * Gets local variables.
+     *
+     * @return the local variables
+     */
+    public List<VariableInfo> getLocalVariables() {
+        return variables;
+    }
+
+    /**
      * Gets the list of instructions
      * @return instruction list, in declaration order.
      */

@@ -15,6 +15,8 @@ public final class CoreModule {
     private final TypeInfo voidType;
     private final TypeInfo nanType;
 
+    private final TypeInfo arrayType;
+
     private final TypeInfo integerType;
     private final TypeInfo floatType;
     private final TypeInfo randomDiceType;
@@ -39,6 +41,7 @@ public final class CoreModule {
     private final TypeInfo graphNodeType;
 
     private final TypeInfo expressionTypeInfo;
+    private final TypeInfo lambdaTypeInfo;
 
     /**
      * Initializes a new core module.
@@ -50,6 +53,8 @@ public final class CoreModule {
             this.objectType = module.createType("Object");
             this.voidType = module.createType("Void").setImplementingClass(TVoid.class);
             this.nanType = module.createType("NaN").setImplementingClass(TNaN.class);
+
+            this.arrayType = module.createType("Array").setImplementingClass(TArray.class);
 
             this.integerType = module.createType("Integer").setImplementingClass(TInteger.class);
             this.floatType = module.createType("Float").setImplementingClass(TFloat.class);
@@ -74,6 +79,7 @@ public final class CoreModule {
             this.graphNodeType = new TypeInfo().setModule(module).setName("GraphNode");
 
             this.expressionTypeInfo = module.createType("Expression").setImplementingClass(TExpression.class);
+            this.lambdaTypeInfo = module.createType("Lambda").setImplementingClass(TLambda.class);
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -86,6 +92,8 @@ public final class CoreModule {
     public static final TypeInfo OBJECT_TYPE = INTERNAL.objectType;
     public static final TypeInfo VOID_TYPE = INTERNAL.voidType;
     public static final TypeInfo NAN_TYPE = INTERNAL.nanType;
+
+    public static final TypeInfo ARRAY_TYPE = INTERNAL.arrayType;
 
     public static final TypeInfo INTEGER_TYPE = INTERNAL.integerType;
     public static final TypeInfo FLOAT_TYPE = INTERNAL.floatType;
@@ -110,4 +118,5 @@ public final class CoreModule {
     public static final TypeInfo GRAPH_NODE_TYPE = INTERNAL.graphNodeType;
 
     public static final TypeInfo EXPRESSION_TYPE = INTERNAL.expressionTypeInfo;
+    public static final TypeInfo LAMBDA_TYPE = INTERNAL.lambdaTypeInfo;
 }

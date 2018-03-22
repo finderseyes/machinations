@@ -8,8 +8,8 @@ import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierExceptio
 import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
-import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,9 +18,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Compiler which compiles AST to Abstract Virtual Machine code.
  */
 public final class Compiler {
+    private static class LambdaContext {
+        InstructionBlock environmentBlock;
+        InstructionBlock lambdaBlock;
+    }
+
     private Scope currentScope;
     private MethodInfo currentMethod;
     private TypeInfo currentType;
+
+    private LambdaContext currentLambdaContext;
 
     /**
      * Compiles a unit to a module.
@@ -282,6 +289,55 @@ public final class Compiler {
 
         block.emit(new Evaluate(expression, temp));
         block.emit(new PutField(fieldInfo, internalInstanceConstructor.getThisVariable(), temp));
+    }
+
+    private Expression compileLambdaExpression(InstructionBlock block, GExpression expression) throws Exception {
+        MethodInfo lambdaMethodInfo = new MethodInfo();
+        LambdaTypeInfo lambdaTypeInfo = new LambdaTypeInfo().setLambdaMethod(lambdaMethodInfo);
+
+        LambdaContext oldLambdaContext = this.currentLambdaContext;
+
+
+
+        InstructionBlock rootBlock = lambdaMethodInfo.getInstructionBlock();
+        InstructionBlock environmentBlock = new InstructionBlock().setParentScope(rootBlock);
+        InstructionBlock lambdaBlock = new InstructionBlock().setParentScope(environmentBlock);
+
+        this.currentLambdaContext = new LambdaContext();
+        this.currentLambdaContext.environmentBlock = environmentBlock;
+        this.currentLambdaContext.lambdaBlock = lambdaBlock;
+
+        {
+            VariableInfo argumentsVar = rootBlock.createTempVar();
+            lambdaBlock.emit(new LoadField(lambdaTypeInfo.getArgumentsField(), lambdaMethodInfo.getThisVariable(), argumentsVar));
+        }
+
+        {
+            List<VariableInfo> variables = rootBlock.getLocalVariables();
+            for (int i = 0; i < variables.size(); i++) {
+                lambdaBlock.emit(new L);
+            }
+        }
+
+        {
+            Expression exp = compileExpression(lambdaBlock, expression);
+            VariableInfo expressionResult = lambdaBlock.createTempVar();
+            lambdaBlock.emit(new Evaluate(exp, expressionResult));
+            lambdaBlock.emit(new Return(expressionResult));
+        }
+
+        VariableInfo argumentsVar = block.createTempVar();
+        VariableInfo lengthVar = block.createTempVar();
+
+        ArrayTypeInfo arrayTypeInfo = new ArrayTypeInfo().setElementType(CoreModule.OBJECT_TYPE);
+        block.emit(new PutConstant(new TInteger(rootBlock.getVariableCount()), lengthVar));
+        block.emit(new New(argumentsVar, arrayTypeInfo, new VariableInfo[]{ lengthVar }));
+
+        VariableInfo resultVar = block.createTempVar();
+        block.emit(new New(resultVar, lambdaTypeInfo, new VariableInfo[] { argumentsVar }));
+
+        this.currentLambdaContext = oldLambdaContext;
+        return new Variable(resultVar);
     }
 
     /**
