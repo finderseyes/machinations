@@ -26,7 +26,10 @@ public class TConnection implements TObject {
         this.to = to;
         this.flow = flow;
 
-        return CompletableFuture.completedFuture(this);
+        return machine.getExpressionMachine().evaluate(flow.getExpression()).thenCompose(v -> {
+            int k = 100;
+            return CompletableFuture.completedFuture(this);
+        });
     }
 
     /**

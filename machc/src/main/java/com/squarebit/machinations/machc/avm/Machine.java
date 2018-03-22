@@ -65,6 +65,15 @@ public final class Machine {
     }
 
     /**
+     * Gets expression machine.
+     *
+     * @return the expression machine
+     */
+    public ExpressionMachine getExpressionMachine() {
+        return expressionMachine;
+    }
+
+    /**
      *
      * @param moduleInfo
      */

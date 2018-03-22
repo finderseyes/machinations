@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * In charge of expression evaluation.
  */
-final class ExpressionMachine {
+public final class ExpressionMachine {
     private final Machine machine;
 
     /**
@@ -49,12 +49,27 @@ final class ExpressionMachine {
     }
 
     /**
+     * Evaluate an expression, or return default value if the expression is null.
+     *
+     * @param expression   the expression
+     * @param defaultValue the default value if the expression is null.
+     * @return the completable future
+     */
+    public CompletableFuture<TObject> evaluateOrDefault(Expression expression, TObject defaultValue)
+    {
+        if (expression == null)
+            return CompletableFuture.completedFuture(defaultValue);
+        else
+            return evaluate(expression);
+    }
+
+    /**
      * Evaluate constant t object.
      *
      * @param constant the constant
      * @return the t object
      */
-    private CompletableFuture<TObject> evaluateConstant(Constant constant) {
+    public CompletableFuture<TObject> evaluateConstant(Constant constant) {
         TObject value = constant.getValue();
 
         if (value instanceof TRandomDice)
@@ -63,11 +78,22 @@ final class ExpressionMachine {
         return CompletableFuture.completedFuture(value);
     }
 
-    private CompletableFuture<TSet> evaluateSet(Set set) {
+    /**
+     * Evaluates a set.
+     * @param set
+     * @return
+     */
+    public CompletableFuture<TSet> evaluateSet(Set set) {
         return evaluateSetDescriptor(set.getDescriptor()).thenCompose(this::instantiateSet);
     }
 
-    private CompletableFuture<TSet> instantiateSet(TSetDescriptor descriptor) {
+    /**
+     * Instantiate set completable future.
+     *
+     * @param descriptor the descriptor
+     * @return the completable future
+     */
+    public CompletableFuture<TSet> instantiateSet(TSetDescriptor descriptor) {
         CompletableFuture<TSet> returnFuture = new CompletableFuture<>();
 
         try {
@@ -119,7 +145,13 @@ final class ExpressionMachine {
         return returnFuture;
     }
 
-    private CompletableFuture<TSetDescriptor> evaluateSetDescriptor(SetDescriptor setDescriptor) {
+    /**
+     * Evaluate set descriptor completable future.
+     *
+     * @param setDescriptor the set descriptor
+     * @return the completable future
+     */
+    public CompletableFuture<TSetDescriptor> evaluateSetDescriptor(SetDescriptor setDescriptor) {
         List<TSetElementTypeDescriptor> typeDescriptors = new ArrayList<>();
         CompletableFuture<TSetDescriptor> returnFuture = new CompletableFuture<>();
 
@@ -150,14 +182,12 @@ final class ExpressionMachine {
         return returnFuture;
     }
 
-    private CompletableFuture<TObject> evaluateOrDefault(Expression expression, TObject defaultValue)
-    {
-        if (expression == null)
-            return CompletableFuture.completedFuture(defaultValue);
-        else
-            return evaluate(expression);
-    }
-
+    /**
+     * Evaluate add completable future.
+     *
+     * @param add the add
+     * @return the completable future
+     */
     private CompletableFuture<TObject> evaluateAdd(Add add) {
         return evaluate(add.getFirst()).thenCompose(first ->
             evaluate(add.getSecond()).thenApply(second -> {
@@ -174,20 +204,6 @@ final class ExpressionMachine {
                     return TNaN.INSTANCE;
             })
         );
-//        CompletableFuture<TObject> first = evaluate(add.getFirst());
-//        CompletableFuture<TObject> second = evaluate(add.getSecond());
-//
-//        TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
-//
-//        if (typeInfo == CoreModule.INTEGER_TYPE) {
-//            TInteger firstInteger = evaluateAsInteger(first);
-//            TInteger secondInteger = evaluateAsInteger(second);
-//            return new TInteger(firstInteger.getValue() + secondInteger.getValue());
-//        }
-//        else if (typeInfo == CoreModule.NAN_TYPE)
-//            return TNaN.INSTANCE;
-//        else
-//            return TNaN.INSTANCE;
     }
 
     private TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {
