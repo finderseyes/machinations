@@ -433,7 +433,7 @@ public final class Machine {
         TObject instance = getLocalVariable(instruction.getInstance().getIndex());
         if (instance instanceof TObjectBase) {
             TObjectBase objectBase = (TObjectBase)instance;
-            objectBase.setField(instruction.getFieldInfo().getIndex(), value);
+            objectBase.setField(instruction.getFieldInfo(), value);
         }
         else
             throw new RuntimeException("The given field does not belong to given type.");
@@ -443,7 +443,7 @@ public final class Machine {
         TObject owner = getLocalVariable(instruction.getInstance().getIndex());
         if (owner instanceof TObjectBase) {
             TObjectBase objectBase = (TObjectBase)owner;
-            TObject value = objectBase.getField(instruction.getFieldInfo().getIndex());
+            TObject value = objectBase.getField(instruction.getFieldInfo());
             setLocalVariable(instruction.getTo().getIndex(), value);
         }
         else

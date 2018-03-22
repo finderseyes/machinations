@@ -103,19 +103,19 @@ public class MachineTests {
 
         {
             TypeInfo typeInfo = module.findType("game");
-            TObject graph = machine.newInstance(typeInfo).get();
-
-            assertThat(graph.getClass()).isEqualTo(TRuntimeGraph.class);
+            TRuntimeGraph graph = (TRuntimeGraph)machine.newInstance(typeInfo).get();
 
             {
-                TPoolNode pool = (TPoolNode)typeInfo.findField("a_0").get(graph);
+                TPoolNode pool = (TPoolNode)graph.getNode("a_0");
                 assertThat(pool.getContent().size()).isEqualTo(0);
+                assertThat(pool.getGraph()).isEqualTo(graph);
             }
 
             {
                 TPoolNode pool = (TPoolNode)typeInfo.findField("a_1").get(graph);
                 assertThat(pool.getContent().size()).isEqualTo(10);
                 assertThat(pool.getContent().size("soldier")).isEqualTo(10);
+                assertThat(pool.getGraph()).isEqualTo(graph);
             }
 
             {
@@ -123,6 +123,7 @@ public class MachineTests {
                 assertThat(pool.getContent().size()).isEqualTo(15);
                 assertThat(pool.getContent().size("gold")).isEqualTo(10);
                 assertThat(pool.getContent().size("")).isEqualTo(5);
+                assertThat(pool.getGraph()).isEqualTo(graph);
             }
 
             {
@@ -130,26 +131,31 @@ public class MachineTests {
                 assertThat(pool.getContent().size()).isEqualTo(25);
                 assertThat(pool.getContent().size("soldier")).isEqualTo(20);
                 assertThat(pool.getContent().size("gold")).isEqualTo(5);
+                assertThat(pool.getGraph()).isEqualTo(graph);
             }
 
             {
                 TTransitiveNode transitive = (TTransitiveNode)typeInfo.findField("a_4").get(graph);
                 assertThat(transitive).isNotNull();
+                assertThat(transitive.getGraph()).isEqualTo(graph);
             }
 
             {
                 TSourceNode node = (TSourceNode) typeInfo.findField("a_5").get(graph);
                 assertThat(node).isNotNull();
+                assertThat(node.getGraph()).isEqualTo(graph);
             }
 
             {
                 TDrainNode node = (TDrainNode) typeInfo.findField("a_6").get(graph);
                 assertThat(node).isNotNull();
+                assertThat(node.getGraph()).isEqualTo(graph);
             }
 
             {
                 TConverterNode node = (TConverterNode) typeInfo.findField("a_7").get(graph);
                 assertThat(node).isNotNull();
+                assertThat(node.getGraph()).isEqualTo(graph);
             }
 
             {

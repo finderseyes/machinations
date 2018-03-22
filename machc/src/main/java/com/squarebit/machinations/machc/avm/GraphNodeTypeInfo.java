@@ -87,7 +87,7 @@ public class GraphNodeTypeInfo extends TypeInfo {
     @Override
     public TObject allocateInstance() throws MachineException {
         try {
-            TGraphNode instance = TGraphNode.class.newInstance();
+            TGraphNode instance = new TGraphNode();
             FieldCache.TYPE_INFO_FIELD.set(instance, this);
 
             return instance;

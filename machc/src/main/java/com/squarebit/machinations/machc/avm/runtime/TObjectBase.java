@@ -1,5 +1,6 @@
 package com.squarebit.machinations.machc.avm.runtime;
 
+import com.squarebit.machinations.machc.avm.FieldInfo;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 
 /**
@@ -26,22 +27,39 @@ public class TObjectBase implements TObject {
     }
 
     /**
-     * Gets a field at given index.
-     * @param index field index.
-     * @return field value
+     * Gets field.
+     *
+     * @param fieldInfo the field info
+     * @return the field
      */
-    public TObject getField(int index) {
-        return __fieldTable[index];
+    public final TObject getField(FieldInfo fieldInfo) {
+        onGetField(fieldInfo);
+        return __fieldTable[fieldInfo.getIndex()];
     }
 
     /**
-     * Sets a field at given index.
-     * @param index field index
-     * @param value field value
-     * @return this instance.
+     * Called upon a field is accessed.
+     * @param fieldInfo
      */
-    public TObjectBase setField(int index, TObject value) {
-        __fieldTable[index] = value;
+    protected void onGetField(FieldInfo fieldInfo) {}
+
+    /**
+     * Sets a field.
+     *
+     * @param fieldInfo the field info
+     * @param value     the value
+     * @return the field
+     */
+    public final TObjectBase setField(FieldInfo fieldInfo, TObject value) {
+        onSetField(fieldInfo, value);
+        __fieldTable[fieldInfo.getIndex()] = value;
         return this;
     }
+
+    /**
+     * Called upon a field is set.
+     * @param fieldInfo
+     * @param value
+     */
+    protected void onSetField(FieldInfo fieldInfo, TObject value) {}
 }

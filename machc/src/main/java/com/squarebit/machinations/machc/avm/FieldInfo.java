@@ -153,7 +153,7 @@ public final class FieldInfo {
      */
     public TObject get(TObject instance) {
         if (instance instanceof TObjectBase) {
-            return ((TObjectBase)instance).getField(index);
+            return ((TObjectBase)instance).getField(this);
         }
         throw new RuntimeException("The given object does not have specified field");
     }
@@ -166,7 +166,7 @@ public final class FieldInfo {
      */
     public void set(TObject instance, TObject value) {
         if (instance instanceof TObjectBase) {
-            ((TObjectBase)instance).setField(index, value);
+            ((TObjectBase)instance).setField(this, value);
         }
         throw new RuntimeException("The given object does not have specified field");
     }

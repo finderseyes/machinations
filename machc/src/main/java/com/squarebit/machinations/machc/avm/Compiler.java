@@ -37,9 +37,14 @@ public final class Compiler {
         try {
             // Create initial type and their method declarations.
             for (GGraph graph : unit.getGraphs()) {
-                TypeInfo typeInfo = moduleInfo.createType(graph.getName())
-                        .setDeclaration(graph)
-                        .setImplementingClass(TRuntimeGraph.class);
+//                TypeInfo typeInfo = moduleInfo.createType(graph.getName())
+//                        .setDeclaration(graph)
+//                        .setImplementingClass(TRuntimeGraph.class);
+
+                TypeInfo typeInfo = new GraphTypeInfo();
+                typeInfo.setName(graph.getName()).setDeclaration(graph);
+                moduleInfo.addType(typeInfo);
+
                 this.currentType = typeInfo;
                 for (GMethod method: graph.getMethods())
                     declareMethod(typeInfo, method);
