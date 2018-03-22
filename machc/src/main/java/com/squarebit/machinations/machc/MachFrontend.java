@@ -4,6 +4,7 @@ import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
+import com.squarebit.machinations.machc.avm.expressions.SetDescriptor;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -337,6 +338,10 @@ public class MachFrontend {
             List<GNode> nodes = transformNodeDeclaration((MachParser.NodeDeclarationContext)decl);
             return nodes.stream().map(f -> (GGraphField)f).collect(Collectors.toList());
         }
+        else if (decl instanceof MachParser.ConnectionDeclarationContext) {
+            List<GConnection> connections = transformConnectionDeclaration((MachParser.ConnectionDeclarationContext)decl);
+            return connections.stream().map(f -> (GGraphField)f).collect(Collectors.toList());
+        }
 
         //
         throw new RuntimeException("Should not reach here.");
@@ -466,6 +471,74 @@ public class MachFrontend {
         }
 
         return node;
+    }
+
+    /**
+     *
+     * @param declarationContext
+     * @return
+     * @throws Exception
+     */
+    private List<GConnection> transformConnectionDeclaration(MachParser.ConnectionDeclarationContext declarationContext)
+        throws Exception
+    {
+        MachParser.ConnectionDeclarationListContext list =
+                (MachParser.ConnectionDeclarationListContext)declarationContext.getChild(1);
+
+        List<GConnection> connections = new ArrayList<>();
+        for (int i = 0; i < list.getChildCount(); i += 2) {
+            GConnection connection = transformConnectionDeclarator((MachParser.ConnectionDeclaratorContext)list.getChild(i));
+            connections.add(connection);
+        }
+        return connections;
+    }
+
+    /**
+     *
+     * @param declaratorContext
+     * @return
+     * @throws Exception
+     */
+    private GConnection transformConnectionDeclarator(MachParser.ConnectionDeclaratorContext declaratorContext)
+        throws Exception
+    {
+        GConnection connection = new GConnection();
+        connection.setName(declaratorContext.getChild(0).getText());
+        connection.setDescriptor(transformConnectionDescriptor(
+                (MachParser.ConnectionDescriptorContext)declaratorContext.getChild(2)
+        ));
+        return connection;
+    }
+
+    /**
+     *
+     * @param descriptorContext
+     * @return
+     * @throws Exception
+     */
+    private GConnectionDescriptor transformConnectionDescriptor(MachParser.ConnectionDescriptorContext descriptorContext)
+        throws Exception
+    {
+        GConnectionDescriptor descriptor = new GConnectionDescriptor();
+
+        ParseTree decl = descriptorContext.getChild(0);
+
+        if (decl instanceof MachParser.FlowDescriptorContext) {
+            descriptor.setFlow(transformSetDescriptor((MachParser.SetDescriptorContext)decl.getChild(0)));
+            decl = descriptorContext.getChild(1);
+        }
+
+        decl = decl.getChild(0);
+
+        descriptor.setFrom(decl.getChild(0).getText());
+        if (decl instanceof MachParser.NormalDirectionDescriptorContext) {
+            descriptor.setTo(decl.getChild(2).getText());
+        }
+        else if (decl instanceof MachParser.FromDefaultSourceDirectionDescriptorContext) {
+            descriptor.setTo(decl.getChild(1).getText());
+        }
+
+        return descriptor;
     }
 
     /**

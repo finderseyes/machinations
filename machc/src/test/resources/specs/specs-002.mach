@@ -26,4 +26,8 @@ graph game {
 
     // Child graph.
     soldier a_9;
+
+    // connections
+    connection
+        e_0 = 1D10:a_0 -> a_1;
 }

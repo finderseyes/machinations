@@ -10,12 +10,14 @@ import java.util.Map;
  */
 public class TGraph extends TObjectBase {
     private Map<String, FieldInfo> nodeFieldByName;
+    private Map<String, FieldInfo> connectionFieldByName;
 
     /**
      * Instantiates a new T graph.
      */
     public TGraph() {
         this.nodeFieldByName = new HashMap<>();
+        this.connectionFieldByName = new HashMap<>();
     }
 
     /**
@@ -31,6 +33,10 @@ public class TGraph extends TObjectBase {
 
             nodeFieldByName.put(fieldInfo.getName(), fieldInfo);
         }
+        else if (value instanceof TConnection) {
+            ((TConnection)value).graph = this;
+            connectionFieldByName.put(fieldInfo.getName(), fieldInfo);
+        }
         super.onSetField(fieldInfo, value);
     }
 
@@ -43,5 +49,16 @@ public class TGraph extends TObjectBase {
     public TNode getNode(String name) {
         FieldInfo fieldInfo = nodeFieldByName.getOrDefault(name, null);
         return (fieldInfo == null) ? null : (TNode)getField(fieldInfo);
+    }
+
+    /**
+     * Gets connection.
+     *
+     * @param name the name
+     * @return the connection
+     */
+    public TConnection getConnection(String name) {
+        FieldInfo fieldInfo = connectionFieldByName.getOrDefault(name, null);
+        return (fieldInfo == null) ? null : (TConnection)getField(fieldInfo);
     }
 }

@@ -28,6 +28,8 @@ public final class CoreModule {
 
     private final TypeInfo graphType;
     private final TypeInfo nodeType;
+    private final TypeInfo connectionType;
+
     private final TypeInfo poolNodeType;
     private final TypeInfo sourceNodeType;
     private final TypeInfo drainNodeType;
@@ -35,6 +37,8 @@ public final class CoreModule {
     private final TypeInfo converterNodeType;
     private final TypeInfo endNodeType;
     private final TypeInfo graphNodeType;
+
+    private final TypeInfo expressionTypeInfo;
 
     /**
      * Initializes a new core module.
@@ -59,6 +63,7 @@ public final class CoreModule {
 
             this.graphType = module.createType("Graph").setImplementingClass(TGraph.class);
             this.nodeType = module.createType("Node").setImplementingClass(TNode.class);
+            this.connectionType = module.createType("Connection").setImplementingClass(TConnection.class);
 
             this.poolNodeType = module.createType("PoolNode").setImplementingClass(TPoolNode.class);
             this.sourceNodeType = module.createType("SourceNode").setImplementingClass(TSourceNode.class);
@@ -67,6 +72,8 @@ public final class CoreModule {
             this.converterNodeType = module.createType("ConverterNode").setImplementingClass(TConverterNode.class);
             this.endNodeType = module.createType("EndNode").setImplementingClass(TEndNode.class);
             this.graphNodeType = new TypeInfo().setModule(module).setName("GraphNode");
+
+            this.expressionTypeInfo = module.createType("Expression").setImplementingClass(TExpression.class);
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -92,6 +99,7 @@ public final class CoreModule {
 
     public static final TypeInfo GRAPH_TYPE = INTERNAL.graphType;
     public static final TypeInfo NODE_TYPE = INTERNAL.nodeType;
+    public static final TypeInfo CONNECTION_TYPE = INTERNAL.connectionType;
 
     public static final TypeInfo POOL_NODE_TYPE = INTERNAL.poolNodeType;
     public static final TypeInfo SOURCE_NODE_TYPE = INTERNAL.sourceNodeType;
@@ -100,4 +108,6 @@ public final class CoreModule {
     public static final TypeInfo CONVERTER_NODE_TYPE = INTERNAL.converterNodeType;
     public static final TypeInfo END_NODE_TYPE = INTERNAL.endNodeType;
     public static final TypeInfo GRAPH_NODE_TYPE = INTERNAL.graphNodeType;
+
+    public static final TypeInfo EXPRESSION_TYPE = INTERNAL.expressionTypeInfo;
 }

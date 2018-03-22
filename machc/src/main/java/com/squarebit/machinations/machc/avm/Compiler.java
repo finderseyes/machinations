@@ -172,6 +172,59 @@ public final class Compiler {
 
             initializeNodeField(fieldInfo);
         }
+        else if (graphField instanceof GConnection) {
+            fieldInfo.setType(CoreModule.CONNECTION_TYPE);
+            initializeConnectionField(fieldInfo);
+        }
+    }
+
+    /**
+     *
+     * @param fieldInfo
+     * @throws Exception
+     */
+    private void initializeConnectionField(FieldInfo fieldInfo) throws Exception {
+        checkArgument(fieldInfo.getDeclaration() instanceof GConnection);
+
+        TypeInfo graphType = fieldInfo.getDeclaringType();
+
+        MethodInfo internalInstanceConstructor = fieldInfo.getDeclaringType().getInternalInstanceConstructor();
+        InstructionBlock block = internalInstanceConstructor.getInstructionBlock();
+        this.currentMethod = internalInstanceConstructor;
+
+        GConnection connection = (GConnection)fieldInfo.getDeclaration();
+        GConnectionDescriptor descriptor = connection.getDescriptor();
+
+        VariableInfo[] args = new VariableInfo[3];
+
+        if (descriptor.getFrom() != null) {
+            FieldInfo fromField = graphType.findField(descriptor.getFrom());
+            if (fromField != null) {
+                VariableInfo fromVar = block.createTempVar();
+                block.emit(new LoadField(fromField, internalInstanceConstructor.getThisVariable(), fromVar));
+                args[0] = fromVar;
+            }
+        }
+
+        if (descriptor.getTo() != null) {
+            FieldInfo toField = graphType.findField(descriptor.getTo());
+            if (toField != null) {
+                VariableInfo toVar = block.createTempVar();
+                block.emit(new LoadField(toField, internalInstanceConstructor.getThisVariable(), toVar));
+                args[1] = toVar;
+            }
+        }
+
+        if (descriptor.getFlow() != null) {
+            SetDescriptor flow = compileSetDescriptor(block, descriptor.getFlow());
+            VariableInfo flowVar = block.createTempVar();
+            block.emit(new PutConstant(new TExpression(flow), flowVar));
+            args[2] = flowVar;
+        }
+
+        VariableInfo instanceVar = block.createTempVar();
+        block.emit(new New(instanceVar, CoreModule.CONNECTION_TYPE, args));
+        block.emit(new PutField(fieldInfo, internalInstanceConstructor.getThisVariable(), instanceVar));
     }
 
     /**

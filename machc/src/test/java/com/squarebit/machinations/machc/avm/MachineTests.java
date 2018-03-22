@@ -173,6 +173,12 @@ public class MachineTests {
                 assertThat(((TInteger)graphType.findField("shield").get(subGraph)).getValue()).isEqualTo(10);
                 assertThat(((TInteger)graphType.findField("damage").get(subGraph)).getValue()).isEqualTo(2);
             }
+
+            {
+                TConnection connection = graph.getConnection("e_0");
+                assertThat(connection.getFrom()).isEqualTo(graph.getNode("a_0"));
+                assertThat(connection.getTo()).isEqualTo(graph.getNode("a_1"));
+            }
         }
 
         machine.shutdown();
