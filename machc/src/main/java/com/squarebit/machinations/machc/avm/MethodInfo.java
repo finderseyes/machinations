@@ -268,4 +268,15 @@ public final class MethodInfo implements Scope {
     public InstructionBlock getInstructionBlock() {
         return instructionBlock;
     }
+
+    /**
+     * Sets instruction block.
+     *
+     * @param instructionBlock the instruction block
+     * @return the instruction block
+     */
+    public MethodInfo setInstructionBlock(InstructionBlock instructionBlock) {
+        this.instructionBlock = instructionBlock;
+        return this;
+    }
 }

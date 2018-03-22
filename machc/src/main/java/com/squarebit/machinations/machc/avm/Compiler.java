@@ -9,7 +9,10 @@ import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -19,8 +22,26 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class Compiler {
     private static class LambdaContext {
+        MethodInfo containerMethod;
         InstructionBlock environmentBlock;
         InstructionBlock lambdaBlock;
+
+        List<VariableInfo> environmentArguments = new ArrayList<>();
+
+        public LambdaContext setContainerMethod(MethodInfo containerMethod) {
+            this.containerMethod = containerMethod;
+            return this;
+        }
+
+        public LambdaContext setEnvironmentBlock(InstructionBlock environmentBlock) {
+            this.environmentBlock = environmentBlock;
+            return this;
+        }
+
+        public LambdaContext setLambdaBlock(InstructionBlock lambdaBlock) {
+            this.lambdaBlock = lambdaBlock;
+            return this;
+        }
     }
 
     private Scope currentScope;
@@ -291,48 +312,72 @@ public final class Compiler {
         block.emit(new PutField(fieldInfo, internalInstanceConstructor.getThisVariable(), temp));
     }
 
-    private Expression compileLambdaExpression(InstructionBlock block, GExpression expression) throws Exception {
+    /**
+     * Compiles an expression to a lambda expression.
+     * @param block
+     * @param expression
+     * @return
+     * @throws Exception
+     */
+    private Variable compileLambdaExpression(InstructionBlock block, GExpression expression) throws Exception {
         MethodInfo lambdaMethodInfo = new MethodInfo();
         LambdaTypeInfo lambdaTypeInfo = new LambdaTypeInfo().setLambdaMethod(lambdaMethodInfo);
 
         LambdaContext oldLambdaContext = this.currentLambdaContext;
 
-
-
         InstructionBlock rootBlock = lambdaMethodInfo.getInstructionBlock();
         InstructionBlock environmentBlock = new InstructionBlock().setParentScope(rootBlock);
         InstructionBlock lambdaBlock = new InstructionBlock().setParentScope(environmentBlock);
 
-        this.currentLambdaContext = new LambdaContext();
-        this.currentLambdaContext.environmentBlock = environmentBlock;
-        this.currentLambdaContext.lambdaBlock = lambdaBlock;
+        this.currentLambdaContext = new LambdaContext()
+                .setContainerMethod(this.currentMethod)
+                .setEnvironmentBlock(environmentBlock)
+                .setLambdaBlock(lambdaBlock);
+        lambdaMethodInfo.setInstructionBlock(lambdaBlock);
 
         {
             VariableInfo argumentsVar = rootBlock.createTempVar();
-            lambdaBlock.emit(new LoadField(lambdaTypeInfo.getArgumentsField(), lambdaMethodInfo.getThisVariable(), argumentsVar));
-        }
+            lambdaBlock.emit(
+                    new LoadField(lambdaTypeInfo.getArgumentsField(),
+                            lambdaMethodInfo.getThisVariable(),
+                            argumentsVar)
+            );
 
-        {
-            List<VariableInfo> variables = rootBlock.getLocalVariables();
-            for (int i = 0; i < variables.size(); i++) {
-                lambdaBlock.emit(new L);
+
+            {
+                List<VariableInfo> variables = environmentBlock.getLocalVariables();
+                for (int i = 0; i < variables.size(); i++) {
+                    lambdaBlock.emit(new LoadArray(argumentsVar, new TInteger(i), variables.get(i)));
+                }
+            }
+
+            {
+                Expression exp = compileExpression(lambdaBlock, expression);
+                VariableInfo expressionResult = lambdaBlock.createTempVar();
+                lambdaBlock.emit(new Evaluate(exp, expressionResult));
+                lambdaBlock.emit(new Return(expressionResult));
             }
         }
 
-        {
-            Expression exp = compileExpression(lambdaBlock, expression);
-            VariableInfo expressionResult = lambdaBlock.createTempVar();
-            lambdaBlock.emit(new Evaluate(exp, expressionResult));
-            lambdaBlock.emit(new Return(expressionResult));
-        }
-
-        VariableInfo argumentsVar = block.createTempVar();
+        // Create the arguments array.
         VariableInfo lengthVar = block.createTempVar();
+        VariableInfo argumentsVar = block.createTempVar();
+
+        int argumentCount = environmentBlock.getVariableCount();
 
         ArrayTypeInfo arrayTypeInfo = new ArrayTypeInfo().setElementType(CoreModule.OBJECT_TYPE);
-        block.emit(new PutConstant(new TInteger(rootBlock.getVariableCount()), lengthVar));
+        block.emit(new PutConstant(new TInteger(argumentCount), lengthVar));
         block.emit(new New(argumentsVar, arrayTypeInfo, new VariableInfo[]{ lengthVar }));
 
+        // Now, loads the environment variables to the array.
+        {
+            for (int i = 0; i < environmentBlock.getLocalVariableCount(); i++) {
+                VariableInfo arg = this.currentLambdaContext.environmentArguments.get(i);
+                block.emit(new PutArray(arg, argumentsVar, new TInteger(i)));
+            }
+        }
+
+        // Create a new TLambda with given argument array.
         VariableInfo resultVar = block.createTempVar();
         block.emit(new New(resultVar, lambdaTypeInfo, new VariableInfo[] { argumentsVar }));
 
@@ -384,7 +429,7 @@ public final class Compiler {
         SetDescriptor result = new SetDescriptor();
 
         for (GSetElementDescriptor elementDescriptor : setDescriptor.getElementDescriptors()) {
-            Expression size = compileExpression(block, elementDescriptor.getSize());
+            Variable size = compileLambdaExpression(block, elementDescriptor.getSize());
             Constant capacity = elementDescriptor.getCapacity() != null ?
                     new Constant(new TInteger((elementDescriptor.getCapacity()).getValue())) : null;
             Constant name = elementDescriptor.getName() != null ?
