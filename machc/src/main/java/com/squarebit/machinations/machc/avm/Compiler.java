@@ -132,6 +132,23 @@ public final class Compiler {
             if (node.getType() == GNode.Type.POOL) {
                 fieldInfo.setType(CoreModule.POOL_NODE_TYPE);
             }
+            else if (node.getType() == GNode.Type.TRANSITIVE) {
+                fieldInfo.setType(CoreModule.TRANSITIVE_NODE_TYPE);
+            }
+            else if (node.getType() == GNode.Type.SOURCE) {
+                fieldInfo.setType(CoreModule.SOURCE_NODE_TYPE);
+            }
+            else if (node.getType() == GNode.Type.DRAIN) {
+                fieldInfo.setType(CoreModule.DRAIN_NODE_TYPE);
+            }
+            else if (node.getType() == GNode.Type.CONVERTER) {
+                fieldInfo.setType(CoreModule.CONVERTER_NODE_TYPE);
+            }
+            else if (node.getType() == GNode.Type.END) {
+                fieldInfo.setType(CoreModule.END_NODE_TYPE);
+            }
+            else
+                throw new CompilationException("Unknown node type.");
 
             initializeNodeField(fieldInfo);
         }

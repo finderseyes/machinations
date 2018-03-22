@@ -1,7 +1,7 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.runtime.*;
-import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
+import com.squarebit.machinations.machc.avm.runtime.nodes.*;
 
 /**
  * Core {@link TypeInfo}s.
@@ -29,11 +29,11 @@ public final class CoreModule {
     private final TypeInfo graphType;
     private final TypeInfo nodeType;
     private final TypeInfo poolNodeType;
-//    private final TypeInfo sourceNodeType;
-//    private final TypeInfo drainNodeType;
-//    private final TypeInfo transitiveNodeType;
-//    private final TypeInfo converterNodeType;
-//    private final TypeInfo endNodeType;
+    private final TypeInfo sourceNodeType;
+    private final TypeInfo drainNodeType;
+    private final TypeInfo transitiveNodeType;
+    private final TypeInfo converterNodeType;
+    private final TypeInfo endNodeType;
 
     /**
      * Initializes a new core module.
@@ -60,6 +60,11 @@ public final class CoreModule {
             this.nodeType = module.createType("Node").setImplementingClass(TNode.class);
 
             this.poolNodeType = module.createType("PoolNode").setImplementingClass(TPoolNode.class);
+            this.sourceNodeType = module.createType("SourceNode").setImplementingClass(TSourceNode.class);
+            this.drainNodeType = module.createType("DrainNode").setImplementingClass(TDrainNode.class);
+            this.transitiveNodeType = module.createType("TransitiveNode").setImplementingClass(TTransitiveNode.class);
+            this.converterNodeType = module.createType("ConverterNode").setImplementingClass(TConverterNode.class);
+            this.endNodeType = module.createType("EndNode").setImplementingClass(TEndNode.class);
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -87,4 +92,9 @@ public final class CoreModule {
     public static final TypeInfo NODE_TYPE = INTERNAL.nodeType;
 
     public static final TypeInfo POOL_NODE_TYPE = INTERNAL.poolNodeType;
+    public static final TypeInfo SOURCE_NODE_TYPE = INTERNAL.sourceNodeType;
+    public static final TypeInfo DRAIN_NODE_TYPE = INTERNAL.drainNodeType;
+    public static final TypeInfo TRANSITIVE_NODE_TYPE = INTERNAL.transitiveNodeType;
+    public static final TypeInfo CONVERTER_NODE_TYPE = INTERNAL.converterNodeType;
+    public static final TypeInfo END_NODE_TYPE = INTERNAL.endNodeType;
 }

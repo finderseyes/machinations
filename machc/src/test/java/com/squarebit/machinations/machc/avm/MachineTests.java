@@ -2,7 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.Utils;
 import com.squarebit.machinations.machc.avm.runtime.*;
-import com.squarebit.machinations.machc.avm.runtime.nodes.TPoolNode;
+import com.squarebit.machinations.machc.avm.runtime.nodes.*;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
 
@@ -130,6 +130,31 @@ public class MachineTests {
                 assertThat(pool.getContent().size()).isEqualTo(25);
                 assertThat(pool.getContent().size("soldier")).isEqualTo(20);
                 assertThat(pool.getContent().size("gold")).isEqualTo(5);
+            }
+
+            {
+                TTransitiveNode transitive = (TTransitiveNode)typeInfo.findField("a_4").get(graph);
+                assertThat(transitive).isNotNull();
+            }
+
+            {
+                TSourceNode node = (TSourceNode) typeInfo.findField("a_5").get(graph);
+                assertThat(node).isNotNull();
+            }
+
+            {
+                TDrainNode node = (TDrainNode) typeInfo.findField("a_6").get(graph);
+                assertThat(node).isNotNull();
+            }
+
+            {
+                TConverterNode node = (TConverterNode) typeInfo.findField("a_7").get(graph);
+                assertThat(node).isNotNull();
+            }
+
+            {
+                TEndNode node = (TEndNode) typeInfo.findField("a_8").get(graph);
+                assertThat(node).isNotNull();
             }
         }
 

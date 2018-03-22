@@ -3,6 +3,7 @@ package com.squarebit.machinations.machc;
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.ast.statements.GReturn;
+import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -21,6 +22,33 @@ import java.util.stream.Collectors;
  * The frontend of Mach language.
  */
 public class MachFrontend {
+    /**
+     *
+     */
+    private static class NodeDeclarationContext {
+        private GNode.Type nodeType;
+
+        /**
+         * Gets node type.
+         *
+         * @return the node type
+         */
+        public GNode.Type getNodeType() {
+            return nodeType;
+        }
+
+        /**
+         * Sets node type.
+         *
+         * @param nodeType the node type
+         * @return the node type
+         */
+        public NodeDeclarationContext setNodeType(GNode.Type nodeType) {
+            this.nodeType = nodeType;
+            return this;
+        }
+    }
+
     /**
      * Compiles a set of source files to a program.
      *
@@ -306,7 +334,6 @@ public class MachFrontend {
 
     /**
      *
-     * @param graphTransformationContext
      * @param fieldDeclarationContext
      * @return
      */
@@ -380,11 +407,13 @@ public class MachFrontend {
             throw new RuntimeException("Not implemented.");
         }
 
+        NodeDeclarationContext context = new NodeDeclarationContext().setNodeType(nodeType);
+
         next += 1;
         decl = declarationContext.getChild(next);
         if (decl instanceof MachParser.NodeDeclaratorListContext) {
             for (int i = 0; i < decl.getChildCount(); i+= 2) {
-                GNode node = transformNodeDeclarator((MachParser.NodeDeclaratorContext)decl.getChild(i));
+                GNode node = transformNodeDeclarator(context, (MachParser.NodeDeclaratorContext)decl.getChild(i));
                 nodes.add(node);
             }
         }
@@ -399,17 +428,25 @@ public class MachFrontend {
      * @return
      * @throws Exception
      */
-    private GNode transformNodeDeclarator(MachParser.NodeDeclaratorContext nodeDeclaratorContext) throws Exception
+    private GNode transformNodeDeclarator(NodeDeclarationContext declarationContext,
+                                          MachParser.NodeDeclaratorContext nodeDeclaratorContext)
+        throws Exception
     {
-        GNode node = new GNode();
+        GNode.Type nodeType = declarationContext.getNodeType();
+        GNode node = new GNode().setType(nodeType);
 
         node.setName(nodeDeclaratorContext.getChild(0).getText());
 
         ParseTree decl = nodeDeclaratorContext.getChild(2);
         if (decl instanceof MachParser.NodeInitializerContext) {
-            MachParser.SetDescriptorContext setDescriptorContext =
-                    (MachParser.SetDescriptorContext)decl.getChild(0).getChild(0);
-            node.setInitializer(transformSetDescriptor(setDescriptorContext));
+            if (nodeType == GNode.Type.POOL) {
+                MachParser.SetDescriptorContext setDescriptorContext =
+                        (MachParser.SetDescriptorContext)decl.getChild(0).getChild(0);
+                node.setInitializer(transformSetDescriptor(setDescriptorContext));
+            }
+            else {
+                throw new CompilationException("Unsupported initializer.");
+            }
         }
 
         return node;

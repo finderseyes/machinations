@@ -13,7 +13,7 @@ public class GNode extends GGraphField {
         POOL,
         SOURCE,
         DRAIN,
-        TRASITIVE,
+        TRANSITIVE,
         CONVERTER,
         END;
 
@@ -21,7 +21,7 @@ public class GNode extends GGraphField {
             if (value.equals("pool"))
                 return POOL;
             else if (value.equals("transitive"))
-                return TRASITIVE;
+                return TRANSITIVE;
             else if (value.equals("source"))
                 return SOURCE;
             else if (value.equals("drain"))

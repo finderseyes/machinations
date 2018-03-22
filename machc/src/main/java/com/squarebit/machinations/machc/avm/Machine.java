@@ -506,13 +506,14 @@ public final class Machine {
 
             if (nativeConstructor != null) {
                 machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance))
-                        .thenCompose(v -> nativeInvoke(nativeConstructor, instance, argValues)
-                                .thenAccept(v0 -> setLocalVariable(instruction.getTo().getIndex(), instance))
-                        );
+                        .thenCompose(v -> nativeInvoke(nativeConstructor, instance, argValues))
+                        .thenAccept(v -> setLocalVariable(instruction.getTo().getIndex(), instance))
+                ;
             }
             else {
                 // TODO: Try to see if there is a Mac constructor.
-                machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance));
+                machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance))
+                        .thenAccept(v0 -> setLocalVariable(instruction.getTo().getIndex(), instance));
             }
         }
         catch (Exception exception) {
