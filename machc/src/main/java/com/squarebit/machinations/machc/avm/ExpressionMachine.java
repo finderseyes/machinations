@@ -4,7 +4,6 @@ import com.squarebit.machinations.machc.avm.expressions.*;
 import com.squarebit.machinations.machc.avm.runtime.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,18 +28,18 @@ final class ExpressionMachine {
      * @param expression the expression
      * @return the expression
      */
-    public TObject evaluate(Expression expression) {
+    public CompletableFuture<TObject> evaluate(Expression expression) {
         if (expression instanceof Constant)
             return evaluateConstant((Constant)expression);
         else if (expression instanceof SetDescriptor) {
-            return evaluateSetDescriptor((SetDescriptor)expression);
+            return evaluateSetDescriptor((SetDescriptor)expression).thenApply(v -> v);
         }
         else if (expression instanceof Set) {
-            return evaluateSet((Set)expression);
+            return evaluateSet((Set)expression).thenApply(v -> v);
         }
         else if (expression instanceof Variable) {
             Variable variable = (Variable)expression;
-            return machine.getLocalVariable(variable.getVariableInfo().getIndex());
+            return CompletableFuture.completedFuture(machine.getLocalVariable(variable.getVariableInfo().getIndex()));
         }
         else if (expression instanceof Add) {
             return evaluateAdd((Add)expression);
@@ -55,22 +54,24 @@ final class ExpressionMachine {
      * @param constant the constant
      * @return the t object
      */
-    private TObject evaluateConstant(Constant constant) {
+    private CompletableFuture<TObject> evaluateConstant(Constant constant) {
         TObject value = constant.getValue();
 
         if (value instanceof TRandomDice)
-            return ((TRandomDice)value).generate();
-        else
-            return value;
+            value = ((TRandomDice)value).generate();
+
+        return CompletableFuture.completedFuture(value);
     }
 
-    private TSet evaluateSet(Set set) {
+    private CompletableFuture<TSet> evaluateSet(Set set) {
+        return evaluateSetDescriptor(set.getDescriptor()).thenCompose(this::instantiateSet);
+    }
+
+    private CompletableFuture<TSet> instantiateSet(TSetDescriptor descriptor) {
+        CompletableFuture<TSet> returnFuture = new CompletableFuture<>();
+
         try {
             TSet result = new TSet();
-            TSetDescriptor descriptor = evaluateSetDescriptor(set.getDescriptor());
-
-//            CompletableFuture<TObject> constructorCalls = null;
-
             MachineInvocationPlan machineInvocationPlan = null;
 
             for (TSetElementTypeDescriptor typeDescriptor: descriptor.getElementTypeDescriptors()) {
@@ -87,10 +88,10 @@ final class ExpressionMachine {
                     else {
                         if (machineInvocationPlan == null)
                             machineInvocationPlan = new MachineInvocationPlan(
-                                    new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance));
+                                    elementType.getInternalInstanceConstructor(), instance);
                         else
-                            machineInvocationPlan.thenInvoke(
-                                    v -> new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
+                            machineInvocationPlan.thenInvoke(v ->
+                                    new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
                             );
                     }
 
@@ -100,49 +101,93 @@ final class ExpressionMachine {
             }
 
             if (machineInvocationPlan != null) {
-                machine.machineInvoke(machineInvocationPlan);
+                machine.machineInvoke(machineInvocationPlan).whenComplete((v, ex) -> {
+                    if (ex != null)
+                        returnFuture.completeExceptionally(ex);
+                    else
+                        returnFuture.complete(result);
+                });
             }
-
-            return result;
+            else {
+                returnFuture.complete(result);
+            }
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex);
+            returnFuture.completeExceptionally(ex);
         }
+
+        return returnFuture;
     }
 
-    private TSetDescriptor evaluateSetDescriptor(SetDescriptor setDescriptor) {
+    private CompletableFuture<TSetDescriptor> evaluateSetDescriptor(SetDescriptor setDescriptor) {
         List<TSetElementTypeDescriptor> typeDescriptors = new ArrayList<>();
+        CompletableFuture<TSetDescriptor> returnFuture = new CompletableFuture<>();
 
-        for (SetElementDescriptor descriptor: setDescriptor.getElementDescriptors()) {
-            int size = evaluateAsInteger(evaluate(descriptor.getSize())).getValue();
-            int capacity = descriptor.getCapacity() != null ?
-                evaluateAsInteger(evaluate(descriptor.getCapacity())).getValue() :
-                -1;
+        CompletableFuture[] returnFutures = setDescriptor.getElementDescriptors().stream().map(descriptor ->
+            evaluate(descriptor.getSize())
+                    .thenCompose(size ->
+                            evaluateOrDefault(descriptor.getCapacity(), new TInteger(-1))
+                                    .thenCompose(capacity ->
+                                            evaluateOrDefault(descriptor.getName(), TString.EMPTY)
+                                                    .thenApply(name ->
+                                                            new TSetElementTypeDescriptor(
+                                                                    evaluateAsInteger(size).getValue(),
+                                                                    evaluateAsInteger(capacity).getValue(),
+                                                                    evaluateAsString(name).getValue()
+                                                            )
+                                                    )
+                                    )
+                    ).thenAccept(typeDescriptors::add)
+        ).toArray(CompletableFuture[]::new);
 
-            String name = descriptor.getName() != null ?
-                evaluateAsString(evaluate(descriptor.getName())).getValue() : null;
+        CompletableFuture.allOf(returnFutures).whenComplete((v, ex) -> {
+            if (ex != null)
+                returnFuture.completeExceptionally(ex);
+            else
+                returnFuture.complete(new TSetDescriptor(typeDescriptors));
+        });
 
-            typeDescriptors.add(new TSetElementTypeDescriptor(size, capacity, name));
-        }
-
-        return new TSetDescriptor(typeDescriptors);
+        return returnFuture;
     }
 
-    private TObject evaluateAdd(Add add) {
-        TObject first = evaluate(add.getFirst());
-        TObject second = evaluate(add.getSecond());
-
-        TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
-
-        if (typeInfo == CoreModule.INTEGER_TYPE) {
-            TInteger firstInteger = evaluateAsInteger(first);
-            TInteger secondInteger = evaluateAsInteger(second);
-            return new TInteger(firstInteger.getValue() + secondInteger.getValue());
-        }
-        else if (typeInfo == CoreModule.NAN_TYPE)
-            return TNaN.INSTANCE;
+    private CompletableFuture<TObject> evaluateOrDefault(Expression expression, TObject defaultValue)
+    {
+        if (expression == null)
+            return CompletableFuture.completedFuture(defaultValue);
         else
-            return TNaN.INSTANCE;
+            return evaluate(expression);
+    }
+
+    private CompletableFuture<TObject> evaluateAdd(Add add) {
+        return evaluate(add.getFirst()).thenCompose(first ->
+            evaluate(add.getSecond()).thenApply(second -> {
+                TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
+
+                if (typeInfo == CoreModule.INTEGER_TYPE) {
+                    TInteger firstInteger = evaluateAsInteger(first);
+                    TInteger secondInteger = evaluateAsInteger(second);
+                    return new TInteger(firstInteger.getValue() + secondInteger.getValue());
+                }
+                else if (typeInfo == CoreModule.NAN_TYPE)
+                    return TNaN.INSTANCE;
+                else
+                    return TNaN.INSTANCE;
+            })
+        );
+//        CompletableFuture<TObject> first = evaluate(add.getFirst());
+//        CompletableFuture<TObject> second = evaluate(add.getSecond());
+//
+//        TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
+//
+//        if (typeInfo == CoreModule.INTEGER_TYPE) {
+//            TInteger firstInteger = evaluateAsInteger(first);
+//            TInteger secondInteger = evaluateAsInteger(second);
+//            return new TInteger(firstInteger.getValue() + secondInteger.getValue());
+//        }
+//        else if (typeInfo == CoreModule.NAN_TYPE)
+//            return TNaN.INSTANCE;
+//        else
+//            return TNaN.INSTANCE;
     }
 
     private TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {

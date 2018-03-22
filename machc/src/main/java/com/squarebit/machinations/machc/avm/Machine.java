@@ -423,8 +423,12 @@ public final class Machine {
     // Instructions execution
 
     private void executeEvaluate(Evaluate instruction) {
-        TObject result = expressionMachine.evaluate(instruction.getExpression());
-        setLocalVariable(instruction.getTo().getIndex(), result);
+        expressionMachine.evaluate(instruction.getExpression())
+                .thenAccept(result -> setLocalVariable(instruction.getTo().getIndex(), result))
+        .exceptionally(ex -> {
+            panicReturn((Exception)ex);
+            return null;
+        });
     }
 
     private void executePutField(PutField instruction) {

@@ -4,6 +4,8 @@ import com.squarebit.machinations.machc.avm.CoreModule;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 
 public class TString implements TObject {
+    public static final TString EMPTY = new TString("");
+
     private final String value;
 
     /**
