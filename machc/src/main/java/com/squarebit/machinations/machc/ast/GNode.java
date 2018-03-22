@@ -39,52 +39,53 @@ public class GNode extends GGraphField {
      * The modifier.
      */
     public static class Modifier {
-        private boolean transitive = false;
-        private boolean interative = false;
+        private boolean isInput = false;
+        private boolean isOutput = false;
 
         /**
-         * Is transitive boolean.
+         * Determines if the node is default input node of the container graph (used when container graph is
+         * a sub-graph of another graph).
          *
          * @return the boolean
          */
-        public boolean isTransitive() {
-            return transitive;
+        public boolean isInput() {
+            return isInput;
         }
 
         /**
-         * Sets transitive.
+         * Sets input.
          *
-         * @param transitive the transitive
-         * @return the transitive
+         * @param input the input
+         * @return the input
          */
-        public Modifier setTransitive(boolean transitive) {
-            this.transitive = transitive;
+        public Modifier setInput(boolean input) {
+            isInput = input;
             return this;
         }
 
         /**
-         * Is interative boolean.
+         * Determines if the node is default output node of the container graph.
          *
          * @return the boolean
          */
-        public boolean isInterative() {
-            return interative;
+        public boolean isOutput() {
+            return isOutput;
         }
 
         /**
-         * Sets interative.
+         * Sets output.
          *
-         * @param interative the interative
-         * @return the interative
+         * @param output the output
+         * @return the output
          */
-        public Modifier setInterative(boolean interative) {
-            this.interative = interative;
+        public Modifier setOutput(boolean output) {
+            isOutput = output;
             return this;
         }
     }
 
     private Modifier modifier = new Modifier();
-    private Type type = Type.POOL;
+    private GNodeType type = new GNodeType(Type.POOL);
     private GSetDescriptor initializer = null;
 
     /**
@@ -112,7 +113,7 @@ public class GNode extends GGraphField {
      *
      * @return the type
      */
-    public Type getType() {
+    public GNodeType getType() {
         return type;
     }
 
@@ -122,7 +123,7 @@ public class GNode extends GGraphField {
      * @param type the type
      * @return the type
      */
-    public GNode setType(Type type) {
+    public GNode setType(GNodeType type) {
         this.type = type;
         return this;
     }

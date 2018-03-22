@@ -132,13 +132,11 @@ public final class Machine {
      * @param args
      * @return
      */
-    private CompletableFuture<TObject> nativeInvoke(Method method, TObject instance, TObject ... args) {
+    private CompletableFuture<TObject> nativeInvoke(Method method, TObject instance, Object ... args) {
         CompletableFuture<TObject> result = new CompletableFuture<>();
         try {
             @SuppressWarnings("unchecked")
-            CompletableFuture<TObject> returnFuture = (CompletableFuture<TObject>)(method.invoke(
-                    instance, Arrays.copyOf(args, args.length, Object[].class)
-            ));
+            CompletableFuture<TObject> returnFuture = (CompletableFuture<TObject>)(method.invoke(instance, args));
 
             pushNativeMethodFrame(returnFuture);
 
@@ -203,7 +201,8 @@ public final class Machine {
                 }
             }
 
-            if (canExecute) {
+            // Only execute if there is one executable instruction and no new pending tasks (induced by new frame!).
+            if (canExecute && this.machineThreadTasks.isEmpty()) {
                 InstructionFrame blockFrame = (InstructionFrame)frame;
                 Instruction instruction = blockFrame.next();
                 executeInstruction(instruction);
@@ -500,15 +499,18 @@ public final class Machine {
 
             // Try to see if there is a native constructor.
             VariableInfo[] args = instruction.getArgs();
-            TObject[] argValues = Stream.of(args).map(a -> getLocalVariable(a.getIndex())).toArray(TObject[]::new);
+            Object[] argValues = new Object[args.length + 1];
+            for (int i = 0; i < args.length; i++)
+                argValues[i + 1] = getLocalVariable(args[i].getIndex());
+            argValues[0] = this;
 
+            // The 1st argument is the machine.
             Method nativeConstructor = nativeMethodCache.findConstructor(typeInfo.getImplementingClass(), args.length);
 
             if (nativeConstructor != null) {
                 machineInvoke(new MachineInvocationPlan(typeInfo.getInternalInstanceConstructor(), instance))
                         .thenCompose(v -> nativeInvoke(nativeConstructor, instance, argValues))
-                        .thenAccept(v -> setLocalVariable(instruction.getTo().getIndex(), instance))
-                ;
+                        .thenAccept(v -> setLocalVariable(instruction.getTo().getIndex(), instance));
             }
             else {
                 // TODO: Try to see if there is a Mac constructor.

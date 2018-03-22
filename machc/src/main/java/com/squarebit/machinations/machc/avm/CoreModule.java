@@ -34,6 +34,7 @@ public final class CoreModule {
     private final TypeInfo transitiveNodeType;
     private final TypeInfo converterNodeType;
     private final TypeInfo endNodeType;
+    private final TypeInfo graphNodeType;
 
     /**
      * Initializes a new core module.
@@ -65,6 +66,7 @@ public final class CoreModule {
             this.transitiveNodeType = module.createType("TransitiveNode").setImplementingClass(TTransitiveNode.class);
             this.converterNodeType = module.createType("ConverterNode").setImplementingClass(TConverterNode.class);
             this.endNodeType = module.createType("EndNode").setImplementingClass(TEndNode.class);
+            this.graphNodeType = new TypeInfo().setModule(module).setName("GraphNode");
         }
         catch (Exception exception) {
             throw new RuntimeException("Error during initialize core module", exception);
@@ -97,4 +99,5 @@ public final class CoreModule {
     public static final TypeInfo TRANSITIVE_NODE_TYPE = INTERNAL.transitiveNodeType;
     public static final TypeInfo CONVERTER_NODE_TYPE = INTERNAL.converterNodeType;
     public static final TypeInfo END_NODE_TYPE = INTERNAL.endNodeType;
+    public static final TypeInfo GRAPH_NODE_TYPE = INTERNAL.graphNodeType;
 }

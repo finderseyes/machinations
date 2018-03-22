@@ -35,10 +35,15 @@ public final class NativeMethodCache {
 
             // Constructors.
             Stream.of(clazz.getMethods())
-                    .filter(m -> m.getDeclaredAnnotation(ConstructorMethod.class) != null)
+                    .filter(m -> {
+                        ConstructorMethod annotation = m.getDeclaredAnnotation(ConstructorMethod.class);
+                        Class[] argumentTypes = m.getParameterTypes();
+
+                        return (annotation != null && argumentTypes.length > 0 && argumentTypes[0] == Machine.class);
+                    })
                     .forEach(m -> {
                         MethodSignature signature = new MethodSignature()
-                                .setConstructor(true).setParameterCount(m.getParameterCount());
+                                .setConstructor(true).setParameterCount(m.getParameterCount() - 1);
                         methods.put(signature, m);
                     });
 

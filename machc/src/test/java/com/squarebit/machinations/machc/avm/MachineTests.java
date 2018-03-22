@@ -156,6 +156,17 @@ public class MachineTests {
                 TEndNode node = (TEndNode) typeInfo.findField("a_8").get(graph);
                 assertThat(node).isNotNull();
             }
+
+            {
+                TGraphNode node = (TGraphNode)typeInfo.findField("a_9").get(graph);
+                assertThat(node).isNotNull();
+                assertThat(node.getTypeInfo().getGraphType()).isEqualTo(module.findType("soldier"));
+
+                TypeInfo graphType = node.getTypeInfo().getGraphType();
+                TRuntimeGraph subGraph = node.getGraph();
+                assertThat(((TInteger)graphType.findField("shield").get(subGraph)).getValue()).isEqualTo(10);
+                assertThat(((TInteger)graphType.findField("damage").get(subGraph)).getValue()).isEqualTo(2);
+            }
         }
 
         machine.shutdown();

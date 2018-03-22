@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * A type declared in a {@link ModuleInfo}.
  */
-public final class TypeInfo {
+public class TypeInfo {
     /**
      *
      */

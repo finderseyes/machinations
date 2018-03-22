@@ -128,27 +128,42 @@ public final class Compiler {
         }
         else if (graphField instanceof GNode) {
             GNode node = (GNode)graphField;
+            GNodeType nodeType = node.getType();
 
-            if (node.getType() == GNode.Type.POOL) {
-                fieldInfo.setType(CoreModule.POOL_NODE_TYPE);
+            if (nodeType.isBuiltin()) {
+                if (nodeType.getBuiltinType() == GNode.Type.POOL) {
+                    fieldInfo.setType(CoreModule.POOL_NODE_TYPE);
+                }
+                else if (nodeType.getBuiltinType() == GNode.Type.TRANSITIVE) {
+                    fieldInfo.setType(CoreModule.TRANSITIVE_NODE_TYPE);
+                }
+                else if (nodeType.getBuiltinType() == GNode.Type.SOURCE) {
+                    fieldInfo.setType(CoreModule.SOURCE_NODE_TYPE);
+                }
+                else if (nodeType.getBuiltinType() == GNode.Type.DRAIN) {
+                    fieldInfo.setType(CoreModule.DRAIN_NODE_TYPE);
+                }
+                else if (nodeType.getBuiltinType() == GNode.Type.CONVERTER) {
+                    fieldInfo.setType(CoreModule.CONVERTER_NODE_TYPE);
+                }
+                else if (nodeType.getBuiltinType() == GNode.Type.END) {
+                    fieldInfo.setType(CoreModule.END_NODE_TYPE);
+                }
+                else
+                    throw new CompilationException("Unknown node type.");
             }
-            else if (node.getType() == GNode.Type.TRANSITIVE) {
-                fieldInfo.setType(CoreModule.TRANSITIVE_NODE_TYPE);
+            else {
+                TypeInfo graphType = typeInfo.getModule().findType(nodeType.getTypeName());
+                if (graphType == null) {
+                    throw  new CompilationException("Unknown graph type");
+                }
+                else {
+                    GraphNodeTypeInfo graphNodeTypeInfo = new GraphNodeTypeInfo();
+                    graphNodeTypeInfo.setGraphType(graphType);
+
+                    fieldInfo.setType(graphNodeTypeInfo);
+                }
             }
-            else if (node.getType() == GNode.Type.SOURCE) {
-                fieldInfo.setType(CoreModule.SOURCE_NODE_TYPE);
-            }
-            else if (node.getType() == GNode.Type.DRAIN) {
-                fieldInfo.setType(CoreModule.DRAIN_NODE_TYPE);
-            }
-            else if (node.getType() == GNode.Type.CONVERTER) {
-                fieldInfo.setType(CoreModule.CONVERTER_NODE_TYPE);
-            }
-            else if (node.getType() == GNode.Type.END) {
-                fieldInfo.setType(CoreModule.END_NODE_TYPE);
-            }
-            else
-                throw new CompilationException("Unknown node type.");
 
             initializeNodeField(fieldInfo);
         }

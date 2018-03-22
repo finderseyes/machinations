@@ -8,6 +8,9 @@ graph soldier {
     let damage = 2;
 }
 
+graph console {
+}
+
 graph game {
     pool
         a_0,                    // empty pool
@@ -20,4 +23,7 @@ graph game {
     drain a_6;
     converter a_7;
     end a_8;
+
+    // Child graph.
+    soldier a_9;
 }

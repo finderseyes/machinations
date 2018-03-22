@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.avm.runtime.nodes;
 
 import com.squarebit.machinations.machc.avm.CoreModule;
+import com.squarebit.machinations.machc.avm.Machine;
 import com.squarebit.machinations.machc.avm.TypeInfo;
 import com.squarebit.machinations.machc.avm.runtime.TNode;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
@@ -18,7 +19,7 @@ public class TPoolNode extends TNode {
      * @return the completable future
      */
     @ConstructorMethod
-    public CompletableFuture<TObject> init() {
+    public CompletableFuture<TObject> init(Machine machine) {
         this.content = new TSet();  // Empty set.
         return CompletableFuture.completedFuture(this);
     }
@@ -30,7 +31,7 @@ public class TPoolNode extends TNode {
      * @return the completable future
      */
     @ConstructorMethod
-    public CompletableFuture<TObject> init(TSet set) {
+    public CompletableFuture<TObject> init(Machine machine, TSet set) {
         this.content = set;
         return CompletableFuture.completedFuture(this);
     }

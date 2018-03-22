@@ -26,25 +26,35 @@ public class MachFrontend {
      *
      */
     private static class NodeDeclarationContext {
-        private GNode.Type nodeType;
+        private GNode.Modifier modifier = new GNode.Modifier();
+        private GNodeType type;
 
         /**
-         * Gets node type.
+         * Gets modifier.
          *
-         * @return the node type
+         * @return the modifier
          */
-        public GNode.Type getNodeType() {
-            return nodeType;
+        public GNode.Modifier getModifier() {
+            return modifier;
         }
 
         /**
-         * Sets node type.
+         * Gets type.
          *
-         * @param nodeType the node type
-         * @return the node type
+         * @return the type
          */
-        public NodeDeclarationContext setNodeType(GNode.Type nodeType) {
-            this.nodeType = nodeType;
+        public GNodeType getType() {
+            return type;
+        }
+
+        /**
+         * Sets type.
+         *
+         * @param type the type
+         * @return the type
+         */
+        public NodeDeclarationContext setType(GNodeType type) {
+            this.type = type;
             return this;
         }
     }
@@ -383,7 +393,7 @@ public class MachFrontend {
     {
         List<GNode> nodes = new ArrayList<>();
 
-        GNode.Type nodeType = GNode.Type.POOL;
+        NodeDeclarationContext context = new NodeDeclarationContext();
 
         int next = 0;
         ParseTree decl = declarationContext.getChild(next);
@@ -391,6 +401,11 @@ public class MachFrontend {
 
         if (decl instanceof MachParser.NodeModifierContext) {
             nodeModifiersContext = (MachParser.NodeModifierContext)decl;
+
+            if (nodeModifiersContext.getText().equals("input"))
+                context.getModifier().setInput(true);
+            else if (nodeModifiersContext.getText().equals("output"))
+                context.getModifier().setOutput(true);
 
             next += 1;
             decl = declarationContext.getChild(next);
@@ -400,14 +415,15 @@ public class MachFrontend {
             ParseTree nodeTypeDecl = decl.getChild(0);
 
             if (nodeTypeDecl instanceof MachParser.BuiltinNodeTypeNameContext) {
-                nodeType = GNode.Type.parse(nodeTypeDecl.getText());
+                context.setType(new GNodeType(GNode.Type.parse(nodeTypeDecl.getText())));
+            }
+            else {
+                context.setType(new GNodeType(nodeTypeDecl.getText()));
             }
         }
         else if (decl instanceof MachParser.NodeArrayTypeContext) {
             throw new RuntimeException("Not implemented.");
         }
-
-        NodeDeclarationContext context = new NodeDeclarationContext().setNodeType(nodeType);
 
         next += 1;
         decl = declarationContext.getChild(next);
@@ -432,14 +448,14 @@ public class MachFrontend {
                                           MachParser.NodeDeclaratorContext nodeDeclaratorContext)
         throws Exception
     {
-        GNode.Type nodeType = declarationContext.getNodeType();
-        GNode node = new GNode().setType(nodeType);
+        GNode node = new GNode().setType(declarationContext.getType());
+        GNodeType nodeType = declarationContext.getType();
 
         node.setName(nodeDeclaratorContext.getChild(0).getText());
 
         ParseTree decl = nodeDeclaratorContext.getChild(2);
         if (decl instanceof MachParser.NodeInitializerContext) {
-            if (nodeType == GNode.Type.POOL) {
+            if (nodeType.getBuiltinType() == GNode.Type.POOL) {
                 MachParser.SetDescriptorContext setDescriptorContext =
                         (MachParser.SetDescriptorContext)decl.getChild(0).getChild(0);
                 node.setInitializer(transformSetDescriptor(setDescriptorContext));
