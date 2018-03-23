@@ -29,5 +29,5 @@ graph game {
 
     // connections
     connection
-        e_0 = 1D10:a_0 -> a_1;
+        e_0 = 1+a_1:a_0 -> a_1;
 }

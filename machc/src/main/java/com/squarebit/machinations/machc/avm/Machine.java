@@ -1,6 +1,7 @@
 package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.instructions.*;
+import com.squarebit.machinations.machc.avm.runtime.TArray;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
@@ -305,6 +306,10 @@ public final class Machine {
             executeJumpBlock((JumpBlock)instruction);
         else if (instruction instanceof PutConstant)
             executePutConstant((PutConstant)instruction);
+        else if (instruction instanceof PutArray)
+            executePutArray((PutArray)instruction);
+        else if (instruction instanceof LoadArray)
+            executeLoadArray((LoadArray)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -542,5 +547,17 @@ public final class Machine {
 
     private void executePutConstant(PutConstant instruction) {
         setLocalVariable(instruction.getTo().getIndex(), instruction.getValue());
+    }
+
+    private void executePutArray(PutArray instruction) {
+        TArray array = (TArray)getLocalVariable(instruction.getArray().getIndex());
+        TObject value = getLocalVariable(instruction.getFrom().getIndex());
+        array.set(instruction.getItemIndex().getValue(), value);
+    }
+
+    private void executeLoadArray(LoadArray instruction) {
+        TArray array = (TArray)getLocalVariable(instruction.getArray().getIndex());
+        TObject value = array.get(instruction.getItemIndex().getValue());
+        setLocalVariable(instruction.getTo().getIndex(), value);
     }
 }

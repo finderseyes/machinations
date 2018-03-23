@@ -6,25 +6,39 @@ import com.squarebit.machinations.machc.avm.runtime.annotations.NativeField;
 
 import java.util.concurrent.CompletableFuture;
 
-public class TLambda implements TObject {
-    private LambdaTypeInfo __typeInfo;
-
-    @NativeField(name = "arguments")
-    public TArray arguments;
-
+public class TLambda extends TObjectBase {
     @ConstructorMethod
     public CompletableFuture<TObject> init(Machine machine, TArray arguments) {
-        this.arguments = arguments;
+        setArguments(arguments);
         return CompletableFuture.completedFuture(this);
     }
 
     /**
-     * Gets information of the type of this class.
+     * Gets lambda type info.
      *
-     * @return the {@link TypeInfo}
+     * @return the lambda type info
      */
-    @Override
-    public TypeInfo getTypeInfo() {
-        return __typeInfo;
+    public LambdaTypeInfo getLambdaTypeInfo() {
+        return (LambdaTypeInfo)this.getTypeInfo();
+    }
+
+    /**
+     * Gets arguments.
+     *
+     * @return the arguments
+     */
+    public TArray getArguments() {
+        return (TArray)getField(getLambdaTypeInfo().getArgumentsField());
+    }
+
+    /**
+     * Sets arguments.
+     *
+     * @param arguments the arguments
+     * @return the arguments
+     */
+    public TLambda setArguments(TArray arguments) {
+        setField(getLambdaTypeInfo().getArgumentsField(), arguments);
+        return this;
     }
 }

@@ -17,6 +17,9 @@ public final class InstructionBlock implements Scope {
     private Map<String, VariableInfo> variableByName;
     private List<Instruction> instructions;
 
+    private static int BLOCK_ID_GENERATOR = 0;
+    private int id;
+
     /**
      * Instantiates a new Instruction block.
      */
@@ -24,6 +27,8 @@ public final class InstructionBlock implements Scope {
         this.variables = new ArrayList<>();
         this.variableByName = new HashMap<>();
         this.instructions = new ArrayList<>();
+
+        this.id = BLOCK_ID_GENERATOR++;
     }
 
     /**
@@ -61,7 +66,7 @@ public final class InstructionBlock implements Scope {
      */
     public VariableInfo createTempVar() {
         try {
-            return createVariable(String.format("$__temp__%d", getVariableCount()));
+            return createVariable(String.format("$__block_%d_temp__%d", this.id, getLocalVariableCount()));
         }
         catch (Exception exception) {
             return null;
@@ -151,5 +156,16 @@ public final class InstructionBlock implements Scope {
     public void emit(Instruction instruction) {
         instruction.setScope(this).setIndex(instructions.size());
         instructions.add(instruction);
+    }
+
+    /**
+     * Reindex variables.
+     */
+    public void reindexVariables() {
+        int parentVariableCount = parentScope == null ? 0 : parentScope.getVariableCount();
+
+        for (int i = 0; i < variables.size(); i++) {
+            variables.get(i).setIndex(i + parentVariableCount);
+        }
     }
 }

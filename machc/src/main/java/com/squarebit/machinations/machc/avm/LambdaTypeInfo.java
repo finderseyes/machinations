@@ -1,12 +1,12 @@
 package com.squarebit.machinations.machc.avm;
 
-import com.squarebit.machinations.machc.avm.exceptions.MachineException;
 import com.squarebit.machinations.machc.avm.runtime.TLambda;
-import com.squarebit.machinations.machc.avm.runtime.TObject;
 
 import java.lang.reflect.Field;
 
 public class LambdaTypeInfo extends TypeInfo {
+    public static final String ARGUMENTS_FIELD_NAME = "arguments";
+
     /**
      *
      */
@@ -37,7 +37,7 @@ public class LambdaTypeInfo extends TypeInfo {
     public LambdaTypeInfo() {
         this.setImplementingClass(TLambda.class);
 
-        this.argumentsField = new FieldInfo().setType(ArrayTypeInfo.OBJECT_ARRAY).setName("arguments");
+        this.argumentsField = new FieldInfo().setType(ArrayTypeInfo.OBJECT_ARRAY).setName(ARGUMENTS_FIELD_NAME);
         try {
             this.addField(this.argumentsField);
         }
@@ -96,25 +96,5 @@ public class LambdaTypeInfo extends TypeInfo {
      */
     public FieldInfo getArgumentsField() {
         return argumentsField;
-    }
-
-    /**
-     * Allocate a new uninitialized instance of given type.
-     *
-     * @return an instance of this type.
-     * @throws MachineException if any errors occur.
-     * @apiNote caller must be responsible for calling the type constructor.
-     */
-    @Override
-    public TObject allocateInstance() throws MachineException {
-        try {
-            TLambda instance = new TLambda();
-            FieldCache.TYPE_INFO_FIELD.set(instance, this);
-
-            return instance;
-        }
-        catch (Exception exception) {
-            throw new MachineException(exception);
-        }
     }
 }

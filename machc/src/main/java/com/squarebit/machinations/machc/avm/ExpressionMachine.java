@@ -96,50 +96,100 @@ public final class ExpressionMachine {
     public CompletableFuture<TSet> instantiateSet(TSetDescriptor descriptor) {
         CompletableFuture<TSet> returnFuture = new CompletableFuture<>();
 
-        try {
-            TSet result = new TSet();
-            MachineInvocationPlan machineInvocationPlan = null;
+        instantiateSetDescriptor(descriptor).thenAccept(instantiated -> {
+            try {
+                TSet result = new TSet();
+                MachineInvocationPlan machineInvocationPlan = null;
 
-            for (TSetElementTypeDescriptor typeDescriptor: descriptor.getElementTypeDescriptors()) {
-                TypeInfo graphElementType = this.machine.findType(typeDescriptor.getName());
+                for (TSetElementTypeDescriptor typeDescriptor: instantiated.getElementTypeDescriptors()) {
+                    TypeInfo graphElementType = this.machine.findType(typeDescriptor.getName());
 
-                final TypeInfo elementType = graphElementType != null ? graphElementType : CoreModule.NAMED_RESOURCE;
+                    final TypeInfo elementType = graphElementType != null ? graphElementType : CoreModule.NAMED_RESOURCE;
 
-                for (int i = 0; i < typeDescriptor.getSize(); i++) {
-                    TObject instance = elementType.allocateInstance();
+                    for (int i = 0; i < typeDescriptor.getInstantiatedSize(); i++) {
+                        TObject instance = elementType.allocateInstance();
 
-                    if (elementType == CoreModule.NAMED_RESOURCE) {
-                        ((TNamedResource)instance).setTypeName(typeDescriptor.getName());
+                        if (elementType == CoreModule.NAMED_RESOURCE) {
+                            ((TNamedResource)instance).setTypeName(typeDescriptor.getName());
+                        }
+                        else {
+                            if (machineInvocationPlan == null)
+                                machineInvocationPlan = new MachineInvocationPlan(
+                                        elementType.getInternalInstanceConstructor(), instance);
+                            else
+                                machineInvocationPlan.thenInvoke(v ->
+                                        new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
+                                );
+                        }
+
+                        result.add((TSetElement)instance);
                     }
-                    else {
-                        if (machineInvocationPlan == null)
-                            machineInvocationPlan = new MachineInvocationPlan(
-                                    elementType.getInternalInstanceConstructor(), instance);
-                        else
-                            machineInvocationPlan.thenInvoke(v ->
-                                    new NativeToMachineInvocation(elementType.getInternalInstanceConstructor(), instance)
-                            );
-                    }
 
-                    result.add((TSetElement)instance);
                 }
 
+                if (machineInvocationPlan != null) {
+                    machine.machineInvoke(machineInvocationPlan).whenComplete((v, ex) -> {
+                        if (ex != null)
+                            returnFuture.completeExceptionally(ex);
+                        else
+                            returnFuture.complete(result);
+                    });
+                }
+                else {
+                    returnFuture.complete(result);
+                }
             }
+            catch (Exception ex) {
+                returnFuture.completeExceptionally(ex);
+            }
+        });
 
-            if (machineInvocationPlan != null) {
-                machine.machineInvoke(machineInvocationPlan).whenComplete((v, ex) -> {
-                    if (ex != null)
-                        returnFuture.completeExceptionally(ex);
-                    else
-                        returnFuture.complete(result);
-                });
-            }
+        return returnFuture;
+    }
+
+    public CompletableFuture<TSetDescriptor> instantiateSetDescriptor(TSetDescriptor descriptor) {
+        CompletableFuture<TSetDescriptor> returnFuture = new CompletableFuture<>();
+        TSetDescriptor instantiated = new TSetDescriptor();
+
+        CompletableFuture.allOf(descriptor.getElementTypeDescriptors().stream()
+                .map(d -> this.instantiateSetElementTypeDescriptor(d).thenAccept(instantiated::add))
+                .toArray(CompletableFuture[]::new)
+        ).whenComplete((value, exception) -> {
+            if (exception != null)
+                returnFuture.completeExceptionally(exception);
             else {
-                returnFuture.complete(result);
+                returnFuture.complete(instantiated);
             }
+        });
+
+        return returnFuture;
+    }
+
+    public CompletableFuture<TSetElementTypeDescriptor> instantiateSetElementTypeDescriptor(TSetElementTypeDescriptor descriptor)
+    {
+        CompletableFuture<TSetElementTypeDescriptor> returnFuture = new CompletableFuture<>();
+
+        if (descriptor.getSize() == null) {
+            returnFuture.complete(TSetElementTypeDescriptor.instantiate(
+                    1, descriptor.getCapacity(), descriptor.getName()
+            ));
         }
-        catch (Exception ex) {
-            returnFuture.completeExceptionally(ex);
+        else {
+            MachineInvocationPlan machineInvocationPlan = new MachineInvocationPlan(
+                    descriptor.getSize().getLambdaTypeInfo().getLambdaMethod(),
+                    descriptor.getSize()
+            );
+
+            machine.machineInvoke(machineInvocationPlan)
+                    .whenComplete((result, exception) -> {
+                        if (exception != null)
+                            returnFuture.completeExceptionally(exception);
+                        else
+                            returnFuture.complete(TSetElementTypeDescriptor.instantiate(
+                                    evaluateAsInteger(result).getValue(),
+                                    descriptor.getCapacity(), descriptor.getName()
+                            ));
+                    });
         }
 
         return returnFuture;
@@ -155,22 +205,12 @@ public final class ExpressionMachine {
         List<TSetElementTypeDescriptor> typeDescriptors = new ArrayList<>();
         CompletableFuture<TSetDescriptor> returnFuture = new CompletableFuture<>();
 
-        CompletableFuture[] returnFutures = setDescriptor.getElementDescriptors().stream().map(descriptor ->
-            evaluate(descriptor.getSize())
-                    .thenCompose(size ->
-                            evaluateOrDefault(descriptor.getCapacity(), new TInteger(-1))
-                                    .thenCompose(capacity ->
-                                            evaluateOrDefault(descriptor.getName(), TString.EMPTY)
-                                                    .thenApply(name ->
-                                                            new TSetElementTypeDescriptor(
-                                                                    evaluateAsInteger(size).getValue(),
-                                                                    evaluateAsInteger(capacity).getValue(),
-                                                                    evaluateAsString(name).getValue()
-                                                            )
-                                                    )
-                                    )
-                    ).thenAccept(typeDescriptors::add)
-        ).toArray(CompletableFuture[]::new);
+        CompletableFuture[] returnFutures = setDescriptor.getElementDescriptors().stream()
+                .map(descriptor ->
+                        this.evaluateSetElementTypeDescriptor(descriptor)
+                                .thenAccept(typeDescriptors::add)
+                )
+                .toArray(CompletableFuture[]::new);
 
         CompletableFuture.allOf(returnFutures).whenComplete((v, ex) -> {
             if (ex != null)
@@ -178,6 +218,38 @@ public final class ExpressionMachine {
             else
                 returnFuture.complete(new TSetDescriptor(typeDescriptors));
         });
+
+        return returnFuture;
+    }
+
+    public CompletableFuture<TSetElementTypeDescriptor> evaluateSetElementTypeDescriptor(SetElementDescriptor descriptor)
+    {
+        CompletableFuture<TSetElementTypeDescriptor> returnFuture = new CompletableFuture<>();
+
+        try {
+            TLambda size = (TLambda)machine.getLocalVariable(descriptor.getSize().getVariableInfo().getIndex());
+
+            evaluateOrDefault(descriptor.getCapacity(), new TInteger(-1))
+                    .thenCompose(capacity ->
+                            evaluateOrDefault(descriptor.getName(), TString.EMPTY)
+                                    .thenApply(name ->
+                                            new TSetElementTypeDescriptor(
+                                                    size,
+                                                    evaluateAsInteger(capacity).getValue(),
+                                                    evaluateAsString(name).getValue()
+                                            )
+                                    )
+                    )
+                    .whenComplete((result, exception) -> {
+                        if (exception != null)
+                            returnFuture.completeExceptionally(exception);
+                        else
+                            returnFuture.complete(result);
+                    });
+        }
+        catch (Exception exception) {
+            returnFuture.completeExceptionally(exception);
+        }
 
         return returnFuture;
     }

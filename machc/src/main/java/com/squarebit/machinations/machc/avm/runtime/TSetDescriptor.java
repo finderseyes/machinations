@@ -29,6 +29,15 @@ public final class TSetDescriptor implements TObject {
         }
     }
 
+    /**
+     * Add.
+     *
+     * @param typeDescriptor the type descriptor
+     */
+    public void add(TSetElementTypeDescriptor typeDescriptor) {
+        typeDescriptorByName.put(typeDescriptor.getName(), typeDescriptor);
+    }
+
     @ConstructorMethod
     public CompletableFuture<TObject> init() {
         // int k = 10;

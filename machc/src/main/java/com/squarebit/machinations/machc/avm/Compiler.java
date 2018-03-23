@@ -22,11 +22,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class Compiler {
     private static class LambdaContext {
+        TypeInfo currentType;
         MethodInfo containerMethod;
         InstructionBlock environmentBlock;
         InstructionBlock lambdaBlock;
 
         List<VariableInfo> environmentArguments = new ArrayList<>();
+        Map<VariableInfo, VariableInfo> bindings = new HashMap<>();
+
+        public VariableInfo bind(VariableInfo environmentArgument) {
+            return bindings.computeIfAbsent(environmentArgument, (arg) -> {
+                environmentArguments.add(arg);
+                return environmentBlock.createTempVar();
+            });
+        }
+
+        public LambdaContext setCurrentType(TypeInfo currentType) {
+            this.currentType = currentType;
+            return this;
+        }
 
         public LambdaContext setContainerMethod(MethodInfo containerMethod) {
             this.containerMethod = containerMethod;
@@ -44,7 +58,6 @@ public final class Compiler {
         }
     }
 
-    private Scope currentScope;
     private MethodInfo currentMethod;
     private TypeInfo currentType;
 
@@ -320,22 +333,31 @@ public final class Compiler {
      * @throws Exception
      */
     private Variable compileLambdaExpression(InstructionBlock block, GExpression expression) throws Exception {
+        // Save context
+        LambdaContext previousLambdaContext = this.currentLambdaContext;
+        MethodInfo previousMethod = this.currentMethod;
+        TypeInfo previousType = this.currentType;
+
         MethodInfo lambdaMethodInfo = new MethodInfo();
         LambdaTypeInfo lambdaTypeInfo = new LambdaTypeInfo().setLambdaMethod(lambdaMethodInfo);
-
-        LambdaContext oldLambdaContext = this.currentLambdaContext;
 
         InstructionBlock rootBlock = lambdaMethodInfo.getInstructionBlock();
         InstructionBlock environmentBlock = new InstructionBlock().setParentScope(rootBlock);
         InstructionBlock lambdaBlock = new InstructionBlock().setParentScope(environmentBlock);
 
         this.currentLambdaContext = new LambdaContext()
+                .setCurrentType(this.currentType)
                 .setContainerMethod(this.currentMethod)
                 .setEnvironmentBlock(environmentBlock)
                 .setLambdaBlock(lambdaBlock);
-        lambdaMethodInfo.setInstructionBlock(lambdaBlock);
+
+        this.currentType = lambdaTypeInfo;
+        this.currentMethod = lambdaMethodInfo;
 
         {
+            rootBlock.emit(new JumpBlock(environmentBlock));
+            environmentBlock.emit(new JumpBlock(lambdaBlock));
+
             VariableInfo argumentsVar = rootBlock.createTempVar();
             lambdaBlock.emit(
                     new LoadField(lambdaTypeInfo.getArgumentsField(),
@@ -357,13 +379,18 @@ public final class Compiler {
                 lambdaBlock.emit(new Evaluate(exp, expressionResult));
                 lambdaBlock.emit(new Return(expressionResult));
             }
+
+            rootBlock.reindexVariables();
+            environmentBlock.reindexVariables();
+            lambdaBlock.reindexVariables();
+
         }
 
         // Create the arguments array.
         VariableInfo lengthVar = block.createTempVar();
         VariableInfo argumentsVar = block.createTempVar();
 
-        int argumentCount = environmentBlock.getVariableCount();
+        int argumentCount = environmentBlock.getLocalVariableCount();
 
         ArrayTypeInfo arrayTypeInfo = new ArrayTypeInfo().setElementType(CoreModule.OBJECT_TYPE);
         block.emit(new PutConstant(new TInteger(argumentCount), lengthVar));
@@ -371,17 +398,21 @@ public final class Compiler {
 
         // Now, loads the environment variables to the array.
         {
-            for (int i = 0; i < environmentBlock.getLocalVariableCount(); i++) {
+            for (int i = 0; i < argumentCount; i++) {
                 VariableInfo arg = this.currentLambdaContext.environmentArguments.get(i);
                 block.emit(new PutArray(arg, argumentsVar, new TInteger(i)));
             }
         }
 
         // Create a new TLambda with given argument array.
-        VariableInfo resultVar = block.createTempVar();
+        VariableInfo resultVar = block.createTempVar().setType(lambdaTypeInfo);
         block.emit(new New(resultVar, lambdaTypeInfo, new VariableInfo[] { argumentsVar }));
 
-        this.currentLambdaContext = oldLambdaContext;
+        // restore
+        this.currentLambdaContext = previousLambdaContext;
+        this.currentMethod = previousMethod;
+        this.currentType = previousType;
+
         return new Variable(resultVar);
     }
 
@@ -463,7 +494,7 @@ public final class Compiler {
             VariableInfo result = block.createTempVar();
             block.emit(new Invoke(
                     methodInfo,
-                    this.currentMethod.getThisVariable(),
+                    getThisVariable(),
                     parameterVariables,
                     result
             ));
@@ -504,6 +535,8 @@ public final class Compiler {
     private Expression compileSymbolRefExpression(InstructionBlock block, GSymbolRef symbolRef) throws Exception {
         VariableInfo localVar = block.findVariable(symbolRef.getSymbolName());
 
+        TypeInfo currentType = this.currentLambdaContext == null ? this.currentType : this.currentLambdaContext.currentType;
+
         if (localVar != null) {
             if (symbolRef.getNext() == null)
                 return new Variable(localVar);
@@ -514,12 +547,12 @@ public final class Compiler {
             }
         }
         else {
-            FieldInfo fieldInfo = this.currentType.findField(symbolRef.getSymbolName());
+            FieldInfo fieldInfo = currentType.findField(symbolRef.getSymbolName());
             if (fieldInfo != null) {
                 VariableInfo result = block.createTempVar();
 
                 if (symbolRef.getNext() == null) {
-                    block.emit(new LoadField(fieldInfo, currentMethod.getThisVariable(), result));
+                    block.emit(new LoadField(fieldInfo, getThisVariable(), result));
                     return new Variable(result);
                 }
                 else {
@@ -529,6 +562,14 @@ public final class Compiler {
             else
                 throw new UnknownIdentifierException(symbolRef.getSymbolName());
         }
+    }
+
+    private VariableInfo getThisVariable() {
+        if (this.currentLambdaContext != null) {
+            return currentLambdaContext.bind(this.currentLambdaContext.containerMethod.getThisVariable());
+        }
+        else
+            return this.currentMethod.getThisVariable();
     }
 
     private Expression compileFieldRefRecurisve(InstructionBlock block, GSymbolRef ref, VariableInfo fieldOwner, VariableInfo result)
