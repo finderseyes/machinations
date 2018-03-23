@@ -232,6 +232,18 @@ public class MachineTests {
             }
         }
 
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f2");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(0);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph)
+                ).get();
+                assertThat(result.getValue()).isEqualTo(110);
+            }
+        }
+
         machine.shutdown();
     }
 }

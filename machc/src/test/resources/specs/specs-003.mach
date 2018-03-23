@@ -17,4 +17,13 @@ graph main {
 
         return false;
     }
+
+    function f2() {
+        let x = 10;
+        {
+            let y = 100;
+            return x + y;
+        }
+        return x;
+    }
 }

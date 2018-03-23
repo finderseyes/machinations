@@ -2,8 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
-import com.squarebit.machinations.machc.ast.statements.GIfThenElse;
-import com.squarebit.machinations.machc.ast.statements.GReturn;
+import com.squarebit.machinations.machc.ast.statements.*;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierException;
 import com.squarebit.machinations.machc.avm.expressions.*;
@@ -146,6 +145,46 @@ public final class Compiler {
         else if (statement instanceof GIfThenElse) {
             compileIfThenElse(block, (GIfThenElse)statement);
         }
+        else if (statement instanceof GVariableDeclaration) {
+            compileVariableDeclaration(block, (GVariableDeclaration)statement);
+        }
+        else if (statement instanceof GBlock) {
+            InstructionBlock childBlock = compileBlock(block, (GBlock)statement);
+            block.emit(new JumpBlock(childBlock));
+        }
+        else
+            throw new CompilationException("Shall not reach here");
+    }
+
+    private InstructionBlock compileBlock(InstructionBlock block, GBlock statement) throws Exception {
+        List<GStatement> statements = statement.getStatements();
+
+        InstructionBlock thisBlock = new InstructionBlock().setParentScope(block);
+
+        for (int i = 0; i < statements.size(); i++) {
+            compileStatement(thisBlock, statements.get(i));
+        }
+
+        return thisBlock;
+    }
+
+    /**
+     *
+     * @param block
+     * @param declaration
+     * @throws Exception
+     */
+    private void compileVariableDeclaration(InstructionBlock block, GVariableDeclaration declaration) throws Exception {
+        List<GVariableDeclarator> declarators = declaration.getDeclarators();
+
+        for (int i = 0; i < declarators.size(); i++) {
+            GVariableDeclarator declarator = declarators.get(i);
+            VariableInfo variable = block.createVariable(declarator.getName());
+            if (declarator.getInitializer() != null) {
+                Expression expression = compileExpression(block, declarator.getInitializer());
+                block.emit(new Evaluate(expression, variable));
+            }
+        }
     }
 
     /**
@@ -161,13 +200,24 @@ public final class Compiler {
         Expression condition = compileExpression(block, statement.getCondition());
         block.emit(new Evaluate(condition, conditionVar));
 
-        InstructionBlock whenTrue = new InstructionBlock().setParentScope(block);
-        compileStatement(whenTrue, statement.getWhenTrue());
+        InstructionBlock whenTrue = null;
+        if (statement.getWhenTrue() instanceof GBlock) {
+            whenTrue = compileBlock(block, (GBlock)statement.getWhenTrue());
+        }
+        else {
+            whenTrue = new InstructionBlock().setParentScope(block);
+            compileStatement(whenTrue, statement.getWhenTrue());
+        }
 
         InstructionBlock whenFalse = null;
         if (statement.getWhenFalse() != null) {
-            whenFalse = new InstructionBlock().setParentScope(block);
-            compileStatement(whenFalse, statement.getWhenFalse());
+            if (statement.getWhenFalse() instanceof GBlock) {
+                whenFalse = compileBlock(block, (GBlock)statement.getWhenFalse());
+            }
+            else {
+                whenFalse = new InstructionBlock().setParentScope(block);
+                compileStatement(whenFalse, statement.getWhenFalse());
+            }
         }
 
         block.emit(new JumpBlockIf(conditionVar, whenTrue, whenFalse));

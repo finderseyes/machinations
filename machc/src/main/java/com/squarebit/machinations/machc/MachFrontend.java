@@ -2,10 +2,9 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
-import com.squarebit.machinations.machc.ast.statements.GBlock;
-import com.squarebit.machinations.machc.ast.statements.GIfThenElse;
-import com.squarebit.machinations.machc.ast.statements.GReturn;
+import com.squarebit.machinations.machc.ast.statements.*;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
+import com.squarebit.machinations.machc.avm.expressions.Expression;
 import com.squarebit.machinations.machc.avm.expressions.SetDescriptor;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
@@ -282,6 +281,11 @@ public class MachFrontend {
         if (decl instanceof MachParser.StatementContext) {
             return transformStatement((MachParser.StatementContext)decl);
         }
+        else if (decl instanceof MachParser.LocalVariableDeclarationStatementContext) {
+            return transformLocalVariableDeclarationStatement(
+                    (MachParser.LocalVariableDeclarationStatementContext)decl
+            );
+        }
         else
             throw new CompilationException("Should not reach here");
     }
@@ -304,6 +308,30 @@ public class MachFrontend {
             }
         }
         return block;
+    }
+
+    private GStatement transformLocalVariableDeclarationStatement(
+            MachParser.LocalVariableDeclarationStatementContext context) throws Exception
+    {
+        GVariableDeclaration declaration = new GVariableDeclaration();
+        ParseTree list = context.getChild(0).getChild(1);
+
+        for (int i = 0; i < list.getChildCount(); i += 2) {
+            GVariableDeclarator declarator =
+                    transformVariableDeclarator((MachParser.VariableDeclaratorContext)list.getChild(i));
+            declaration.add(declarator);
+        }
+        return declaration;
+    }
+
+    private GVariableDeclarator transformVariableDeclarator(MachParser.VariableDeclaratorContext context) throws Exception {
+        String name = context.getChild(0).getText();
+        if (context.getChildCount() == 3) {
+            GExpression initializer = transformExpression((MachParser.ExpressionContext)context.getChild(2).getChild(0));
+            return new GVariableDeclarator(name, initializer);
+        }
+        else
+            return new GVariableDeclarator(name, null);
     }
 
     /**
