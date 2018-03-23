@@ -1,0 +1,20 @@
+/**
+Test aspects:
+- if-then(-else) statement
+*/
+
+graph main {
+    function f0(v) {
+        if (v > 0)
+            return true;
+        else
+            return false;
+    }
+
+    function f1(v) {
+        if (v > 0)
+            return true;
+
+        return false;
+    }
+}

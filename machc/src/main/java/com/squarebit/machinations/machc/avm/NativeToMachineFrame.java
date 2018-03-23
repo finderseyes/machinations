@@ -106,8 +106,10 @@ public class NativeToMachineFrame extends InstructionFrame implements DataFrame 
 
         TObject[] args = invocation.getArgs();
         VariableInfo[] argVars = new VariableInfo[args.length];
-        for (int i = 0; i < args.length; i++)
+        for (int i = 0; i < args.length; i++) {
+            argVars[i] = invocationBlock.createTempVar();
             invocationBlock.emit(new PutConstant(args[i], argVars[i]));
+        }
 
         invocationBlock.emit(new Invoke(invocation.getMethodInfo(), instanceVar, argVars, returnValueStore));
 

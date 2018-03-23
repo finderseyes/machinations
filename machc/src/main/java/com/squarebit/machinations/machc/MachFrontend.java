@@ -2,6 +2,8 @@ package com.squarebit.machinations.machc;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
+import com.squarebit.machinations.machc.ast.statements.GBlock;
+import com.squarebit.machinations.machc.ast.statements.GIfThenElse;
 import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.avm.expressions.SetDescriptor;
@@ -281,7 +283,27 @@ public class MachFrontend {
             return transformStatement((MachParser.StatementContext)decl);
         }
         else
-            return null;
+            throw new CompilationException("Should not reach here");
+    }
+
+    /**
+     * Transform block g statement.
+     *
+     * @param context the context
+     * @return the g statement
+     * @throws Exception the exception
+     */
+    public GStatement transformBlock(MachParser.BlockContext context) throws Exception {
+        GBlock block = new GBlock();
+        ParseTree decl = context.getChild(1);
+
+        if (decl instanceof MachParser.BlockStatementsContext) {
+            for (int i = 0; i < decl.getChildCount(); i++) {
+                GStatement statement = transformBlockStatement((MachParser.BlockStatementContext)decl.getChild(i));
+                block.add(statement);
+            }
+        }
+        return block;
     }
 
     /**
@@ -296,15 +318,16 @@ public class MachFrontend {
         if (decl instanceof MachParser.EmptyStatementContext)
             return GStatement.EMPTY;
         else if (decl instanceof MachParser.BlockContext) {
-            return null;
+            return transformBlock((MachParser.BlockContext)decl);
         }
         else if (decl instanceof MachParser.ExpressionStatementContext) {
             return null;
         }
-        else if (decl instanceof MachParser.IfThenStatementContext ||
-                decl instanceof MachParser.IfThenElseStatementContext)
-        {
-            return null;
+        else if (decl instanceof MachParser.IfThenStatementContext) {
+            return transformIfThenStatement((MachParser.IfThenStatementContext)decl);
+        }
+        else if (decl instanceof MachParser.IfThenElseStatementContext) {
+            return transformIfThenElseStatement((MachParser.IfThenElseStatementContext)decl);
         }
         else if (decl instanceof MachParser.ReturnStatementContext) {
             ParseTree returnExpression = decl.getChild(1);
@@ -315,6 +338,31 @@ public class MachFrontend {
         }
         else
             throw new Exception("Shall not reach here");
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformIfThenStatement(MachParser.IfThenStatementContext statementContext) throws Exception {
+        GExpression condition = transformExpression((MachParser.ExpressionContext)statementContext.getChild(2));
+        GStatement whenTrue = transformStatement((MachParser.StatementContext)statementContext.getChild(4));
+        return new GIfThenElse(condition, whenTrue);
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformIfThenElseStatement(MachParser.IfThenElseStatementContext statementContext) throws Exception {
+        GExpression condition = transformExpression((MachParser.ExpressionContext)statementContext.getChild(2));
+        GStatement whenTrue = transformStatement((MachParser.StatementContext)statementContext.getChild(4));
+        GStatement whenFalse = transformStatement((MachParser.StatementContext)statementContext.getChild(6));
+        return new GIfThenElse(condition, whenTrue, whenFalse);
     }
 
     /**

@@ -4,7 +4,7 @@ import com.squarebit.machinations.machc.ast.GStatement;
 import com.squarebit.machinations.machc.ast.expressions.GExpression;
 
 /**
- * The type G return.
+ * Return statement.
  */
 public class GReturn extends GStatement {
     private final GExpression expression;

@@ -183,4 +183,55 @@ public class MachineTests {
 
         machine.shutdown();
     }
+
+    @Test
+    public void specs_003() throws Exception {
+        ModuleInfo module = Utils.compile("specs/specs-003.mach");
+
+        Machine machine = new Machine(module);
+        machine.start();
+
+        TypeInfo typeInfo = module.findType("main");
+        TRuntimeGraph graph = (TRuntimeGraph)machine.newInstance(typeInfo).get();
+
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f0");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(1);
+
+            {
+                TBoolean result = (TBoolean)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(1))
+                ).get();
+                assertThat(result).isEqualTo(TBoolean.TRUE);
+            }
+
+            {
+                TBoolean result = (TBoolean)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(-1))
+                ).get();
+                assertThat(result).isEqualTo(TBoolean.FALSE);
+            }
+        }
+
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f1");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(1);
+
+            {
+                TBoolean result = (TBoolean)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(1))
+                ).get();
+                assertThat(result).isEqualTo(TBoolean.TRUE);
+            }
+
+            {
+                TBoolean result = (TBoolean)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(-1))
+                ).get();
+                assertThat(result).isEqualTo(TBoolean.FALSE);
+            }
+        }
+
+        machine.shutdown();
+    }
 }

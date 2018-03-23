@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.avm.instructions.*;
 import com.squarebit.machinations.machc.avm.runtime.TArray;
+import com.squarebit.machinations.machc.avm.runtime.TBoolean;
 import com.squarebit.machinations.machc.avm.runtime.TObject;
 import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 
@@ -310,6 +311,8 @@ public final class Machine {
             executePutArray((PutArray)instruction);
         else if (instruction instanceof LoadArray)
             executeLoadArray((LoadArray)instruction);
+        else if (instruction instanceof JumpBlockIf)
+            executeJumpBlockIf((JumpBlockIf)instruction);
         else
             throw new RuntimeException("Unimplemented instruction");
     }
@@ -414,12 +417,32 @@ public final class Machine {
     }
 
     /**
+     * Sets local variable.
+     *
+     * @param variableInfo the variable info
+     * @param value        the value
+     */
+    void setLocalVariable(VariableInfo variableInfo, TObject value) {
+        setLocalVariable(variableInfo.getIndex(), value);
+    }
+
+    /**
      * Gets a local variable on the stack.
      * @param index the variable index.
      * @return variable value.
      */
     TObject getLocalVariable(int index) {
         return dataStack.get(this.activeDataFrame.getOffset() + index);
+    }
+
+    /**
+     * Gets local variable.
+     *
+     * @param variableInfo the variable info
+     * @return the local variable
+     */
+    TObject getLocalVariable(VariableInfo variableInfo) {
+        return getLocalVariable(variableInfo.getIndex());
     }
 
     /**
@@ -559,5 +582,13 @@ public final class Machine {
         TArray array = (TArray)getLocalVariable(instruction.getArray().getIndex());
         TObject value = array.get(instruction.getItemIndex().getValue());
         setLocalVariable(instruction.getTo().getIndex(), value);
+    }
+
+    private void executeJumpBlockIf(JumpBlockIf instruction) {
+        TBoolean value = (TBoolean)getLocalVariable(instruction.getCondition());
+        if (value.getValue())
+            pushInstructionBlockFrame(instruction.getWhenTrueBlock());
+        else if (instruction.getWhenFalseBlock() != null)
+            pushInstructionBlockFrame(instruction.getWhenFalseBlock());
     }
 }

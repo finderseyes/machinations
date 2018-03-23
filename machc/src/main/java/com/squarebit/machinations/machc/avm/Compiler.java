@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
+import com.squarebit.machinations.machc.ast.statements.GIfThenElse;
 import com.squarebit.machinations.machc.ast.statements.GReturn;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
 import com.squarebit.machinations.machc.avm.exceptions.UnknownIdentifierException;
@@ -105,13 +106,7 @@ public final class Compiler {
 
                 // Methods
                 for (MethodInfo methodInfo: typeInfo.getMethods()) {
-                    GMethod methodDeclaration = methodInfo.getDeclaration();
-                    this.currentMethod = methodInfo;
-
-                    InstructionBlock block = methodInfo.getInstructionBlock();
-                    for (GStatement statement: methodDeclaration.getStatements()) {
-                        compileStatement(block, statement);
-                    }
+                    compileMethod(methodInfo);
                 }
             }
         }
@@ -125,6 +120,21 @@ public final class Compiler {
 
     /**
      *
+     * @param methodInfo
+     * @throws Exception
+     */
+    private void compileMethod(MethodInfo methodInfo) throws Exception {
+        GMethod methodDeclaration = methodInfo.getDeclaration();
+        this.currentMethod = methodInfo;
+
+        InstructionBlock block = methodInfo.getInstructionBlock();
+        for (GStatement statement: methodDeclaration.getStatements()) {
+            compileStatement(block, statement);
+        }
+    }
+
+    /**
+     *
      * @param block
      * @param statement
      * @throws Exception
@@ -133,8 +143,42 @@ public final class Compiler {
         if (statement instanceof GReturn) {
             compileReturnStatement(block, (GReturn)statement);
         }
+        else if (statement instanceof GIfThenElse) {
+            compileIfThenElse(block, (GIfThenElse)statement);
+        }
     }
 
+    /**
+     *
+     * @param block
+     * @param statement
+     * @throws Exception
+     */
+    private void compileIfThenElse(InstructionBlock block, GIfThenElse statement) throws Exception {
+        VariableInfo conditionVar = block.createTempVar();
+
+        // Condition.
+        Expression condition = compileExpression(block, statement.getCondition());
+        block.emit(new Evaluate(condition, conditionVar));
+
+        InstructionBlock whenTrue = new InstructionBlock().setParentScope(block);
+        compileStatement(whenTrue, statement.getWhenTrue());
+
+        InstructionBlock whenFalse = null;
+        if (statement.getWhenFalse() != null) {
+            whenFalse = new InstructionBlock().setParentScope(block);
+            compileStatement(whenFalse, statement.getWhenFalse());
+        }
+
+        block.emit(new JumpBlockIf(conditionVar, whenTrue, whenFalse));
+    }
+
+    /**
+     *
+     * @param block
+     * @param statement
+     * @throws Exception
+     */
     private void compileReturnStatement(InstructionBlock block, GReturn statement) throws Exception {
         VariableInfo resultVar = block.createTempVar();
         Expression resultExpression = compileExpression(block, statement.getExpression());
@@ -153,6 +197,11 @@ public final class Compiler {
         MethodInfo methodInfo = typeInfo.createMethod(method.getName()).setDeclaration(method);
 
         // TODO: Adding parameters
+        List<String> arguments = method.getArguments();
+        for (int i = 0; i < arguments.size(); i++) {
+            ParameterInfo parameterInfo = methodInfo.createParameter(arguments.get(i));
+            parameterInfo.setType(CoreModule.OBJECT_TYPE);
+        }
     }
 
     /**
@@ -521,8 +570,26 @@ public final class Compiler {
         if (binaryExpression.getOperator().equals("+")) {
             return new Add(first, second);
         }
+        else if (binaryExpression.getOperator().equals("<")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
+        else if (binaryExpression.getOperator().equals("<=")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
+        else if (binaryExpression.getOperator().equals(">")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
+        else if (binaryExpression.getOperator().equals(">=")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
+        else if (binaryExpression.getOperator().equals("==")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
+        else if (binaryExpression.getOperator().equals("!=")) {
+            return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
+        }
         else
-            return null;
+            throw new CompilationException("Shall not reach here");
     }
 
     /**

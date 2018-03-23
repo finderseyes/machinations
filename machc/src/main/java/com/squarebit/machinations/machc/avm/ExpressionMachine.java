@@ -44,6 +44,9 @@ public final class ExpressionMachine {
         else if (expression instanceof Add) {
             return evaluateAdd((Add)expression);
         }
+        else if (expression instanceof Compare) {
+            return evaluateCompare((Compare)expression).thenApply(v -> v);
+        }
         else
             throw new RuntimeException("Shall not reach here");
     }
@@ -276,6 +279,39 @@ public final class ExpressionMachine {
                     return TNaN.INSTANCE;
             })
         );
+    }
+
+    /**
+     *
+     * @param compare
+     * @return
+     */
+    private CompletableFuture<TBoolean> evaluateCompare(Compare compare) {
+        return evaluate(compare.getFirst()).thenCompose(first ->
+                evaluate(compare.getSecond()).thenApply(second -> {
+                    TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
+
+                    if (typeInfo == CoreModule.INTEGER_TYPE) {
+                        TInteger firstInteger = evaluateAsInteger(first);
+                        TInteger secondInteger = evaluateAsInteger(second);
+                        return TBoolean.from(compare(compare.getOperator(), firstInteger.getValue(), secondInteger.getValue()));
+                    }
+                    else
+                        return TBoolean.FALSE;
+                })
+        );
+    }
+
+    private boolean compare(Compare.Operator operator, int first, int second) {
+        switch (operator) {
+            case EQ: return first == second;
+            case NEQ: return first != second;
+            case GT: return first > second;
+            case GTE: return first >= second;
+            case LT: return first < second;
+            case LTE: return first <= second;
+        }
+        return false;
     }
 
     private TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {
