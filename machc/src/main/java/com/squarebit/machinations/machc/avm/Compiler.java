@@ -355,26 +355,23 @@ public final class Compiler {
         this.currentMethod = lambdaMethodInfo;
 
         {
-            rootBlock.emit(new JumpBlock(environmentBlock));
-            environmentBlock.emit(new JumpBlock(lambdaBlock));
+            Expression exp = compileExpression(lambdaBlock, expression);
 
             VariableInfo argumentsVar = rootBlock.createTempVar();
-            lambdaBlock.emit(
+            environmentBlock.emit(
                     new LoadField(lambdaTypeInfo.getArgumentsField(),
                             lambdaMethodInfo.getThisVariable(),
                             argumentsVar)
             );
 
-
             {
                 List<VariableInfo> variables = environmentBlock.getLocalVariables();
                 for (int i = 0; i < variables.size(); i++) {
-                    lambdaBlock.emit(new LoadArray(argumentsVar, new TInteger(i), variables.get(i)));
+                    environmentBlock.emit(new LoadArray(argumentsVar, new TInteger(i), variables.get(i)));
                 }
             }
 
             {
-                Expression exp = compileExpression(lambdaBlock, expression);
                 VariableInfo expressionResult = lambdaBlock.createTempVar();
                 lambdaBlock.emit(new Evaluate(exp, expressionResult));
                 lambdaBlock.emit(new Return(expressionResult));
@@ -383,6 +380,9 @@ public final class Compiler {
             rootBlock.reindexVariables();
             environmentBlock.reindexVariables();
             lambdaBlock.reindexVariables();
+
+            rootBlock.emit(new JumpBlock(environmentBlock));
+            environmentBlock.emit(new JumpBlock(lambdaBlock));
 
         }
 

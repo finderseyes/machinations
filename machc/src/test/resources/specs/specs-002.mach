@@ -12,9 +12,13 @@ graph console {
 }
 
 graph game {
+    let
+        y = foo(),
+        x = 1 + y;
+
     pool
         a_0,                    // empty pool
-        a_1 = {10 soldier},            // pool with 10 default resources
+        a_1 = {(x + 7) soldier},            // pool with 10 default resources
         a_2 = {5, 10 gold },    // pool with 5 default resources and 10 gold (named resource, having no properties)
         a_3 = {20 soldier, 5 gold };    // pool with 20 soldier resources
 
@@ -30,4 +34,8 @@ graph game {
     // connections
     connection
         e_0 = 1+a_1:a_0 -> a_1;
+
+    function foo() {
+        return 2;
+    }
 }
