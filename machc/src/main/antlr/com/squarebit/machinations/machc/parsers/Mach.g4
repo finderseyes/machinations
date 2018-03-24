@@ -242,6 +242,7 @@ statement
     | expressionStatement
     | ifThenStatement
     | ifThenElseStatement
+    | forStatement
     | returnStatement
     ;
 
@@ -274,6 +275,27 @@ ifThenElseStatement
     : 'if' '(' expression ')' statement 'else' statement
     ;
 
+forStatement
+    : basicForStatement
+    ;
+
+basicForStatement
+	: 'for' '(' forInit? ';' expression? ';' forUpdate? ')' statement
+	;
+
+forInit
+	: statementExpressionList
+	| variableDeclaration
+	;
+
+forUpdate
+	:	statementExpressionList
+	;
+
+statementExpressionList
+	:	statementExpression (',' statementExpression)*
+	;
+
 returnStatement
     : 'return' expression? ';'
     ;
@@ -290,17 +312,17 @@ assignment
 	;
 
 leftHandSide
-	: localVariableOrThisField
+	: symbol
 	| targetWithOwner
 	;
 
-// -> from is assign to a local variale or a field of current instance.
-localVariableOrThisField
+// -> a name which resolves to a local variable, a "this" field, method, or a global name.
+symbol
     : IDENTIFIER
     ;
 
 targetWithOwner
-    : primary (referenceFieldAccess | referenceArrayAccess)
+    : primary (referenceMemberAccess | referenceArrayAccess)
     ;
 
 assignmentOperator
@@ -424,12 +446,13 @@ primary
     ;
 
 referenceOperator
-    : referenceFieldAccess
+    : referenceMemberAccess
     | referenceMethodInvocation
     | referenceArrayAccess
     ;
 
-referenceFieldAccess
+// Access to a field or a TObject or a type of a module.
+referenceMemberAccess
     : '.' IDENTIFIER
     ;
 
@@ -445,7 +468,7 @@ primaryReference
 	: literal
 	| '(' expression ')'
 	| thisReference
-	| localVariableOrThisField
+	| symbol
 	| thisMethodInvocation
 //	| methodInvocation
 //	| arrayAccess

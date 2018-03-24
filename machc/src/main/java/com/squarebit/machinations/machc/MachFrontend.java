@@ -313,14 +313,21 @@ public class MachFrontend {
     private GStatement transformLocalVariableDeclarationStatement(
             MachParser.LocalVariableDeclarationStatementContext context) throws Exception
     {
-        GVariableDeclaration declaration = new GVariableDeclaration();
-        ParseTree list = context.getChild(0).getChild(1);
+        return transformVariableDeclaration((MachParser.VariableDeclarationContext)context.getChild(0));
+    }
 
-        for (int i = 0; i < list.getChildCount(); i += 2) {
+    private GVariableDeclaration transformVariableDeclaration(MachParser.VariableDeclarationContext context)
+        throws Exception
+    {
+        ParseTree list = context.getChild(1);
+        GVariableDeclaration declaration = new GVariableDeclaration();
+
+        for (int i = 0; i < context.getChildCount(); i += 2) {
             GVariableDeclarator declarator =
                     transformVariableDeclarator((MachParser.VariableDeclaratorContext)list.getChild(i));
             declaration.add(declarator);
         }
+
         return declaration;
     }
 
@@ -357,6 +364,9 @@ public class MachFrontend {
         else if (decl instanceof MachParser.IfThenElseStatementContext) {
             return transformIfThenElseStatement((MachParser.IfThenElseStatementContext)decl);
         }
+        else if (decl instanceof MachParser.ForStatementContext) {
+            return transformForStatement((MachParser.ForStatementContext)decl);
+        }
         else if (decl instanceof MachParser.ReturnStatementContext) {
             ParseTree returnExpression = decl.getChild(1);
             if (returnExpression instanceof MachParser.ExpressionContext)
@@ -366,6 +376,131 @@ public class MachFrontend {
         }
         else
             throw new Exception("Shall not reach here");
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformForStatement(MachParser.ForStatementContext statementContext) throws Exception {
+        ParseTree decl = statementContext.getChild(0);
+
+        if (decl instanceof MachParser.BasicForStatementContext)
+            return transformBasicForStatement((MachParser.BasicForStatementContext)decl);
+        else
+            throw new CompilationException("Unknown 'for' statement.");
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformBasicForStatement(MachParser.BasicForStatementContext statementContext)
+        throws Exception
+    {
+        GFor forStatement = new GFor();
+
+        int next = 2;
+        ParseTree delc = statementContext.getChild(2);
+
+        if (delc instanceof MachParser.ForInitContext) {
+            forStatement.setInit(transformForInit((MachParser.ForInitContext)delc));
+            next += 2;
+        }
+        else
+            next += 1;
+
+        delc = statementContext.getChild(next);
+        if (delc instanceof MachParser.ExpressionContext) {
+            forStatement.setExpression(transformExpression((MachParser.ExpressionContext)delc));
+            next += 2;
+        }
+        else
+            next += 1;
+
+        delc = statementContext.getChild(next);
+        if (delc instanceof MachParser.ForUpdateContext) {
+            forStatement.setUpdate(transformForUpdate((MachParser.ForUpdateContext)delc));
+            next += 2;
+        }
+        else
+            next += 1;
+
+        delc = statementContext.getChild(next);
+        forStatement.setStatement(transformStatement((MachParser.StatementContext)delc));
+
+        return forStatement;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformForInit(MachParser.ForInitContext context) throws Exception {
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.StatementExpressionListContext) {
+            GBlock block = new GBlock();
+
+            List<GExpression> expressions = transformStatementExpressionList(
+                    (MachParser.StatementExpressionListContext)decl);
+
+            for (GExpression expression: expressions) {
+                block.add(new GExpressionStatement().setExpression(expression));
+            }
+
+            return block;
+        }
+        else if (decl instanceof MachParser.VariableDeclarationContext) {
+            return transformVariableDeclaration((MachParser.VariableDeclarationContext)decl);
+        }
+        else
+            throw new CompilationException("Unknown for init construct.");
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformForUpdate(MachParser.ForUpdateContext context) throws Exception {
+        GBlock block = new GBlock();
+
+        List<GExpression> expressions = transformStatementExpressionList(
+                (MachParser.StatementExpressionListContext)context.getChild(0));
+
+        for (GExpression expression: expressions) {
+            block.add(new GExpressionStatement().setExpression(expression));
+        }
+
+        return block;
+    }
+
+    private List<GExpression> transformStatementExpressionList(MachParser.StatementExpressionListContext context)
+        throws Exception
+    {
+        List<GExpression> list = new ArrayList<>();
+        for (int i = 0; i < context.getChildCount(); i += 2) {
+            list.add(transformStatementExpression((MachParser.StatementExpressionContext)context.getChild(i)));
+        }
+        return list;
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformStatementExpression(MachParser.StatementExpressionContext context) throws Exception {
+        return null;
     }
 
     /**

@@ -19,4 +19,9 @@ public class GVariableDeclaration extends GStatement {
     public List<GVariableDeclarator> getDeclarators() {
         return declarators;
     }
+
+    public GVariableDeclaration setDeclarators(List<GVariableDeclarator> declarators) {
+        this.declarators = declarators;
+        return this;
+    }
 }
