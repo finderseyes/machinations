@@ -308,12 +308,12 @@ expression
     ;
 
 assignment
-	:	leftHandSide assignmentOperator expression
+	:	assignmentTarget assignmentOperator expression
 	;
 
-leftHandSide
+assignmentTarget
 	: symbol
-	| targetWithOwner
+	| referenceAccess
 	;
 
 // -> a name which resolves to a local variable, a "this" field, method, or a global name.
@@ -321,7 +321,7 @@ symbol
     : IDENTIFIER
     ;
 
-targetWithOwner
+referenceAccess
     : primary (referenceMemberAccess | referenceArrayAccess)
     ;
 
@@ -440,7 +440,7 @@ postDecrementExpression_lf_postfixExpression
 	:	'--'
 	;
 
-// --> Resolve to from
+// --> Resolve to a reference.
 primary
     : primaryReference (referenceOperator)*
     ;

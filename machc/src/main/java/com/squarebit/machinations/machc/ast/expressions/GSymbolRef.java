@@ -1,9 +1,9 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
 /**
- * Reference to a symbol.
+ * Reference to a local variable/this object field/global name.
  */
-public final class GSymbolRef extends GExpression {
+public final class GSymbolRef extends GExpression implements GAssignmentTarget {
     private final String symbolName;
     private GSymbolRef next;
 

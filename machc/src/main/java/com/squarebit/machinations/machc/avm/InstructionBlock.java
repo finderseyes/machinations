@@ -153,9 +153,10 @@ public final class InstructionBlock implements Scope {
      *
      * @param instruction the {@link Instruction} instance
      */
-    public void emit(Instruction instruction) {
+    public Instruction emit(Instruction instruction) {
         instruction.setScope(this).setIndex(instructions.size());
         instructions.add(instruction);
+        return instruction;
     }
 
     /**
@@ -166,6 +167,15 @@ public final class InstructionBlock implements Scope {
 
         for (int i = 0; i < variables.size(); i++) {
             variables.get(i).setIndex(i + parentVariableCount);
+        }
+    }
+
+    /**
+     *
+     */
+    public void reindexInstructions() {
+        for (int i = 0; i < instructions.size(); i++) {
+            instructions.get(i).setIndex(i);
         }
     }
 }

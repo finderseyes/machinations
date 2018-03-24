@@ -145,6 +145,10 @@ public final class Compiler {
         else if (statement instanceof GIfThenElse) {
             compileIfThenElse(block, (GIfThenElse)statement);
         }
+        else if (statement instanceof GFor) {
+            InstructionBlock childBlock = compileFor(block, (GFor)statement);
+            block.emit(new JumpBlock(childBlock));
+        }
         else if (statement instanceof GVariableDeclaration) {
             compileVariableDeclaration(block, (GVariableDeclaration)statement);
         }
@@ -152,8 +156,73 @@ public final class Compiler {
             InstructionBlock childBlock = compileBlock(block, (GBlock)statement);
             block.emit(new JumpBlock(childBlock));
         }
+        else if (statement instanceof GExpressionStatement) {
+            compileExpressionStatement(block, (GExpressionStatement)statement);
+        }
         else
             throw new CompilationException("Shall not reach here");
+    }
+
+    private void compileExpressionStatement(InstructionBlock block, GExpressionStatement statement) throws Exception {
+        GExpression expression = statement.getExpression();
+
+        if (expression instanceof GAssignment) {
+            compileAssignment(block, (GAssignment)expression);
+        }
+        else
+            throw new CompilationException("Shall not reach here");
+    }
+
+    private Expression compileAssignment(InstructionBlock block, GAssignment assignment) throws Exception {
+        Expression expression = compileExpression(block, assignment.getExpression());
+        if (assignment.getTarget() instanceof GSymbolRef) {
+
+        }
+    }
+
+    private void compileFlatBlockOrSingleStatement(InstructionBlock block, GStatement statement) throws Exception {
+        if (statement instanceof GBlock) {
+            GBlock statementBlock = (GBlock)statement;
+            for (GStatement s: statementBlock.getStatements())
+                compileStatement(block, s);
+        }
+        else
+            compileStatement(block, statement);
+    }
+
+    private InstructionBlock compileFor(InstructionBlock block, GFor instruction) throws Exception {
+        InstructionBlock forBlock = new InstructionBlock().setParentScope(block);
+
+        // for-init
+        compileFlatBlockOrSingleStatement(forBlock, instruction.getInit());
+
+        // for-condition check.
+        Label start = new Label();
+        forBlock.emit(start);
+
+        // Evaluate the "not-condition".
+        VariableInfo conditionVar = forBlock.createTempVar();
+        Expression condition = compileExpression(forBlock, instruction.getExpression());
+        forBlock.emit(new Evaluate(new Not(condition), conditionVar));
+
+        Label end = new Label();
+        forBlock.emit(new JumpIf().setCondition(conditionVar).setWhenTrue(end));
+
+        // for-body
+        compileFlatBlockOrSingleStatement(forBlock, instruction.getStatement());
+
+        // for-update
+        compileFlatBlockOrSingleStatement(forBlock, instruction.getUpdate());
+
+        //
+        forBlock.emit(new Jump(start));
+
+        // for-end
+        forBlock.emit(end);
+
+        forBlock.reindexVariables();
+        forBlock.reindexInstructions();
+        return forBlock;
     }
 
     private InstructionBlock compileBlock(InstructionBlock block, GBlock statement) throws Exception {

@@ -4,8 +4,7 @@ import com.squarebit.machinations.machc.ast.*;
 import com.squarebit.machinations.machc.ast.expressions.*;
 import com.squarebit.machinations.machc.ast.statements.*;
 import com.squarebit.machinations.machc.avm.exceptions.CompilationException;
-import com.squarebit.machinations.machc.avm.expressions.Expression;
-import com.squarebit.machinations.machc.avm.expressions.SetDescriptor;
+import com.squarebit.machinations.machc.parsers.Java8Parser;
 import com.squarebit.machinations.machc.parsers.MachLexer;
 import com.squarebit.machinations.machc.parsers.MachParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -500,7 +499,86 @@ public class MachFrontend {
      * @throws Exception
      */
     private GExpression transformStatementExpression(MachParser.StatementExpressionContext context) throws Exception {
-        return null;
+        ParseTree decl = context.getChild(0);
+
+        if (decl instanceof MachParser.AssignmentContext) {
+            return transformAssignment((MachParser.AssignmentContext)decl);
+        }
+        else if (decl instanceof MachParser.PostIncrementExpressionContext) {
+            return transformPostIncrementExpression((MachParser.PostIncrementExpressionContext)decl);
+        }
+        else if (decl instanceof Java8Parser.PostDecrementExpressionContext) {
+            return transformPostDecrementExpression((MachParser.PostDecrementExpressionContext)decl);
+        }
+        else throw new CompilationException("Unknown statement expression");
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformPostIncrementExpression(MachParser.PostIncrementExpressionContext context)
+        throws Exception
+    {
+        GExpression expression = transformPostfixExpression((MachParser.PostfixExpressionContext)context.getChild(0));
+        return new GPostfixExpression().setExpression(expression).setOperator(GPostfixExpression.Operator.INCREMENT);
+    }
+
+    private GExpression transformPostDecrementExpression(MachParser.PostDecrementExpressionContext context)
+        throws Exception
+    {
+        GExpression expression = transformPostfixExpression((MachParser.PostfixExpressionContext)context.getChild(0));
+        return new GPostfixExpression().setExpression(expression).setOperator(GPostfixExpression.Operator.DECREMENT);
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GExpression transformAssignment(MachParser.AssignmentContext context) throws Exception {
+        GAssignmentTarget target = transformAssignmentTarget((MachParser.AssignmentTargetContext)context.getChild(0));
+        GExpression expression = transformExpression((MachParser.ExpressionContext)context.getChild(2));
+        return new GAssignment().setTarget(target).setExpression(expression);
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GAssignmentTarget transformAssignmentTarget(MachParser.AssignmentTargetContext context) throws Exception {
+        ParseTree delc = context.getChild(0);
+
+        if (delc instanceof MachParser.SymbolContext)
+            return new GSymbolRef(delc.getText());
+        else if (delc instanceof MachParser.ReferenceAccessContext) {
+            return transformReferenceAccess((MachParser.ReferenceAccessContext) delc);
+        }
+        else throw new CompilationException("Unknown assignment target");
+    }
+
+    /**
+     *
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    private GAssignmentTarget transformReferenceAccess(MachParser.ReferenceAccessContext context)
+        throws Exception
+    {
+        GExpression primary = transformPrimary((MachParser.PrimaryContext)context.getChild(0));
+        ParseTree decl = context.getChild(1);
+
+        if (decl instanceof MachParser.ReferenceMemberAccessContext) {
+            return new GMemberAccess().setReference(primary).setMemberName(decl.getText());
+        }
+        else
+            throw new CompilationException("Unknown reference access");
     }
 
     /**
@@ -1098,7 +1176,9 @@ public class MachFrontend {
 
         for (int i = 1; i < expressionContext.getChildCount(); i++) {
             decl = expressionContext.getChild(i);
-            expression = new GSuffixExpression().setOperator(decl.getText()).setChild(expression);
+            expression = new GPostfixExpression()
+                    .setOperator(GPostfixExpression.Operator.parse(decl.getText()))
+                    .setExpression(expression);
         }
 
         return expression;
@@ -1120,8 +1200,8 @@ public class MachFrontend {
         for (int i = 1; i < expressionContext.getChildCount(); i++) {
             ParseTree decl = expressionContext.getChild(i).getChild(0);
 
-            if (decl instanceof MachParser.ReferenceFieldAccessContext)
-                reference = loadField(reference, (MachParser.ReferenceFieldAccessContext)decl);
+            if (decl instanceof MachParser.ReferenceMemberAccessContext)
+                reference = loadField(reference, (MachParser.ReferenceMemberAccessContext)decl);
             else
                 throw new RuntimeException("Not implemented");
         }
@@ -1136,7 +1216,7 @@ public class MachFrontend {
      * @return
      * @throws Exception
      */
-    private GExpression loadField(GExpression reference, MachParser.ReferenceFieldAccessContext fieldAccessContext)
+    private GExpression loadField(GExpression reference, MachParser.ReferenceMemberAccessContext fieldAccessContext)
         throws Exception
     {
         return new GLoadField(reference, fieldAccessContext.getChild(1).getText());
@@ -1162,7 +1242,7 @@ public class MachFrontend {
         else if (decl instanceof MachParser.ThisReferenceContext) {
             return GThis.INSTANCE;
         }
-        else if (decl instanceof MachParser.LocalVariableOrThisFieldContext) {
+        else if (decl instanceof MachParser.SymbolContext) {
             return new GSymbolRef(decl.getText());
         }
         else if (decl instanceof MachParser.ThisMethodInvocationContext) {
