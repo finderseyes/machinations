@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  *
  */
-public final class GUnaryExpression extends GExpression {
+public final class GUnaryExpression implements GExpression {
     private String operator;
     private GExpression child;
 

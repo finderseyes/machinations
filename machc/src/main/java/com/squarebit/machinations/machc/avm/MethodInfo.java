@@ -2,6 +2,7 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.GMethod;
 import com.squarebit.machinations.machc.avm.exceptions.ParameterAlreadyExistedException;
+import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 /**
  * A method declared in a {@link TypeInfo}.
  */
-public final class MethodInfo implements Scope {
+public final class MethodInfo implements Scope, Symbol {
     public static final String CONSTRUCTOR_NAME = "$__ctor__$";
 
     private GMethod declaration;

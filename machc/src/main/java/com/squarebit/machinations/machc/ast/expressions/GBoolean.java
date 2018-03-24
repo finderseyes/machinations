@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public final class GBoolean extends GExpression {
+public final class GBoolean implements GExpression {
     public static GBoolean TRUE = new GBoolean();
     public static GBoolean FALSE = new GBoolean();
 

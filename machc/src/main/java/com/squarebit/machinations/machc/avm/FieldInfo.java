@@ -7,7 +7,7 @@ import com.squarebit.machinations.machc.avm.runtime.TObjectBase;
 /**
  * A field declared in a {@link TypeInfo}.
  */
-public final class FieldInfo {
+public final class FieldInfo implements Symbol {
     private GGraphField declaration;
     private TypeInfo declaringType;
     private boolean isStatic;

@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public final class GPrefixExpression extends GExpression {
+public final class GPrefixExpression implements GExpression {
     private String operator;
     private GExpression child;
 

@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * The integer literal.
  */
-public final class GInteger extends GExpression {
+public final class GInteger implements GExpression {
     private final int value;
 
     /**

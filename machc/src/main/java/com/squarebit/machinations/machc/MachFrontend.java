@@ -523,14 +523,22 @@ public class MachFrontend {
         throws Exception
     {
         GExpression expression = transformPostfixExpression((MachParser.PostfixExpressionContext)context.getChild(0));
-        return new GPostfixExpression().setExpression(expression).setOperator(GPostfixExpression.Operator.INCREMENT);
+        if (!(expression instanceof GAssignmentTarget))
+            throw new CompilationException("Variable or field required");
+        return new GPostfixExpression()
+                .setExpression((GAssignmentTarget)expression)
+                .setOperator(GPostfixExpression.Operator.INCREMENT);
     }
 
     private GExpression transformPostDecrementExpression(MachParser.PostDecrementExpressionContext context)
         throws Exception
     {
         GExpression expression = transformPostfixExpression((MachParser.PostfixExpressionContext)context.getChild(0));
-        return new GPostfixExpression().setExpression(expression).setOperator(GPostfixExpression.Operator.DECREMENT);
+        if (!(expression instanceof GAssignmentTarget))
+            throw new CompilationException("Variable or field required");
+        return new GPostfixExpression()
+                .setExpression((GAssignmentTarget)expression)
+                .setOperator(GPostfixExpression.Operator.DECREMENT);
     }
 
     /**
@@ -1174,11 +1182,14 @@ public class MachFrontend {
             expression = new GSymbolRef(decl.getText());
         }
 
+        if (!(expression instanceof GAssignmentTarget))
+            throw new CompilationException("Variable or field required");
+
         for (int i = 1; i < expressionContext.getChildCount(); i++) {
             decl = expressionContext.getChild(i);
             expression = new GPostfixExpression()
                     .setOperator(GPostfixExpression.Operator.parse(decl.getText()))
-                    .setExpression(expression);
+                    .setExpression((GAssignmentTarget)expression);
         }
 
         return expression;

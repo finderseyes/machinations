@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * The ternary expression (condition ? first : second).
  */
-public final class GTernaryExpression extends GExpression {
+public final class GTernaryExpression implements GExpression {
     private GExpression condition;
     private GExpression first;
     private GExpression second;

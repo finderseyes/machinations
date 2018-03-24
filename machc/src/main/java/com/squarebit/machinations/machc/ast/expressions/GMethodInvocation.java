@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public class GMethodInvocation extends GExpression {
+public class GMethodInvocation implements GExpression {
     private GExpression reference;
     private String methodName;
     private GExpression[] arguments;

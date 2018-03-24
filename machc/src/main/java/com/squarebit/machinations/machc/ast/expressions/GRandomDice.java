@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * The random draw literal.
  */
-public final class GRandomDice extends GExpression {
+public final class GRandomDice implements GExpression {
     private static final String DRAW_PREFIX = "draw";
     private static final int DRAW_PREFIX_LENGTH = DRAW_PREFIX.length();
 

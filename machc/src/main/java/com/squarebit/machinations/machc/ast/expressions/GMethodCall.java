@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * The type G method call.
  */
-public final class GMethodCall extends GExpression {
+public final class GMethodCall implements GExpression {
     private final GSymbolRef target;
     private final String name;
     private final GExpression[] arguments;

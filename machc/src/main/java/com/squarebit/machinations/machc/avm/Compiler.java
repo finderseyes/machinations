@@ -24,6 +24,8 @@ public final class Compiler {
     private static class LambdaContext {
         TypeInfo currentType;
         MethodInfo containerMethod;
+        InstructionBlock containerBlock;
+
         InstructionBlock environmentBlock;
         InstructionBlock lambdaBlock;
 
@@ -42,9 +44,16 @@ public final class Compiler {
             return this;
         }
 
+        public LambdaContext setContainerBlock(InstructionBlock containerBlock) {
+            this.containerBlock = containerBlock;
+            return this;
+        }
+
         public LambdaContext setContainerMethod(MethodInfo containerMethod) {
             this.containerMethod = containerMethod;
             return this;
+
+
         }
 
         public LambdaContext setEnvironmentBlock(InstructionBlock environmentBlock) {
@@ -159,7 +168,7 @@ public final class Compiler {
         else if (statement instanceof GExpressionStatement) {
             compileExpressionStatement(block, (GExpressionStatement)statement);
         }
-        else
+        else if (statement != GStatement.EMPTY)
             throw new CompilationException("Shall not reach here");
     }
 
@@ -169,15 +178,84 @@ public final class Compiler {
         if (expression instanceof GAssignment) {
             compileAssignment(block, (GAssignment)expression);
         }
+        else if (expression instanceof GPostfixExpression) {
+            compilePostfixExpression(block, (GPostfixExpression)expression);
+        }
         else
             throw new CompilationException("Shall not reach here");
     }
 
+    private Expression compilePostfixExpression(InstructionBlock block, GPostfixExpression expression) throws Exception {
+        Expression child = compileExpression(block, expression.getExpression());
+        TInteger constant = expression.getOperator() == GPostfixExpression.Operator.INCREMENT ?
+                new TInteger(1) : new TInteger(-1);
+
+        Variable value = emitEvaluateOrSkip(block, child);
+        VariableInfo postValue = block.createTempVar();
+
+        // block.emit(new Evaluate(child, value));
+        return null;
+    }
+
     private Expression compileAssignment(InstructionBlock block, GAssignment assignment) throws Exception {
         Expression expression = compileExpression(block, assignment.getExpression());
-        if (assignment.getTarget() instanceof GSymbolRef) {
 
+        if (assignment.getTarget() instanceof GSymbolRef) {
+            GSymbolRef symbolRef = (GSymbolRef)assignment.getTarget();
+            Symbol symbol = resolveLocalVariableOrFieldSymbol(block, symbolRef.getSymbolName());
+
+            if (symbol == null)
+                throw new CompilationException(String.format("Unknown identifier %s", symbolRef.getSymbolName()));
+            else {
+                if (symbol instanceof VariableInfo) {
+                    VariableInfo variableInfo = (VariableInfo)symbol;
+
+                    if (!isChildScope(block, variableInfo.getDeclaringScope()))
+                        throw new CompilationException(String.format("Cannot assign to variable %s", symbolRef.getSymbolName()));
+
+                    Variable expressionValue = emitEvaluateOrSkip(block, expression);
+                    block.emit(new Move(expressionValue.getVariableInfo(), variableInfo));
+                    return expressionValue;
+                }
+                else if (symbol instanceof FieldInfo) {
+                    Variable expressionValue = emitEvaluateOrSkip(block, expression);
+                    block.emit(new PutField((FieldInfo)symbol, getThisVariable(), expressionValue.getVariableInfo()));
+                    return expressionValue;
+                }
+                else throw new CompilationException("Shall not reach here");
+            }
         }
+        else throw new CompilationException("Shall not reach here.");
+    }
+
+    private Variable emitEvaluateOrSkip(InstructionBlock block, Expression expression) {
+        if (expression instanceof Variable) {
+            return ((Variable)expression);
+        }
+        else {
+            VariableInfo variableInfo = block.createTempVar();
+            block.emit(new Evaluate(expression, variableInfo));
+            return new Variable(variableInfo);
+        }
+    }
+
+    /**
+     * Determines if the first scope is the same or child scope of the second.
+     * @param first
+     * @param second
+     * @return
+     */
+    private boolean isChildScope(Scope first, Scope second) {
+        if (second == null)
+            return false;
+
+        while (first != null) {
+            if (first == second)
+                return true;
+            first = first.getParentScope();
+        }
+
+        return false;
     }
 
     private void compileFlatBlockOrSingleStatement(InstructionBlock block, GStatement statement) throws Exception {
@@ -188,6 +266,28 @@ public final class Compiler {
         }
         else
             compileStatement(block, statement);
+    }
+
+    private Symbol resolveLocalVariableOrFieldSymbol(Scope scope, String name) throws Exception {
+        // Try to find in current scope first.
+        VariableInfo localVar = scope.findVariable(name);
+
+        if (localVar != null)
+            return localVar;
+        else {
+            // Try to find in lambda container scope
+            if (this.currentLambdaContext != null)
+                localVar = this.currentLambdaContext.containerBlock.findVariable(name);
+
+            if (localVar != null)
+                return localVar;
+            else {
+                TypeInfo currentType = this.currentLambdaContext == null ?
+                        this.currentType : this.currentLambdaContext.currentType;
+
+                return currentType.findField(name);
+            }
+        }
     }
 
     private InstructionBlock compileFor(InstructionBlock block, GFor instruction) throws Exception {
@@ -516,6 +616,7 @@ public final class Compiler {
         this.currentLambdaContext = new LambdaContext()
                 .setCurrentType(this.currentType)
                 .setContainerMethod(this.currentMethod)
+                .setContainerBlock(block)
                 .setEnvironmentBlock(environmentBlock)
                 .setLambdaBlock(lambdaBlock);
 

@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public final class GString extends GExpression {
+public final class GString implements GExpression {
     private final String value;
 
     /**

@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * For post incremental/decremental.
  */
-public final class GPostfixExpression extends GExpression {
+public final class GPostfixExpression implements GExpression {
     public enum Operator {
         INCREMENT,
         DECREMENT;
@@ -16,7 +16,7 @@ public final class GPostfixExpression extends GExpression {
     }
 
     private Operator operator;
-    private GExpression expression;
+    private GAssignmentTarget expression;
 
     /**
      * Gets operator.
@@ -43,7 +43,7 @@ public final class GPostfixExpression extends GExpression {
      *
      * @return the expression
      */
-    public GExpression getExpression() {
+    public GAssignmentTarget getExpression() {
         return expression;
     }
 
@@ -53,7 +53,7 @@ public final class GPostfixExpression extends GExpression {
      * @param expression the expression
      * @return the expression
      */
-    public GPostfixExpression setExpression(GExpression expression) {
+    public GPostfixExpression setExpression(GAssignmentTarget expression) {
         this.expression = expression;
         return this;
     }

@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public class GMemberAccess extends GExpression implements GAssignmentTarget {
+public class GMemberAccess implements GAssignmentTarget {
     private GExpression reference;
     private String memberName;
 

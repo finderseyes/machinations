@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * Expression involves 2 sub-expressions (first op second).
  */
-public class GBinaryExpression extends GExpression {
+public class GBinaryExpression implements GExpression {
     private GExpression first, second;
     private String operator;
 

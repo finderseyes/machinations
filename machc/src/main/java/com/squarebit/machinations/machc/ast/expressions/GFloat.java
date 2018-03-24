@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public final class GFloat extends GExpression {
+public final class GFloat implements GExpression {
     private final float value;
 
     /**

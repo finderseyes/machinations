@@ -1,6 +1,6 @@
 package com.squarebit.machinations.machc.ast.expressions;
 
-public final class GLoadField extends GExpression {
+public final class GLoadField implements GExpression {
     private final GExpression reference;
     private final String fieldName;
 

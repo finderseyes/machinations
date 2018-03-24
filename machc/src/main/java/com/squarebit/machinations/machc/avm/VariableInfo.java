@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.avm;
 /**
  * A local variable in a {@link Scope}.
  */
-public final class VariableInfo {
+public final class VariableInfo implements Symbol {
     private Scope declaringScope;
     private String name;
     private TypeInfo type;

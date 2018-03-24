@@ -3,7 +3,7 @@ package com.squarebit.machinations.machc.ast.expressions;
 /**
  * Reference to a local variable/this object field/global name.
  */
-public final class GSymbolRef extends GExpression implements GAssignmentTarget {
+public final class GSymbolRef implements GAssignmentTarget {
     private final String symbolName;
     private GSymbolRef next;
 
