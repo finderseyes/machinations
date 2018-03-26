@@ -197,10 +197,12 @@ public final class Compiler {
             throw new CompilationException("Require a variable or field.");
 
         Variable childVar = (Variable)child;
-        if (childVar.getVariableInfo().isTemporary())
-            throw new CompilationException("Require a variable or field.");
 
+        // The variable does reference a local variable.
         if (childVar.getData() == null) {
+            if (childVar.getVariableInfo().isTemporary())
+                throw new CompilationException("Require a variable or field.");
+
             VariableInfo preValue = block.createTempVar();
             VariableInfo postValue = block.createTempVar();
 
@@ -211,8 +213,20 @@ public final class Compiler {
 
             return new Variable(preValue);
         }
-        else
-            throw new CompilationException("Should not reach here");
+        else {
+            if (childVar.getData() instanceof FieldAccess) {
+                FieldAccess fieldAccess = (FieldAccess)childVar.getData();
+
+                VariableInfo postValue = block.createTempVar();
+                block.emit(new Evaluate(new Add(childVar, new Constant(constant)), postValue));
+                block.emit(new Move(postValue, childVar.getVariableInfo()));
+                block.emit(new PutField(fieldAccess.getFieldInfo(), fieldAccess.getOwner(), postValue));
+
+                return childVar;
+            }
+            else
+                throw new CompilationException("Should not reach here");
+        }
     }
 
     private Expression compileAssignment(InstructionBlock block, GAssignment assignment) throws Exception {
@@ -857,8 +871,10 @@ public final class Compiler {
                 VariableInfo result = block.createTempVar();
 
                 if (symbolRef.getNext() == null) {
-                    block.emit(new LoadField(fieldInfo, getThisVariable(), result));
-                    return new Variable(result);
+                    VariableInfo thisVariable = getThisVariable();
+
+                    block.emit(new LoadField(fieldInfo, thisVariable, result));
+                    return new Variable(result).setData(new FieldAccess().setFieldInfo(fieldInfo).setOwner(thisVariable));
                 }
                 else {
                     return null;

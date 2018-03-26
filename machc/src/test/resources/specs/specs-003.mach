@@ -4,6 +4,8 @@ Test aspects:
 */
 
 graph main {
+    let z = 0;
+
     function f0(v) {
         if (v > 0)
             return true;
@@ -38,5 +40,10 @@ graph main {
         let x = 0;
         for (let y=5; y < 15; x++, y++);
         return x;
+    }
+
+    function f5() {
+        for (let y=0; y < 20; z++, y++);
+        return z;
     }
 }
