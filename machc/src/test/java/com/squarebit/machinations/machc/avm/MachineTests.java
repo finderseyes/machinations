@@ -244,6 +244,30 @@ public class MachineTests {
             }
         }
 
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f3");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(0);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph)
+                ).get();
+                assertThat(result.getValue()).isEqualTo(10);
+            }
+        }
+
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f4");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(0);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph)
+                ).get();
+                assertThat(result.getValue()).isEqualTo(10);
+            }
+        }
+
         machine.shutdown();
     }
 }

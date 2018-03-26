@@ -21,6 +21,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Compiler which compiles AST to Abstract Virtual Machine code.
  */
 public final class Compiler {
+    /**
+     * Data for current lambda compilation.
+     */
     private static class LambdaContext {
         TypeInfo currentType;
         MethodInfo containerMethod;
@@ -190,11 +193,26 @@ public final class Compiler {
         TInteger constant = expression.getOperator() == GPostfixExpression.Operator.INCREMENT ?
                 new TInteger(1) : new TInteger(-1);
 
-        Variable value = emitEvaluateOrSkip(block, child);
-        VariableInfo postValue = block.createTempVar();
+        if (!(child instanceof Variable))
+            throw new CompilationException("Require a variable or field.");
 
-        // block.emit(new Evaluate(child, value));
-        return null;
+        Variable childVar = (Variable)child;
+        if (childVar.getVariableInfo().isTemporary())
+            throw new CompilationException("Require a variable or field.");
+
+        if (childVar.getData() == null) {
+            VariableInfo preValue = block.createTempVar();
+            VariableInfo postValue = block.createTempVar();
+
+            block.emit(new Move(childVar.getVariableInfo(), preValue));
+
+            block.emit(new Evaluate(new Add(childVar, new Constant(constant)), postValue));
+            block.emit(new Move(postValue, childVar.getVariableInfo()));
+
+            return new Variable(preValue);
+        }
+        else
+            throw new CompilationException("Should not reach here");
     }
 
     private Expression compileAssignment(InstructionBlock block, GAssignment assignment) throws Exception {

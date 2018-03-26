@@ -61,4 +61,12 @@ public final class VariableInfo implements Symbol {
         this.index = index;
         return this;
     }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isTemporary() {
+        return name.startsWith("$");
+    }
 }

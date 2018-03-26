@@ -2,7 +2,6 @@ package com.squarebit.machinations.machc.avm;
 
 import com.squarebit.machinations.machc.ast.GMethod;
 import com.squarebit.machinations.machc.avm.exceptions.ParameterAlreadyExistedException;
-import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -313,7 +313,13 @@ public final class Machine {
             executeLoadArray((LoadArray)instruction);
         else if (instruction instanceof JumpBlockIf)
             executeJumpBlockIf((JumpBlockIf)instruction);
-        else
+        else if (instruction instanceof Move)
+            executeMove((Move)instruction);
+        else if (instruction instanceof JumpIf)
+            executeJumpIf((JumpIf)instruction);
+        else if (instruction instanceof Jump)
+            executeJump((Jump)instruction);
+        else if (!(instruction instanceof Label))
             throw new RuntimeException("Unimplemented instruction");
     }
 
@@ -590,5 +596,32 @@ public final class Machine {
             pushInstructionBlockFrame(instruction.getWhenTrueBlock());
         else if (instruction.getWhenFalseBlock() != null)
             pushInstructionBlockFrame(instruction.getWhenFalseBlock());
+    }
+
+    private void executeMove(Move instruction) {
+        TObject fromValue = getLocalVariable(instruction.getFrom());
+        setLocalVariable(instruction.getTo(), fromValue);
+    }
+
+    private void executeJumpIf(JumpIf instruction) {
+        InstructionBlockFrame currentInstructionBlockFrame = (InstructionBlockFrame)this.activeFrame;
+        if (instruction.getScope() != currentInstructionBlockFrame.getBlock()) {
+            throw new RuntimeException("Invalid jump.");
+        }
+
+        TBoolean condition = expressionMachine.evaluateAsBoolean(getLocalVariable(instruction.getCondition()));
+        if (condition.getValue())
+            currentInstructionBlockFrame.setCounter(instruction.getWhenTrue().getIndex());
+        else if (instruction.getWhenFalse() != null)
+            currentInstructionBlockFrame.setCounter(instruction.getWhenFalse().getIndex());
+    }
+
+    private void executeJump(Jump instruction) {
+        InstructionBlockFrame currentInstructionBlockFrame = (InstructionBlockFrame)this.activeFrame;
+        if (instruction.getScope() != currentInstructionBlockFrame.getBlock()) {
+            throw new RuntimeException("Invalid jump.");
+        }
+
+        currentInstructionBlockFrame.setCounter(instruction.getTo().getIndex());
     }
 }

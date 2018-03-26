@@ -47,8 +47,38 @@ public final class ExpressionMachine {
         else if (expression instanceof Compare) {
             return evaluateCompare((Compare)expression).thenApply(v -> v);
         }
+        else if (expression instanceof Not) {
+            return evaluateNot((Not)expression).thenApply(v -> v);
+        }
         else
             throw new RuntimeException("Shall not reach here");
+    }
+
+    /**
+     *
+     * @param expression
+     * @return
+     */
+    public CompletableFuture<TBoolean> evaluateNot(Not expression) {
+        CompletableFuture<TBoolean> returnFuture = new CompletableFuture<>();
+
+        evaluate(expression.getExpression()).whenComplete((result, exception) -> {
+            if (exception != null)
+                returnFuture.completeExceptionally(exception);
+
+            try {
+                TBoolean booleanResult = evaluateAsBoolean(result);
+                if (booleanResult == TBoolean.TRUE)
+                    returnFuture.complete(TBoolean.FALSE);
+                else
+                    returnFuture.complete(TBoolean.TRUE);
+            }
+            catch (Exception ex) {
+                returnFuture.completeExceptionally(ex);
+            }
+        });
+
+        return returnFuture;
     }
 
     /**
@@ -286,7 +316,7 @@ public final class ExpressionMachine {
      * @param compare
      * @return
      */
-    private CompletableFuture<TBoolean> evaluateCompare(Compare compare) {
+    public CompletableFuture<TBoolean> evaluateCompare(Compare compare) {
         return evaluate(compare.getFirst()).thenCompose(first ->
                 evaluate(compare.getSecond()).thenApply(second -> {
                     TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
@@ -302,7 +332,7 @@ public final class ExpressionMachine {
         );
     }
 
-    private boolean compare(Compare.Operator operator, int first, int second) {
+    public boolean compare(Compare.Operator operator, int first, int second) {
         switch (operator) {
             case EQ: return first == second;
             case NEQ: return first != second;
@@ -314,7 +344,7 @@ public final class ExpressionMachine {
         return false;
     }
 
-    private TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {
+    public TypeInfo coerceType(TypeInfo firstType, TypeInfo secondType) {
         if (firstType == CoreModule.STRING_TYPE || secondType == CoreModule.STRING_TYPE)
             return CoreModule.STRING_TYPE;
         else if (firstType == CoreModule.NAN_TYPE || secondType == CoreModule.NAN_TYPE)
@@ -327,7 +357,7 @@ public final class ExpressionMachine {
             throw new RuntimeException("Cannot coerce types");
     }
 
-    private TInteger evaluateAsInteger(TObject value) {
+    public TInteger evaluateAsInteger(TObject value) {
         if (value instanceof TInteger)
             return (TInteger)value;
         else if (value instanceof TFloat)
@@ -336,9 +366,16 @@ public final class ExpressionMachine {
             throw new RuntimeException("Cannot convert to integer");
     }
 
-    private TString evaluateAsString(TObject value) {
+    public TString evaluateAsString(TObject value) {
         if (value instanceof TString)
             return (TString) value;
         return new TString(value.toString());
+    }
+
+    public TBoolean evaluateAsBoolean(TObject value) {
+        if (value instanceof TBoolean)
+            return (TBoolean)value;
+        else
+            throw new RuntimeException("Cannot convert to boolean");
     }
 }

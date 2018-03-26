@@ -1182,7 +1182,7 @@ public class MachFrontend {
             expression = new GSymbolRef(decl.getText());
         }
 
-        if (!(expression instanceof GAssignmentTarget))
+        if (expressionContext.getChildCount() > 1 && !(expression instanceof GAssignmentTarget))
             throw new CompilationException("Variable or field required");
 
         for (int i = 1; i < expressionContext.getChildCount(); i++) {

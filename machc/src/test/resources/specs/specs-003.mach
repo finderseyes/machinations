@@ -33,4 +33,10 @@ graph main {
         for (x=1; x < 10; x++);
         return x;
     }
+
+    function f4() {
+        let x = 0;
+        for (let y=5; y < 15; x++, y++);
+        return x;
+    }
 }
