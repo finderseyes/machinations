@@ -355,7 +355,8 @@ public class MachFrontend {
             return transformBlock((MachParser.BlockContext)decl);
         }
         else if (decl instanceof MachParser.ExpressionStatementContext) {
-            return null;
+            GExpression expression = transformStatementExpression((MachParser.StatementExpressionContext)decl.getChild(0));
+            return new GExpressionStatement().setExpression(expression);
         }
         else if (decl instanceof MachParser.IfThenStatementContext) {
             return transformIfThenStatement((MachParser.IfThenStatementContext)decl);
@@ -366,6 +367,12 @@ public class MachFrontend {
         else if (decl instanceof MachParser.ForStatementContext) {
             return transformForStatement((MachParser.ForStatementContext)decl);
         }
+        else if (decl instanceof MachParser.WhileStatementContext) {
+            return transformWhileStatement((MachParser.WhileStatementContext)decl);
+        }
+        else if (decl instanceof MachParser.DoWhileStatementContext) {
+            return transformDoWhileStatement((MachParser.DoWhileStatementContext)decl);
+        }
         else if (decl instanceof MachParser.ReturnStatementContext) {
             ParseTree returnExpression = decl.getChild(1);
             if (returnExpression instanceof MachParser.ExpressionContext)
@@ -375,6 +382,32 @@ public class MachFrontend {
         }
         else
             throw new Exception("Shall not reach here");
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformWhileStatement(MachParser.WhileStatementContext statementContext) throws Exception {
+        GExpression condition = transformExpression((MachParser.ExpressionContext)statementContext.getChild(2));
+        GStatement statement = transformStatement((MachParser.StatementContext)statementContext.getChild(4));
+
+        return new GWhile().setCondition(condition).setStatement(statement);
+    }
+
+    /**
+     *
+     * @param statementContext
+     * @return
+     * @throws Exception
+     */
+    private GStatement transformDoWhileStatement(MachParser.DoWhileStatementContext statementContext) throws Exception {
+        GStatement statement = transformStatement((MachParser.StatementContext)statementContext.getChild(1));
+        GExpression condition = transformExpression((MachParser.ExpressionContext)statementContext.getChild(4));
+
+        return new GDoWhile().setCondition(condition).setStatement(statement);
     }
 
     /**

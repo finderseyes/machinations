@@ -243,6 +243,8 @@ statement
     | ifThenStatement
     | ifThenElseStatement
     | forStatement
+    | whileStatement
+    | doWhileStatement
     | returnStatement
     ;
 
@@ -294,6 +296,14 @@ forUpdate
 
 statementExpressionList
 	:	statementExpression (',' statementExpression)*
+	;
+
+whileStatement
+	: 'while' '(' expression ')' statement
+	;
+
+doWhileStatement
+	: 'do' statement 'while' '(' expression ')' ';'
 	;
 
 returnStatement

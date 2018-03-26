@@ -1,6 +1,7 @@
 /**
 Test aspects:
 - if-then(-else) statement
+- while-do
 */
 
 graph main {
@@ -45,5 +46,24 @@ graph main {
     function f5() {
         for (let y=0; y < 20; z++, y++);
         return z;
+    }
+
+    // while-do
+    function f6() {
+        let x = 0;
+        while (x < 10) {
+            x++;
+        }
+        return x;
+    }
+
+    // do-while
+    function f7() {
+        let x = 0;
+        do {
+            x = x+1;
+        }
+        while (x < 11);
+        return x;
     }
 }

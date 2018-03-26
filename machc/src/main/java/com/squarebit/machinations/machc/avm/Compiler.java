@@ -161,6 +161,12 @@ public final class Compiler {
             InstructionBlock childBlock = compileFor(block, (GFor)statement);
             block.emit(new JumpBlock(childBlock));
         }
+        else if (statement instanceof GWhile) {
+            compileWhileStatement(block, (GWhile)statement);
+        }
+        else if (statement instanceof GDoWhile) {
+            compileDoWhileStatement(block, (GDoWhile)statement);
+        }
         else if (statement instanceof GVariableDeclaration) {
             compileVariableDeclaration(block, (GVariableDeclaration)statement);
         }
@@ -173,6 +179,66 @@ public final class Compiler {
         }
         else if (statement != GStatement.EMPTY)
             throw new CompilationException("Shall not reach here");
+    }
+
+    /**
+     *
+     * @param block
+     * @param statement
+     * @throws Exception
+     */
+    private void compileWhileStatement(InstructionBlock block, GWhile statement) throws Exception {
+        InstructionBlock whileBlock = block;
+
+        // while-start
+        Label start = new Label();
+        whileBlock.emit(start);
+
+        Expression expression = compileExpression(whileBlock, statement.getCondition());
+        VariableInfo conditionVarInfo = whileBlock.createTempVar();
+        whileBlock.emit(new Evaluate(new Not(expression), conditionVarInfo));
+
+        Label end = new Label();
+        whileBlock.emit(new JumpIf().setCondition(conditionVarInfo).setWhenTrue(end));
+
+        // while-statement
+        compileStatement(whileBlock, statement.getStatement());
+        whileBlock.emit(new Jump(start));
+
+        // while-end
+        whileBlock.emit(end);
+
+        whileBlock.reindexVariables();
+        whileBlock.reindexInstructions();
+    }
+
+    /**
+     *
+     * @param block
+     * @param statement
+     * @throws Exception
+     */
+    private void compileDoWhileStatement(InstructionBlock block, GDoWhile statement) throws Exception {
+        // do-while-start
+        Label start = new Label();
+        block.emit(start);
+
+        // do-while-statement
+        compileStatement(block, statement.getStatement());
+
+        // end checking.
+        Expression expression = compileExpression(block, statement.getCondition());
+        VariableInfo conditionVarInfo = block.createTempVar();
+        block.emit(new Evaluate(expression, conditionVarInfo));
+
+        Label end = new Label();
+        block.emit(new JumpIf().setCondition(conditionVarInfo).setWhenTrue(start).setWhenFalse(end));
+
+        // do-while-end
+        block.emit(end);
+
+        block.reindexVariables();
+        block.reindexInstructions();
     }
 
     private void compileExpressionStatement(InstructionBlock block, GExpressionStatement statement) throws Exception {

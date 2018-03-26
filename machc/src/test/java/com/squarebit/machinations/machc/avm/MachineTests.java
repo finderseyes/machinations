@@ -280,6 +280,30 @@ public class MachineTests {
             }
         }
 
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f6");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(0);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph)
+                ).get();
+                assertThat(result.getValue()).isEqualTo(10);
+            }
+        }
+
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("f7");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(0);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph)
+                ).get();
+                assertThat(result.getValue()).isEqualTo(11);
+            }
+        }
+
         machine.shutdown();
     }
 }
