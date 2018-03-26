@@ -44,6 +44,9 @@ public final class ExpressionMachine {
         else if (expression instanceof Add) {
             return evaluateAdd((Add)expression);
         }
+        else if (expression instanceof Subtract) {
+            return evaluateSubtract((Subtract)expression);
+        }
         else if (expression instanceof Compare) {
             return evaluateCompare((Compare)expression).thenApply(v -> v);
         }
@@ -313,6 +316,29 @@ public final class ExpressionMachine {
 
     /**
      *
+     * @param add
+     * @return
+     */
+    private CompletableFuture<TObject> evaluateSubtract(Subtract add) {
+        return evaluate(add.getFirst()).thenCompose(first ->
+                evaluate(add.getSecond()).thenApply(second -> {
+                    TypeInfo typeInfo = coerceType(first.getTypeInfo(), second.getTypeInfo());
+
+                    if (typeInfo == CoreModule.INTEGER_TYPE) {
+                        TInteger firstInteger = evaluateAsInteger(first);
+                        TInteger secondInteger = evaluateAsInteger(second);
+                        return new TInteger(firstInteger.getValue() - secondInteger.getValue());
+                    }
+                    else if (typeInfo == CoreModule.NAN_TYPE)
+                        return TNaN.INSTANCE;
+                    else
+                        return TNaN.INSTANCE;
+                })
+        );
+    }
+
+    /**
+     *
      * @param compare
      * @return
      */
@@ -354,8 +380,19 @@ public final class ExpressionMachine {
         else if (firstType == CoreModule.INTEGER_TYPE || secondType == CoreModule.INTEGER_TYPE)
             return CoreModule.INTEGER_TYPE;
         else
-            throw new RuntimeException("Cannot coerce types");
+            return CoreModule.NAN_TYPE;
     }
+
+    public TypeInfo coerceTypeNoAdd(TypeInfo firstType, TypeInfo secondType) {
+        if (firstType == CoreModule.FLOAT_TYPE || secondType == CoreModule.FLOAT_TYPE)
+            return CoreModule.FLOAT_TYPE;
+        else if (firstType == CoreModule.INTEGER_TYPE || secondType == CoreModule.INTEGER_TYPE)
+            return CoreModule.INTEGER_TYPE;
+        else
+            return CoreModule.NAN_TYPE;
+    }
+
+
 
     public TInteger evaluateAsInteger(TObject value) {
         if (value instanceof TInteger)

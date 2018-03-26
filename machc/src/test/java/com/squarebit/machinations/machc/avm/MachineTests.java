@@ -304,6 +304,25 @@ public class MachineTests {
             }
         }
 
+        {
+            MethodInfo methodInfo = typeInfo.findMethod("fibonacci");
+            assertThat(methodInfo.getParameterCount()).isEqualTo(1);
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(9))
+                ).get();
+                assertThat(result.getValue()).isEqualTo(34);
+            }
+
+            {
+                TInteger result = (TInteger)machine.machineInvoke(
+                        new MachineInvocationPlan(methodInfo, graph, new TInteger(18))
+                ).get();
+                assertThat(result.getValue()).isEqualTo(2584);
+            }
+        }
+
         machine.shutdown();
     }
 }

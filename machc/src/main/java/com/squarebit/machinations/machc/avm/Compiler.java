@@ -888,6 +888,9 @@ public final class Compiler {
         if (binaryExpression.getOperator().equals("+")) {
             return new Add(first, second);
         }
+        else if (binaryExpression.getOperator().equals("-")) {
+            return new Subtract(first, second);
+        }
         else if (binaryExpression.getOperator().equals("<")) {
             return new Compare(Compare.Operator.parse(binaryExpression.getOperator()), first, second);
         }
