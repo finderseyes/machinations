@@ -1,0 +1,7 @@
+graph main {
+    let x = 0;
+
+    automatic function f0() {
+        x++;
+    }
+}
