@@ -34,12 +34,16 @@ public final class MethodInfo implements Scope, Symbol {
     // Signature.
     private MethodSignature signature;
 
+    // Modifier
+    private MethodModifier modifier;
+    private MethodInfo interactiveCondition;
+
     /**
      * Instantiates a new instance.
      */
     public MethodInfo() {
         this.isStatic = false;
-        this.isConstructor = true;
+        this.isConstructor = false;
 
         this.parameters = new ArrayList<>();
         this.parameterByName = new HashMap<>();
@@ -278,5 +282,54 @@ public final class MethodInfo implements Scope, Symbol {
     public MethodInfo setInstructionBlock(InstructionBlock instructionBlock) {
         this.instructionBlock = instructionBlock;
         return this;
+    }
+
+    /**
+     * Gets the method modifier.
+     *
+     * @return the method modifier or null
+     */
+    public MethodModifier getModifier() {
+        return modifier;
+    }
+
+    /**
+     * Sets method modifier.
+     *
+     * @param modifier the method modifier
+     * @return the method
+     */
+    public MethodInfo setModifier(MethodModifier modifier) {
+        this.modifier = modifier;
+        return this;
+    }
+
+    /**
+     * Gets interactive condition evaluation method.
+     *
+     * @return the interactive condition method
+     */
+    public MethodInfo getInteractiveCondition() {
+        return interactiveCondition;
+    }
+
+    /**
+     * Sets interactive condition method.
+     *
+     * @param interactiveCondition the interactive condition method
+     * @return the interactive condition
+     */
+    public MethodInfo setInteractiveCondition(MethodInfo interactiveCondition) {
+        this.interactiveCondition = interactiveCondition;
+        return this;
+    }
+
+    /**
+     * Determines if this method is an internal method.
+     *
+     * @return the boolean
+     */
+    public boolean isInternal() {
+        return name.startsWith("$");
     }
 }

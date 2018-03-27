@@ -1,7 +1,18 @@
 graph main {
-    let x = 0;
+    let x = 0, y = 0;
 
     automatic function f0() {
+        x++;
+    }
+
+    start function f1() {
+        y++;
+    }
+
+    interactive (x > 0) function f2() {
+    }
+
+    function f3() {
         x++;
     }
 }

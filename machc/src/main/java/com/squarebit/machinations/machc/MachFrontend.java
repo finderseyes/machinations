@@ -212,6 +212,21 @@ public class MachFrontend {
         ParseTree decl = methodDeclarationContext.getChild(next);
 
         if (decl instanceof MachParser.MethodModifierContext) {
+            ParseTree modifierDecl = decl.getChild(0);
+
+            if (modifierDecl instanceof MachParser.StartMethodModifierContext)
+                method.setModifier(GMethodModifier.START);
+            else if (modifierDecl instanceof MachParser.AutomaticMethodModifierContext)
+                method.setModifier(GMethodModifier.AUTOMATIC);
+            else if (modifierDecl instanceof MachParser.InteractiveMethodModifierContext) {
+                method.setModifier(GMethodModifier.INTERACTIVE);
+                if (modifierDecl.getChildCount() > 1) {
+                    method.setInteractiveCondition(
+                            transformExpression((MachParser.ExpressionContext)modifierDecl.getChild(2).getChild(0))
+                    );
+                }
+            }
+
             next += 2;
             decl = methodDeclarationContext.getChild(next);
         }

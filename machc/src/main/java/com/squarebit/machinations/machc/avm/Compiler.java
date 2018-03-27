@@ -116,7 +116,8 @@ public final class Compiler {
                 typeInfo.reindexFields();
 
                 // Methods
-                for (MethodInfo methodInfo: typeInfo.getMethods()) {
+                List<MethodInfo> methods = new ArrayList<>(typeInfo.getMethods());
+                for (MethodInfo methodInfo: methods) {
                     compileMethod(methodInfo);
                 }
             }
@@ -136,12 +137,38 @@ public final class Compiler {
      */
     private void compileMethod(MethodInfo methodInfo) throws Exception {
         GMethod methodDeclaration = methodInfo.getDeclaration();
-        this.currentMethod = methodInfo;
 
+        if (methodInfo.getModifier() == MethodModifier.INTERACTIVE) {
+            if (methodDeclaration.getInteractiveCondition() != null) {
+                compileInteractiveCondition(methodInfo);
+            }
+        }
+
+        this.currentMethod = methodInfo;
         InstructionBlock block = methodInfo.getInstructionBlock();
         for (GStatement statement: methodDeclaration.getStatements()) {
             compileStatement(block, statement);
         }
+    }
+
+    /**
+     *
+     * @param methodInfo
+     * @throws Exception
+     */
+    private void compileInteractiveCondition(MethodInfo methodInfo) throws Exception {
+        GMethod methodDeclaration = methodInfo.getDeclaration();
+        MethodInfo evaluationMethod = methodInfo.getDeclaringType()
+                .createMethod(String.format("$__%s__interactive_condition_", methodInfo.getName()));
+
+        methodInfo.setInteractiveCondition(evaluationMethod);
+        this.currentMethod = evaluationMethod;
+
+        InstructionBlock block = evaluationMethod.getInstructionBlock();
+        VariableInfo temp = block.createTempVar();
+        Expression expression = compileExpression(block, methodDeclaration.getInteractiveCondition());
+        block.emit(new Evaluate(expression, temp));
+        block.emit(new Return(temp));
     }
 
     /**
@@ -512,6 +539,13 @@ public final class Compiler {
      */
     private void declareMethod(TypeInfo typeInfo, GMethod method) throws Exception {
         MethodInfo methodInfo = typeInfo.createMethod(method.getName()).setDeclaration(method);
+
+        if (method.getModifier() == GMethodModifier.START)
+            methodInfo.setModifier(MethodModifier.START);
+        else if (method.getModifier() == GMethodModifier.AUTOMATIC)
+            methodInfo.setModifier(MethodModifier.AUTOMATIC);
+        else if (method.getModifier() == GMethodModifier.INTERACTIVE)
+            methodInfo.setModifier(MethodModifier.INTERACTIVE);
 
         // TODO: Adding parameters
         List<String> arguments = method.getArguments();
