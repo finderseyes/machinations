@@ -16,3 +16,7 @@ graph main {
         x++;
     }
 }
+
+default graph default_graph() {
+
+}

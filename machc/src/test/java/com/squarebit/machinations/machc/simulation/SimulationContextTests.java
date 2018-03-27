@@ -3,6 +3,7 @@ package com.squarebit.machinations.machc.simulation;
 import com.squarebit.machinations.machc.Utils;
 import com.squarebit.machinations.machc.avm.*;
 import com.squarebit.machinations.machc.avm.runtime.TInteger;
+import com.squarebit.machinations.machc.avm.runtime.TRuntimeGraph;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,6 +94,21 @@ public class SimulationContextTests {
         assertThat(((TInteger)context.getMainGraph().getField("x")).getValue()).isEqualTo(2);
         assertThat(((TInteger)context.getMainGraph().getField("y")).getValue()).isEqualTo(1);
 
+
+        context.stop();
+    }
+
+    @Test
+    public void should_simulate_default_graph() throws Exception {
+        ModuleInfo module = Utils.compile("simulation/test-001.mach");
+
+        Simulation simulation = new Simulation(new SimulationConfigurations().setModuleInfo(module));
+        SimulationContext context = new SimulationContext(simulation);
+
+        context.start().get();
+
+        TRuntimeGraph graph = context.getMainGraph();
+        assertThat(graph.getTypeInfo().getName()).isEqualTo("default_graph");
 
         context.stop();
     }

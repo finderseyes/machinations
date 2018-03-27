@@ -94,8 +94,10 @@ public final class Compiler {
 //                        .setDeclaration(graph)
 //                        .setImplementingClass(TRuntimeGraph.class);
 
-                TypeInfo typeInfo = new GraphTypeInfo();
-                typeInfo.setName(graph.getName()).setDeclaration(graph);
+                GraphTypeInfo typeInfo = new GraphTypeInfo();
+                typeInfo.setDefault(graph.isDefaultGraph())
+                        .setName(graph.getName())
+                        .setDeclaration(graph);
                 moduleInfo.addType(typeInfo);
 
                 this.currentType = typeInfo;

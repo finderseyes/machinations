@@ -6,6 +6,7 @@ import com.squarebit.machinations.machc.avm.runtime.TRuntimeGraph;
  * The type Graph type info.
  */
 public class GraphTypeInfo extends TypeInfo {
+    private boolean isDefault = false;
 
     /**
      * Instantiates a new Graph type info.
@@ -36,5 +37,25 @@ public class GraphTypeInfo extends TypeInfo {
             throw new RuntimeException("Invalid operation");
 
         return super.setImplementingClass(implementingClass);
+    }
+
+    /**
+     * Determines if the type is default type in the module.
+     *
+     * @return the boolean
+     */
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    /**
+     * Sets default.
+     *
+     * @param aDefault the a default
+     * @return the default
+     */
+    public GraphTypeInfo setDefault(boolean aDefault) {
+        isDefault = aDefault;
+        return this;
     }
 }

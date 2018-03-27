@@ -31,6 +31,20 @@ public class SimulationContext {
 
         this.moduleInfo = simulation.getConfigurations().getModuleInfo();
         this.mainGraphType = simulation.getConfigurations().getMainGraphType();
+        if (this.mainGraphType == null) {
+            TypeInfo[] defaultTypes = this.moduleInfo.getTypes().stream()
+                    .filter(t -> (t instanceof GraphTypeInfo && ((GraphTypeInfo)t).isDefault()))
+                    .toArray(TypeInfo[]::new);
+
+            if (defaultTypes.length > 1)
+                throw new RuntimeException("Multiple default types found.");
+
+            else if (defaultTypes.length == 0)
+                throw new RuntimeException("Cannot find any default type.");
+
+            this.mainGraphType = defaultTypes[0];
+        }
+
         this.machine = new Machine(moduleInfo);
     }
 
